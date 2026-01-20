@@ -76,6 +76,29 @@ dict_reports = {
                     "data_approve": "21.09.2023",
                     "author": "Гусейнов Ш.",
                     "params": {"date_first": "C", "date_second": "по"},
+                },
+                {
+                    "name": "Получатели СВут 0702 за период c 1 разделом",
+                    "num_rep": "03",
+                    "proc": "rep_0702_03",
+                    "data_approve": "20.01.2026",
+                    "author": "Гусейнов Ш.",
+                    "params": {"date_first": "C", "date_second": "по"},
+
+                    "meta_params": {
+                        "date_first": {
+                            "display_name": "C",
+                            "type": "date",
+                            "length": None,
+                            "required": True
+                        },
+                        "date_second": {
+                            "display_name": "по",
+                            "type": "date",
+                            "length": None,
+                            "required": True
+                        }
+                    }
                 }
             ]
         },
