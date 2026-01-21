@@ -19,7 +19,7 @@ select
       sex, 
       age,
       appointdate, date_approve, stopdate, 
-      last_pay_sum,  
+      sum(last_pay_sum) as all_sum_pay,  
       ksu, kut, sum_avg, sum_all,
 	  mrzp,
 	  sum(sum_debt)	 sum_debt
@@ -59,7 +59,7 @@ from (
                FIRST_VALUE(sipr.risk_date) OVER(PARTITION BY D.PNCD_ID ORDER BY sipr.risk_date DESC) risk_date,
                FIRST_VALUE(sipr.date_approve) OVER(PARTITION BY sipr.iin ORDER BY sipr.date_approve DESC) date_approve,
                FIRST_VALUE(pp.stopdate) OVER(PARTITION BY D.PNCD_ID ORDER BY D.PNCP_DATE DESC) stopdate,
-               FIRST_VALUE(case when D.pay_sum>0 then D.pay_sum else d.sum_debt end) OVER(PARTITION BY D.PNCD_ID ORDER BY D.PNCP_DATE DESC) last_pay_sum,
+               case when D.pay_sum>0 then D.pay_sum else d.sum_debt end as last_pay_sum,
                sipr.kut, sipr.ksu, sipr.sum_avg, sipr.sum_all, 
                d.knp, 
                FIRST_VALUE(mrzp) OVER(PARTITION BY D.PNCD_ID ORDER BY sipr.risk_date DESC) mrzp,
@@ -89,7 +89,6 @@ group by
       sex, 
       age,
       appointdate, date_approve, stopdate, 
-      last_pay_sum,  
       ksu, kut, sum_avg, sum_all, mrzp
 order by rfbn_id, rfpm_id, iin
 """
