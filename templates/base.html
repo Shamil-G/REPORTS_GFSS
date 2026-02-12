@@ -48,7 +48,7 @@
             {% block navigate %}{% endblock %}
             {% if g.user.is_active %}
             <a class="nav_button" href="/running-reports">{{ res_value('RUNNING_REPORTS') }}</a>
-            {% if 'admin' in g.user.roles %}
+            {% if 'Admin' in g.user.roles %}
             <a class="nav_button" id="aux_task" href="/auxiliary-task-dia">{{ res_value('AUXILIARY_TASK') }}</a>
             {% endif %}
             <!--<a class="title2" href="/change-passwd">{{ res_value('CHANGE_PASSWORD') }}</a>-->

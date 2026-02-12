@@ -81,9 +81,9 @@ def view_set_dep(dep_name):
     log.debug(f'SET_DEP: {dep_name}')
     #if request.method == 'POST':
     session['dep_name'] = dep_name
-    log.debug(f"DEP_NAME: {session['dep_name']}")
+    log.debug(f"SET_DEP. DEP_NAME: {session['dep_name']}")
     list_groups = get_list_groups()
-    log.debug(f"DEP_NAME: {session['dep_name']}, LIST_GROUPS: {list_groups}")
+    log.debug(f"SET_DEP. DEP_NAME: {session['dep_name']}, LIST_GROUPS: {list_groups}")
     return render_template("list_grps.html", cursor=list_groups)
 
 
@@ -91,9 +91,9 @@ def view_set_dep(dep_name):
 @login_required
 def view_set_grp_name(grp):
     session['grp_name'] = str(grp)
-    log.debug(f'+++ LIST_REPORTS/<grp>. GRP_NAME: {grp}')
+    log.debug(f'---> SET_GRP_NAME/<grp>\n\tGRP_NAME: {grp}')
     grps = get_list_reports()
-    log.debug(f'+++ GROUPS: {grps}')
+    log.debug(f'---> SET_GRP_NAME\n\tGROUPS: {grps}')
     if request.method == 'GET':
         return render_template("list_reports.html", cursor=grps)
 
@@ -213,7 +213,7 @@ def uploaded_file(full_path):
 @app.route('/remove-reports/<string:date_report>/<int:num_report>')
 @login_required
 def view_remove_report(date_report,num_report):
-    if 'admin' in g.user.roles or 'Руководитель' in g.user.roles:
+    if 'Admin' in g.user.roles:
         log.info(f"REMOVE REPORT. {session['username']}. DATE_REPORT: {date_report}, NUM_REPORT: {num_report}, ROLES: {g.user.roles}")
         remove_report(date_report, num_report)
     return redirect(url_for('view_running_reports'))

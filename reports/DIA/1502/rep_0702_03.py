@@ -35,18 +35,16 @@ from (
       b.ksu, b.kut, b.sum_avg, b.sum_all,
       b.knp,
       mrzp,
-      sum_debt,
-      case when b.pay_month>=to_date('2023-01-01','YYYY-MM-DD') then 1 else 0 end p_month,
-      case when b.pay_month is null then 0 else 1 end all_month	  
+      sum_debt
     from (
         select unique 
+
           a.rfbn_id, a.rfpm_id, p.iin, p.birthdate,
           case when p.sex=0 then 'Ж' else 'M' end as sex, 
           floor( months_between(a.risk_date, p.birthdate) / 12 ) age,
           a.appointdate, a.date_approve, a.stopdate, 
           a.last_pay_sum,  
           a.ksu, a.kut, a.sum_avg, a.sum_all,
-          si.pay_month,
           a.knp,
 		  a.mrzp,
 		  a.sum_debt
@@ -59,7 +57,7 @@ from (
                FIRST_VALUE(sipr.risk_date) OVER(PARTITION BY D.PNCD_ID ORDER BY sipr.risk_date DESC) risk_date,
                FIRST_VALUE(sipr.date_approve) OVER(PARTITION BY sipr.iin ORDER BY sipr.date_approve DESC) date_approve,
                FIRST_VALUE(pp.stopdate) OVER(PARTITION BY D.PNCD_ID ORDER BY D.PNCP_DATE DESC) stopdate,
-               case when D.pay_sum>0 then D.pay_sum else d.sum_debt end as last_pay_sum,
+               D.pay_sum last_pay_sum,
                sipr.kut, sipr.ksu, sipr.sum_avg, sipr.sum_all, 
                d.knp, 
                FIRST_VALUE(mrzp) OVER(PARTITION BY D.PNCD_ID ORDER BY sipr.risk_date DESC) mrzp,
@@ -246,8 +244,10 @@ def do_report(file_name: str, date_first: str, date_second: str):
 						worksheet.write(row_cnt+shift_row, col, list_val, common_format)
 					if col in (4,7,8,9):
 						worksheet.write(row_cnt+shift_row, col, list_val, date_format)
-					if col in (10,11,12,13,14,15,16,17):
+					if col in (10,11,12,13,14,15,16):
 						worksheet.write(row_cnt+shift_row, col, list_val, money_format)
+						if col==16 and list_val==151:
+							log.info(f'record[0]: {record[0]}, {record[1]}, {record[2]}: {list_val} ')
 					# ADD to SUMMARY
 					# if col in (9):
 					# 	m_val[0] = m_val[0] + list_val

@@ -1,8 +1,7 @@
-﻿from ldap3 import Server, Connection, SUBTREE
 from flask import session
 from util.ip_addr import ip_addr
 from util.logger import log
-from app_config import ldap_admins, permit_deps, ldap_boss
+from app_config import admin_post, work_post, view_post
 
      
 class SSO_User:
@@ -11,59 +10,87 @@ class SSO_User:
         self.src_user = src_user
         self.post=''
         self.dep_name=''
+        self.roles=''
+        self.top_control=0
 
         if 'password' in session:
             self.password = session['password']
-
         if src_user and 'login_name' in src_user:
-            log.info(f'SSO_USER. src_user: {src_user}')
+            log.debug(f'SSO_USER. src_user: {src_user}')
 
-            login_name = src_user['login_name']
-            self.username = login_name
-            session['username'] = login_name
-
-            if 'dep_name' not in src_user or src_user['dep_name'] not in permit_deps:
-                log.info(f'----------------\n\tUSER {self.username} from {ip} not Registred\n----------------')
+            self.username = src_user['login_name']
+            session['username'] = self.username
+            # Required fields check
+            if 'fio' not in src_user:
+                log.info(f"---> SSO\n\tUSER {self.username} not Registred\n\tFIO is empty\n<---")
                 return None
 
-            principalName = src_user['principalName']
-            self.principal_name = principalName
+            if 'dep_name' not in src_user:
+                log.info(f"---> SSO\n\tUSER {self.username} not Registred\n\tDEP_NAME is empty\n<---")
+                return None
 
-            full_name = src_user['fio']
-            self.full_name = full_name
-            
+            if 'post' not in src_user:
+                log.info(f"---> SSO\n\tUSER {self.username} not Registred\n\tPOST in \n{src_user}\n\tis empty\n<---")
+                return None
 
-            if 'post' in src_user:
-                self.post = src_user['post']
-                session['post']=self.post
+            # RFBN_ID
+            self.rfbn_id=src_user.get('rfbn_id','')
+            # dep_name
+            self.dep_name = src_user.get('dep_name','')
 
-            if 'dep_name' in src_user:
-                self.depname = src_user['dep_name']
-                session['depname']=self.depname
+            # Эту переменную выставлять нельзя, так как она будет перезаписывать 
+            # используемую в приложении session['dep_name']
+            # что приведет к ошеломляющим артефактам
+            # session['dep_name']=self.dep_name
+
+            # post
+            self.post = src_user.get('post','')
+            session['post']=self.post
+            # check admin right!
+            list_admin_dep = admin_post.get(self.post,[])
+            if self.dep_name in list_admin_dep:
+                self.roles='Admin'
+                self.top_control=2
+
+            log.info(f'SSO. list_admin_dep: {list_admin_dep}. top_control: {self.top_control}')
+            # check user right
+            if self.top_control==0:
+                list_work_dep = work_post.get(self.post,[])
+                if '*' in list_work_dep or self.dep_name in list_work_dep:
+                    self.roles='Operator'
+                    self.top_control=1
+
+            # check user right
+            if self.top_control==0:
+                list_view_dep = view_post.get(self.post,[])
+                if '*' in list_view_dep or self.dep_name in list_view_dep:
+                    self.roles='Guest'
+                else:
+                    log.info(f'SSO. Undefined ROLE for: {self.username}')
+                    return None
+
+            # FIO
+            self.fio = src_user.get('fio','')
+            session['fio'] = self.fio
+            #
 
             if 'roles' in src_user:
-                self.roles = src_user['roles']
-                log.debug(f'----------------\n\tUSER {session['username']} have SSO Roles {self.roles}\n----------------')
-            elif src_user['fio'] in ldap_admins or src_user['post'] in ldap_boss:
-                self.roles='admin'
-                log.debug(f'----------------\n\tUSER {session['username']} are System Admin\n----------------')
-            else:
-                self.roles='operator'
-                log.debug(f'----------------\n\tUSER {session['username']} are Operator\n----------------')
-            session['roles'] = self.roles
-            
+                self.roles.append(src_user['roles'])
+                session['roles']=self.roles
                 
-            self.full_name = full_name
-            session['full_name'] = full_name 
+            session['top_control']=self.top_control
+
+            self.full_name = self.fio
+            session['full_name'] = self.fio
 
             self.ip_addr = ip
-            log.debug(f"LM SSO. SUCCESS. USERNAME: {self.username}, ip_addr: {self.ip_addr}\n\tFIO: {self.full_name}, roles: {self.roles} ")
+            log.info(f"--->\n\tSSO SUCCESS\n\tUSERNAME: {self.username}\n\tIP_ADDR: {self.ip_addr}\n\tFIO: {self.fio}\n\tROLES: {self.roles}, POST: {self.post}\n\tRFBN: {self.rfbn_id}\n\tDEP_NAME: {self.dep_name}\n<---")
             return self
-        log.info(f"LM SSO. FAIL. USERNAME: {src_user}, ip_addr: {ip}, password: {session['password']}")
+        log.info(f"---> SSO FAIL. USERNAME: {src_user}\n\tip_addr: {ip}, password: {session['password']}\n<---")
         return None
 
     def have_role(self, role_name):
-        if hasattr(self, 'username'):
+        if hasattr(self, 'roles'):
             return role_name in self.roles
 
     def is_authenticated(self):
@@ -79,7 +106,7 @@ class SSO_User:
             return False
 
     def is_anonymous(self):
-        if not self.username:
+        if not hasattr(self, 'username'):
             return True
         else:
             return False
