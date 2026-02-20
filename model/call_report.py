@@ -86,7 +86,9 @@ def set_status_report(file_path: str, status: int):
 
 def check_report(file_path: str):
     stmt = f"""
-      select to_char(st.date_execute,'YYYY-MM-DD'), st.num, st.status, 
+      select to_char(st.date_execute,'YYYY-MM-DD') as date_report, 
+             st.num num_report, 
+             st.status, 
             case 
                 when st.live_time = 0 then 1
                 when st.status = 2 then
@@ -96,26 +98,23 @@ def check_report(file_path: str):
                 when trunc(st.date_execute) != trunc(sysdate) and st.status = 1 then
                      0
                 else st.live_time 
-            end           
+            end  as remain_time
       from LOAD_REPORT_STATUS st 
       where st.file_path = :file_path
     """
-    mistake, result, err_msg = select_one(stmt, [file_path])
-    log.info(f"CHECK_REPORT. mistake: {mistake},  err_msg: {err_msg}, file_path: {file_path}")
-    if mistake == 0:
-        if result:
-            date_report = result[0]
-            num_report = result[1]
-            status = int(result[2])
-            remain_time = result[3]
-            log.debug(f"CHECK_REPORT. result: {result}, status: {status}, idate_report: {date_report}, inum_report: {num_report}")
-            if remain_time <= 0:
-                log.info(f"CHECK_REPORT. REMOVE. REMAIN TIME: {remain_time}, idate_report: {date_report}, inum_report: {num_report}")
-                remove_report(date_report, num_report)
-                status = 0
-            return status
-        return 10
-    return -100
+    result = select_one(stmt, {'file_path': file_path})
+    if result:
+        date_report = result['date_report']
+        num_report = result['num_report']
+        status = int(result['status'])
+        remain_time = result['remain_time']
+        log.debug(f"CHECK_REPORT. result: {result}, status: {status}, idate_report: {date_report}, inum_report: {num_report}")
+        if remain_time <= 0:
+            log.info(f"CHECK_REPORT. REMOVE. REMAIN TIME: {remain_time}, idate_report: {date_report}, inum_report: {num_report}")
+            remove_report(date_report, num_report)
+            status = 0
+        return status
+    return 10
 
 
 def init_report(name_report: str, date_first: str, date_second: str, rfpm_id: str, rfbn_id: str, live_time: str, file_path: str):

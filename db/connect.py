@@ -47,42 +47,52 @@ def close_connection(connection):
     _pool.release(connection)
 
 
-def select(stmt):
+def is_english_column(name: str) -> bool: 
+    return all(c.isascii() and (c.isalnum() or c == '_') for c in name)
+
+
+def _select(stmt, cursor, params=None):
     results = []
-    mistake = 0
-    err_mess = ''
+    try:
+        cursor.execute(stmt, params or {})
+
+        columns = [ col[0].lower() if is_english_column(col[0]) else col[0] for col in cursor.description ]
+
+        for row in cursor.fetchall():
+            results.append(dict(zip(columns, row)))
+        return results
+    except oracledb.DatabaseError as e:
+        error, = e.args
+        err_message = f'STMT: {stmt}\nPARAMS: {params}\n\t{error.code} : {error.message}'
+        log.error(f"------select------> ERROR\n{err_message}\n")
+        return []
+
+
+def select(stmt, params=None):
     with get_connection() as connection:
         with connection.cursor() as cursor:
-            try:
-                cursor.execute(stmt)
-                recs = cursor.fetchall()
-                for rec in recs:
-                    results.append(rec)
-            except oracledb.DatabaseError as e:
-                error, = e.args
-                mistake = 1
-                err_mess = f"Oracle error: {error.code} : {error.message}"
-                log.error(f"ERROR with ------select------>\nmess: {err_mess}")
-            finally:
-                return mistake, results, err_mess
+            return _select(stmt, cursor, params)
 
 
 def select_one(stmt, args):
-    mistake = 0
-    err_mess = ''
+    result = {}
     with get_connection() as connection:
         with connection.cursor() as cursor:
             try:
                 cursor.execute(stmt, args)
-                rec = cursor.fetchone()
+                columns = [ col[0].lower() if is_english_column(col[0]) else col[0] for col in cursor.description ]
+                row = cursor.fetchone()
+                if row:
+                    result=dict(zip(columns, row))
+                else:
+                    log.info(f'--->\n\tSELECT_ONE. ROW is Empty\n\tparams: {args}\n\tSTMT: {stmt}\n<---')
+                return result
             except oracledb.DatabaseError as e:
                 error, = e.args
-                mistake = 1
-                rec = ''
-                err_mess = f"Oracle error: {error.code} : {error.message}"
-                log.error(f"ERROR ------select------>\n{stmt}\nARGS: {args}\n{err_mess}")
-            finally:
-                return mistake, rec, err_mess
+                err_message = f'STMT: {stmt}\n\tARGS: {args}\n\t{error.code} : {error.message}'
+                log.error(f"------select------> ERROR\n\t{err_message}")
+                log.error(err_message)
+                return {}
 
 
 def plsql_execute(cursor, f_name, cmd, args):
