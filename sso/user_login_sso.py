@@ -1,4 +1,4 @@
-﻿from flask import render_template, request, redirect, flash, url_for, g, session
+from flask import render_template, request, redirect, flash, url_for, g, session
 from flask_login import login_required, logout_user, login_user, current_user
 from sso.sso_login import SSO_User
 from main_app import app, log, login_manager
@@ -12,9 +12,8 @@ log.info("user_login_sso стартовал...")
 
 @login_manager.user_loader
 def loader_user(id_user):
-    log.debug(f"LM. Loader ID User: {id_user}")
-    # return User().get_user_by_name(id_user)
-    return SSO_User().get_user_by_name(id_user)
+    log.info(f"LM. Loader ID User: {id_user}")
+    return fetch_user_from_sso("check", {"ip_addr": ip_addr(), "login_name": id_user})
 
 
 @app.after_request
@@ -28,118 +27,100 @@ def redirect_to_signing(response):
 def before_request():
     g.user = current_user
 
+# Получение данных пользователя из SSO сервера по IP адресу и, если возможно, по имени пользователя из сессии
+def fetch_user_from_sso(endpoint: str, req_json: dict) -> SSO_User | None:
+    resp = requests.post(url=f'{sso_server}/{endpoint}', json=req_json)
+    if resp.status_code == 200:
+        resp_json = resp.json()
+        if resp_json.get('status') == 200 and 'user' in resp_json:
+            return SSO_User().init_user(resp_json['user'])
+    return None
+
+
+def try_auto_login():
+    ip = ip_addr()
+    req_json = {"ip_addr": ip}
+    if ip == "127.0.0.1" and "username" in session:
+        req_json["login_name"] = session["username"]
+    user = fetch_user_from_sso("check", req_json)
+    if user:
+        log.info(f"TRY AUTO LOGIN. USER {ip} SUCCESS Registered {session.get('username', 'unknown')}")
+        login_user(user)
+        return True
+    log.info(f"TRY AUTO LOGIN. USER {ip} FAIL Registered {session.get('username', 'unknown')}, request: {req_json}")
+    return False
+
 
 @app.route('/logout', methods=['GET', 'POST'])
 @login_required
 def logout():
     log.info(f"LM. LOGOUT. USERNAME: {session['username']}, ip_addr: {ip_addr()}")
-    logout_user()
+
     username = session['username']
+    req_json = {'ip_addr': f'{ip_addr()}', 'login_name': username}
+
+    logout_user()
     if 'username' in session:
         session.pop('username', None)
     if 'password' in session:
         session.pop('password', None)
     if 'info' in session:
         session.pop('info', None)
-    if 'list_bd' in session:
-        session.pop('list_bd', None)
     if '_flashes' in session:
         session['_flashes'].clear()
-
-    req_json = {'ip_addr': f'{ip_addr()}'}
 
     resp = requests.post(url=f'{sso_server}/close', json=req_json)
 
     if resp.status_code != 200:
         log.info(f'----------------\n\tОшибка {resp.status_code} соединения {username} с сервером SSO\n----------------')
-        return redirect(url_for('view_root'))
 
-    resp_json = resp.json()
+    if resp.status_code == 200:
+        resp_json = resp.json()
 
-    if 'status' in resp_json and resp_json['status'] !=200:
-        log.info(f'----------------\n\tОшибка закрытия сессии. Статус: {resp_json['status']}/{ip_addr()}\n----------------')
+        if 'status' in resp_json and resp_json['status'] !=200:
+            log.info(f'----------------\n\tОшибка закрытия сессии. Статус: {resp_json['status']}/{ip_addr()}\n----------------')
 
     return redirect(url_for('view_root'))
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login_page():
-    log.info(f'LOGIN. \n\taddr: {sso_server}/check from {ip_addr()}')
+@app.get('/login')
+def login_page_get():
+    if g.user.is_authenticated:
+        return redirect(url_for('view_root'))
+
+    if try_auto_login():
+        log.info('LOGIN_PAGE_GET. try_auto_login SUCCESS')
+        return redirect(url_for('view_root'))
+
+    # Настройка стилей
     if 'styles' not in session:
-        if "STYLE" in environ:
-            session['styles']=environ["STYLES"]
-        else:
-            session['styles']='styles'
-    
+        session['styles'] = environ.get("STYLES", "color")
+
+    # Очистка flash-сообщений
     if '_flashes' in session:
-         session['_flashes'].clear()
-    
-    user = ''
-    json_user = ''
+        session['_flashes'].clear()
 
-    if request.method == "GET":
-        req_json = {'ip_addr': f'{ip_addr()}'}
-        resp = requests.post(url=f'{sso_server}/check', json=req_json)
-
-        log.debug(f'LOGIN CHECK. \n\taddr: {sso_server}/check\n\tresp: {resp}')
-        if resp.status_code == 200:
-            resp_json=resp.json()
-            log.debug(f'LOGIN GET. resp_json: {resp_json}')
-            if 'status' in resp_json and resp_json['status'] == 200:
-                json_user = resp_json['user']
-                log.info(f'LOGIN GET. json_user: {json_user}')
-                session['username'] = json_user['login_name']
-            else:
-                log.info(f'----------------\n\tUSER {ip_addr()} not Registred\n----------------')
-                return render_template('login.html')
-
-    if request.method == "POST":
-        session['username'] = request.form.get('username')
-        session['password'] = request.form.get('password')
-
-        req_json = {'login_name': session['username'], 'password': session['password'], 'ip_addr': ip_addr() }
-        log.debug(f'LOGIN POST. REQUEST JSON: {req_json}')
-
-        resp = requests.post(url=f'{sso_server}/login', json=req_json)
-        if resp.status_code != 200:
-            log.info(f'----------------\n\tОшибка {resp.status_code} соединения с сервером SSO\n----------------')
-            return render_template('login.html')
-
-        resp_json=resp.json()
-        log.debug(f'LOGIN POST. resp_json: {resp_json}/{type(resp_json)}')
-        log.info(f'LOGIN POST. resp_json: {resp_json}/{type(resp_json)}')
-        if resp_json['status'] !=200:
-            log.info(f'----------------\n\tUSER {session['username']}/{session['password']} not Registred\n----------------')
-            return render_template('login.html', info='Неверна Фамилия (или ИИН) или пароль в Windows')
-
-        json_user = resp_json['user']
-        
-        log.info(f'LOGIN POST. json_user: {json_user}')
-
-    # Если такой username существует и объект user создался, надо проверить пароль и вытащить атрибуты
-    if json_user:
-        log.info(f'LOGIN. json_user: {json_user}')
-        user = SSO_User().get_user_by_name(json_user)
-        if not user:
-            log.info(f"LOGIN_PAGE. ERROR LOGIN. New object user is empty. MAY BE USER'S DEP_NAME in LDAP not in list permit_deps in APP_CONFIG.PY")
-            return render_template('login.html')
-
-        login_user(user)
-        next_page = request.args.get('next')
-        if next_page is not None:
-            log.info(f'LOGIN_PAGE. SUCCESS AUTHORITY. GOTO NEXT PAGE: {next_page}')
-            return redirect(next_page)
-        else:
-            return redirect(url_for('view_root'))
-    
-    return render_template('login.html')
+    return render_template('login.html', info=request.args.get('info'))
 
 
-# @app.context_processor
-# def get_current_user():
-    # if g.user.id_user:
-    # if g.user.is_anonymous:
-    #     log.debug('Anonymous current_user!')
-    # if g.user.is_authenticated:
-    #     log.debug('Authenticated current_user: '+str(g.user.username))
-    # return{"current_user": 'admin_user'}
+@app.post('/login')
+def login_page_post():
+    req_json = {
+        "login_name": request.form.get("username"),
+        "password": request.form.get("password"),
+        "ip_addr": ip_addr(),
+    }
+    user = fetch_user_from_sso("login", req_json)
+
+    if not user:
+        log.info(f'---\nLOGIN PAGE POST. FAIL: {req_json}\n---')
+        return redirect(url_for("login_page_get", info="Ошибка авторизации"))
+    login_user(user)
+
+    next_page = request.args.get('next')
+    if next_page is not None:
+        log.info(f'LOGIN_PAGE. SUCCESS AUTHORITY. GOTO NEXT PAGE: {next_page}')
+        return redirect(next_page)
+
+    return redirect(url_for("view_root"))
+

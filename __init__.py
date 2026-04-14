@@ -13,7 +13,7 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 app.secret_key = getenv('SECRET_KEY', default=token_hex())
 
 login_manager = LoginManager(app)
-login_manager.login_view = 'login_page'
+login_manager.login_view = 'login_page_get'
 login_manager.login_message = "Необходимо зарегистрироваться в системе"
 login_manager.login_message_category = "warning"
 

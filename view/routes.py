@@ -48,9 +48,6 @@ def utility_processor():
 @app.route('/home', methods=['POST', 'GET'])
 @login_required
 def view_root():
-    # if not g or 'user' not in g or g.user.is_anonymous():
-    #     log.info(f"VIEW ROOT. NOT LOGIN")
-    #     return redirect(url_for('login_page'))
     owners = get_owner_reports()
     if 'username' in session:
         log.debug(f"VIEW_ROOT. USERNAME: {session['username']}")
