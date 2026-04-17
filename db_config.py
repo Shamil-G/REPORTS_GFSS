@@ -29,5 +29,5 @@ retry_delay = 2
 
 Debug = True
 
-log.info(f"=====> DB CONFIG. platform: {platform}, ORACLE_HOME: {ORACLE_HOME}, DSN: {dsn}")
+log.info(f"=====>\tDB CONFIG\n\tPLATFORM: {platform}\n\tORACLE_HOME: {ORACLE_HOME}\n\tDSN: {dsn}\n\tUSERNAME: {username}")
 

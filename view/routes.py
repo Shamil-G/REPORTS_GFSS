@@ -129,6 +129,7 @@ def view_set_params():
 
     list_params = session['params']
     log.debug(f'\nSET_PARAMS\n\tLIST_PARAMS:\t{list_params}')
+
     if request.method == 'POST':
         #Вытащим значения параметров из формы в новый список
         for parm in list_params:
@@ -143,6 +144,10 @@ def view_set_params():
                     report = rep
                     report['params'] = new_params
                     result = call_report(session['dep_name'], session['grp_name'], session['rep_code'], new_params)
+                    if 'at_once_report' in result:
+                        log.debug(f'--->\nAT_ONCE_REPORT\n{result.get('at_once_report')}\n<---')
+                        return result.get('at_once_report')
+
                     log.debug(f"EDIT_PARAMS. RESULT: {result}, PARAMS: {new_params}, report: {report}")
                     if 'status' in result:
                         status = result['status']

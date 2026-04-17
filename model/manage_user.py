@@ -36,13 +36,13 @@ def get_user_roles(public_name, username, ip):
         resp_json = {"mistake": f'{e}', "username": username, "roles": []}
     finally:
         log.info(f"GET ROLES. FINALLY. USERNAME: {username}, resp_json: {resp_json}")
-        return resp_json
+    return resp_json
 
 
 
 def server_logout(id_user):
     request_json = { "id_user": id_user}
-    url = f'{URL_LOGIN}/user--logout'
+    url = f'{URL_LOGIN}/user-logout'
     try:
         resp = requests.post(url, json=request_json)
         status = resp.status_code
@@ -72,7 +72,7 @@ def server_logout(id_user):
         resp_json = {"mistake": f'{e}', "id_user": {id_user}, "roles": []}
     finally:
         log.debug(f"REQUEST USER INFO. FINALLY. id_user: {id_user}, resp_json: {resp_json}")
-        return resp_json
+    return resp_json
 
 def user_info(public_name, username):
     request_json = { "app_name": public_name, "username": username }
@@ -106,39 +106,4 @@ def user_info(public_name, username):
         resp_json = {"mistake": f'{e}', "username": username, "roles": []}
     finally:
         log.info(f"REQUEST USER INFO. FINALLY. USERNAME: {username}, resp_json: {resp_json}")
-        return resp_json
-
-
-# def change_passwd(username, passwd, new_passwd):
-#     request_json = { "app_name": public_name, "username": username, "passwd": passwd, "new_passwd": new_passwd }
-#     url = f'{URL_LOGIN}/change-passwd'
-#     try:
-#         resp = requests.post(url, json=request_json)
-#         status = resp.status_code
-#         if status == 200:
-#             log.debug(f'-----> GET CHANGE PASSWORD. resp: {resp}, status: {status}, request_json: {request_json}')
-#             resp_json = resp.json()
-#         else:
-#             log.error(f'\nERROR CHANGE PASSWORD. "username": {username}, URL: {url}, status: {status}')
-#             resp_json = {"mistake": '100', "username": username, "mess": f'RESP STATUS: {status}'}
-#     except requests.exceptions.HTTPError as errH:
-#         log.error(f"\n=====> Http Error. request change-password. username: {username} : {errH}")
-#         resp_json = {"mistake": f'{errH}', "username": username, "roles": []}
-#     except requests.exceptions.Timeout as errT:
-#         log.error(f'\n=====> TIMEOUT ERROR. request change-password. username: {username} : {errT}')
-#         resp_json = {"mistake": f'{errT}', "username": username, "roles": []}
-#     except requests.exceptions.TooManyRedirects as errM:
-#         log.error(f'\n=====> ERROR MANY REDIRECT. request change-password. username: {username} : {errM}')
-#         resp_json = {"mistake": f'{errM}', "username": username, "roles": []}
-#     except requests.exceptions.ConnectionError as errC:
-#         log.error(f'\n=====> ERROR CONNECTION. request change-password. username: {username} : {errC}')
-#         resp_json = {"mistake": f'{errC}', "username": username, "roles": []}
-#     except requests.exceptions.RequestException as errE:
-#         log.error(f'\n=====> REQUEST ERROR. request change-password. username: {username} : {errE}')
-#         resp_json = {"mistake": f'{errE}', "username": username, "roles": []}
-#     except Exception as e:
-#         log.error(f'=====> GET CHANGE PASSWORD. URL: {url}, ERROR: {e}')
-#         resp_json = {"mistake": f'{e}', "username": username, "roles": []}
-#     finally:
-#         log.info(f"CHANGE PASSWORD. FINALLY. USERNAME: {username}, resp_json: {resp_json}")
-#         return resp_json
+    return resp_json

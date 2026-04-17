@@ -8,7 +8,7 @@ from   gfss_parameter import platform
 from   model.list_reports import dict_reports
 from   model.manage_reports import remove_report
 from   util.trunc_date import get_year
-
+from   datetime import date
 
 
 stmt_table = """
@@ -129,132 +129,105 @@ def init_report(name_report: str, date_first: str, date_second: str, rfpm_id: st
     return status
 
 
-def call_report(dep_name: str, group_name: str, code: str, params: dict):
-    log.info(f'\nCALL REPORT. DEP: {dep_name}, group: {group_name}, code: {code}, input_params: {params}')
+# def get_report_meta(dep_name, group_name, num_rep):
+#     dp = dict_reports.get(dep_name)
+#     if not dp:
+#         return None,None
 
-    log.debug(f"--- PARAMS: {params}")
-    #Определим владельца отчета-департамент
-    if dep_name in dict_reports:
-        dp = dict_reports[dep_name]
-        log.debug(f'\n---> CALL REPORT. DP: {dp}')
-        #Переберем все группы для выбора нужной по имени
-        for cur_group in dp:
-            if cur_group['grp_name'] == group_name:
-                list_reports = cur_group['list']
-                log.debug(f'\n-----> CALL REPORT. CUR_GROUP: {cur_group}')
-                log.debug(f'\n-------> CALL REPORT. LIST_REPORTS: {list_reports}')
-                for curr_report in list_reports:
-                    #Определяем код отчета в группе
-                    if code == curr_report['num_rep']:
-                        # log.info(f'\n-------> CALL REPORT. CODE. DEP: {dep_name}, CODE: {code}, CUR_GROUP: {cur_group}, params: {params}')
-                        #Определим по коду отчета имя Python модуля для последующей загрузке
-                        if 'proc' in curr_report:
-                            #  Параметры дат отчетов надо заложить в имя файла
-                            #  Четыре параметра используются в init_report
-                            date_first = ''
-                            date_second = ''
-                            rfpm_id = ''
-                            rfbn_id = ''
+#     cur_grp = dp.get(group_name,None)
+#     module_dir = cur_grp.get('module_dir')
+#     list_rep = cur_grp.get('list', None)
+#     cur_report = cur_grp.get(num_rep, None)
+#     proc_name = cur_report.get('proc',None)
+#     return module_dir, proc_name
 
-                            if 'rfbn_id' in params:
-                                rfbn_id = params['rfbn_id']
-                            if 'rfpm_id' in params:
-                                rfpm_id = params['rfpm_id']
 
-                            if 'date_first' in params:
-                                date_first = params['date_first']
-                            if 'date_second' in params:
-                                date_second = params['date_second']
-                            #
+def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
+    log.info(f'\nCALL REPORT. DEP: {dep_name}, group: {group_name}, code: {num_rep}, input_params: {params}')
 
-                            check_dir(f'{REPORT_PATH}/{get_year(date_first)}')
-                            report_part_path = f'{REPORT_PATH}/{get_year(date_first)}/{dep_name}.{group_name}.{code}'
-                            proc = curr_report['proc']
+    try:
+        group = dict_reports[dep_name][group_name]
+        report = group["reports"][num_rep]
+    except KeyError:
+        return {"status": 0, "file_path": "Mistake in parameters"}
 
-                            log.debug(f'\n-------> CALL REPORT. PROC: {proc}')
-                            #Определим время жизни отчета
-                            live_time = 0
-                            if 'live_time' in cur_group:
-                                live_time = cur_group['live_time']
+    proc = report["proc"]
+    module_dir = group["module_dir"]
+    module_path = f"{module_dir}.{proc}"
 
-                            # Загрузим модуль отчетности
-                            # 1. Определим путь для импорта необходимого Python модуля-отчета
-                            module_dir = cur_group['module_dir']
-                            module_path = f"{module_dir}.{proc}"
-                            log.debug(f'CALL REPORT. MODULE DIR: {module_dir}, MODULE PATH: {module_path}')
-                            # 2. Загрузим модуль по найденному пути
-                            loaded_module = importlib.import_module(module_path)
+    loaded_module = importlib.import_module(module_path)
 
-                            # Найдем в модуле rep_code
-                            if hasattr(loaded_module,'report_code'):
-                                rep_code = getattr(loaded_module,'report_code')
+    rep_code = getattr(loaded_module, "report_code", "")
 
-                            # Найдем в модуле функцию формирования имени файла, если она есть
-                            # 1. Проверяем модуль на наличе функции 'get_file_full_name'
-                            # 2. Извлекаем имя с полным путем
-                            if hasattr(loaded_module,'get_file_full_name'):
-                                # file_name = loaded_module.get_file_path(**params)
-                                get_file_name = getattr(loaded_module,'get_file_full_name')
-                                file_name = get_file_name(report_part_path, params)
-                                log.info(f'\nCALL REPORT. GET FILE FULL NAME. FILE_NAME {file_name}\nparams:{params}\n')
-                            else:
-                                report_part_path = f'{report_part_path}.{rep_code}'
-                                prefix_path_name = ".".join([
-                                    value for key, value in params.items()
-                                    if value not in [None, "", [], {}]
-                                ])
-                                report_part_path = f'{report_part_path}.{prefix_path_name}'
+    params = params.copy()
 
-                                file_name = f'{report_part_path}.xlsx'
+    date_first = params.get("date_first", "")
+    date_second = params.get("date_second", "")
+    rfpm_id = params.get("rfpm_id", "")
+    rfbn_id = params.get("rfbn_id", "")
 
-                            log.debug(f'CALL_REPORT. PARAMS: {params}')
+    target_path = f'{REPORT_PATH}/{get_year(date_first) if date_first else str(date.today().year)}'
+    check_dir(target_path)
 
-                            # Дополним параметром начального пути для отчета
-                            params['file_name']=file_name
+    suffix = ".".join(
+        str(params[k]) for k in params
+        if params[k] not in [None, "", [], {}]
+    )
 
-                            # log.info(f'CALL REPORT. GET FILE NAME. file_name: {file_name}')
-                            status = int(check_report(file_name))
- 
-                            ##log.info(f'CALL REPORT. CHECK REPORT. status: {status}')
-                            if status < 0:
-                                log.info(f'CALL REPORT. Ошибка статуса. {status}. {file_name}')
-                                return {"status": status}
-                            # Если запись об отчете в БД присутствует
-                            if status in (1, 2): # Файл готовится или готов
-                                if status == 1:
-                                    log.info(f'CALL REPORT. Отчет готовится. status: {status}. {file_name}')
-                                if status == 2:
-                                    log.info(f'CALL REPORT. Отчет готов. status: {status}. {file_name}')
-                                return {"status": status, "file_path": file_name}
+    target_file = f"{dep_name}.{group_name}.{num_rep}.{rep_code}"
+    if suffix:
+        target_file += f".{suffix}"
+    target_file += ".xlsx"
+    #-------------------------------------------------------
+    # Вызываем выполнение отчета, который формируется сразу
+    #-------------------------------------------------------
+    if report.get("living_time") == "at_once":
+        params["file_name"] = target_file
+        return { 'at_once_report': loaded_module.do_report(params)}
+    #----------------------------------------------
 
-                            # Если запись об отчете в БД отсутствует, то ее надо сделать
-                            if status in (0,10):
-                                status = init_report(f'{group_name}.{code}.{rep_code}', date_first, date_second, rfpm_id, rfbn_id, live_time, file_name)
-                                log.debug(f'CALL REPORT. Status: {status}')
-                                if status == 1:
-                                    log.info(f'CALL REPORT. REPORT PREPARING. Status: {status}, file_name: {file_name}')
-                                    return {"status": status, "file_path": file_name}
-                                if status == 2:
-                                    log.info(f'CALL REPORT. RESULT EXIST. Status: {status}, file_name: {file_name}')
-                                    return {"status": status, "file_path": file_name}
-                                log.info(f'MAKE_REPORT. Start {module_path} -> {file_name}')
+    file_name = f"{target_path}/{target_file}"
+    params["file_name"] = file_name
 
-                                params['file_name']=file_name
+    status = int(check_report(file_name))
 
-                                # Получаем полный путь к файлу - результату
-                                # log.info(f'CALL_REPORT. PARAMS: {params}')
+    ##log.info(f'CALL REPORT. CHECK REPORT. status: {status}')
+    if status < 0:
+        log.info(f'CALL REPORT. Ошибка статуса. {status}. {file_name}')
+        return {"status": status}
+    # Если запись об отчете в БД присутствует
+    if status in (1, 2): # Файл готовится или готов
+        if status == 1:
+            log.info(f'CALL REPORT. Отчет готовится. status: {status}. {file_name}')
+        if status == 2:
+            log.info(f'CALL REPORT. Отчет готов. status: {status}. {file_name}')
+        return {"status": status, "file_path": file_name}
 
-                                if platform == 'unix':
-                                    from os import fork
-                                    pid = fork()
-                                    if pid:
-                                        return {"status": 1, "file_path": file_name}
-                                    else:
-                                        log.info(f'CALL REPORT. CHILD FORK PROCESS. {file_name}')
-                                        loaded_module.do_report(**params)
-                                else:
-                                    log.info(f'CALL REPORT. THREAD PROCESS. \nBEG PARAMS ---------------------\n{params}\nEND PARAMS ---------------------')
-                                    result = loaded_module.thread_report(**params)
-                                    return result
-    return {"status": 0, "file_path": "Mistake in parameters"}
+    # Если запись об отчете в БД отсутствует, то ее надо сделать
+    if status in (0,10):
+        status = init_report(f'{group_name}.{num_rep}.{rep_code}', date_first, date_second, rfpm_id, rfbn_id, live_time, file_name)
+        log.debug(f'CALL REPORT. Status: {status}')
+        if status == 1:
+            log.info(f'CALL REPORT. REPORT PREPARING. Status: {status}, file_name: {file_name}')
+            return {"status": status, "file_path": file_name}
+        if status == 2:
+            log.info(f'CALL REPORT. RESULT EXIST. Status: {status}, file_name: {file_name}')
+            return {"status": status, "file_path": file_name}
+        log.info(f'MAKE_REPORT. Start {module_path} -> {file_name}')
+
+
+    # Получаем полный путь к файлу - результату
+    # log.info(f'CALL_REPORT. PARAMS: {params}')
+    if platform == 'unix':
+        from os import fork
+        pid = fork()
+        if pid:
+            return {"status": 1, "file_path": file_name}
+        else:
+            log.info(f'CALL REPORT. CHILD FORK PROCESS. {file_name}')
+            loaded_module.do_report(**params)
+    else:
+        log.info(f'CALL REPORT. THREAD PROCESS. \nBEG PARAMS ---------------------\n{params}\nEND PARAMS ---------------------')
+        result = loaded_module.thread_report(**params)
+        return result
 

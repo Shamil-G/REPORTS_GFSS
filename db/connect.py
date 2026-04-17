@@ -31,7 +31,7 @@ _pool = oracledb.create_pool(user=cfg.username,
                              session_callback=init_session)
 
 log.info(f'Пул соединенй БД Oracle создан. Timeout: {_pool.timeout}, wait_timeout: {_pool.wait_timeout}, '
-            f'max_lifetime_session: {_pool.max_lifetime_session}, min: {cfg.pool_min}, max: {cfg.pool_max}')
+            f'max_lifetime_session: {_pool.max_lifetime_session}, min: {cfg.pool_min}, max: {cfg.pool_max}\n')
 
 
 def get_connection():
@@ -72,6 +72,28 @@ def select(stmt, params=None):
     with get_connection() as connection:
         with connection.cursor() as cursor:
             return _select(stmt, cursor, params)
+
+
+def is_english_column(name: str) -> bool: 
+    return all(c.isascii() and (c.isalnum() or c == '_') for c in name)
+
+def select_2(stmt, params=None):
+    results = []
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            try:
+                cursor.execute(stmt, params or {})
+
+                columns = [ col[0].lower() if is_english_column(col[0]) else col[0] for col in cursor.description ]
+
+                for row in cursor.fetchall():
+                    results.append(dict(zip(columns, row)))
+                return results
+            except oracledb.DatabaseError as e:
+                error, = e.args
+                err_message = f'STMT: {stmt}\nPARAMS: {params}\n\t{error.code} : {error.message}'
+                log.error(f"------select------> ERROR\n{err_message}\n")
+                return []
 
 
 def select_one(stmt, args):
