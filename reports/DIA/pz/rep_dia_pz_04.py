@@ -8,7 +8,7 @@ from   util.logger import log
 from   model.manage_reports import set_status_report
 
 
-report_name = 'Списочная часть чистых ПЗ-шников(СВ)'
+report_name = 'Списочная часть чистых ПЗ-шников - имеющих СВ'
 report_code = 'ПЗ.04'
 
 stmt_2 = """

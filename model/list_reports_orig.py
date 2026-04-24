@@ -450,7 +450,7 @@ dict_reports = {
                 "params": {"date_first": "C", "date_second": "по"},
                 },
                 {
-                "name": "Списочная часть чистых ПЗ-шников(СВ)",
+                "name": "Списочная часть чистых ПЗ-шников - имеющих СВ",
                 "num_rep": "04",
                 "proc": "rep_dia_pz_04",
                 "data_approve": "26.11.2024",
@@ -458,7 +458,7 @@ dict_reports = {
                 "params": {"date_first": "С", "date_second": "по"},
                 },
                 {
-                "name": "Списочная часть смешанных ПЗ-шников(СВ)",
+                "name": "Списочная часть смешанных ПЗ-шников - имеющих СВ",
                 "num_rep": "05",
                 "proc": "rep_dia_pz_05",
                 "data_approve": "26.11.2024",
