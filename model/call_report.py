@@ -151,8 +151,9 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
     except KeyError:
         return {"status": 0, "file_path": "Mistake in parameters"}
 
-    proc = report["proc"]
     module_dir = group["module_dir"]
+    live_time = group["live_time"]
+    proc = report["proc"]
     module_path = f"{module_dir}.{proc}"
 
     loaded_module = importlib.import_module(module_path)
