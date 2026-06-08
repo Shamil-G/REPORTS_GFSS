@@ -28,7 +28,7 @@ SELECT
           sfa.count_donation donation,--"Количество месяцев",
           sfa.sum_all sfa_all, --"Назначенный размер, тенге"
           case when p.status in (4,2) then 'Умерший' else 'Получатель' end status
-        FROM sipr_maket_first_approve_2 sfa, person p
+        FROM sipr_maket_first_approve_3 sfa, person p
         WHERE sfa.sicp_id = p.sicid
         AND substr(sfa.rfpm_id,1,4) = '0704'
         AND sfa.date_approve >= to_date(:d1,'yyyy-mm-dd') 
