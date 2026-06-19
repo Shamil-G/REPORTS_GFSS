@@ -169,11 +169,6 @@ def do_report(file_name: str, date_first: str, date_second: str):
             worksheet[page_num - 1].write(0, 0, report_name, title_name_report)
             worksheet[page_num - 1].write(1, 0, f'За период: {date_first} - {date_second}', title_name_report)
 
-            row_cnt = 1
-            all_cnt = 0
-            shift_row = 3
-            cnt_part = 0
-
             log.info(f'REPORT {report_code}. CREATING REPORT')
 
             try:
@@ -190,13 +185,14 @@ def do_report(file_name: str, date_first: str, date_second: str):
             log.info(f'REPORT: {report_code}. Формируем выходную EXCEL таблицу')
 
             record = cursor.fetchone()
-            all_cnt = 1
 
             if not record:
                 log.warning(f'REPORT {report_code}. Данные отсутствуют')
                 workbook.close()
                 set_status_report(file_name, 2)
                 return None
+
+            all_cnt = 1
 
             worksheet[page_num - 1].write(3, 0, 1, digital_format)
 
