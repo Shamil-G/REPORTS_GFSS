@@ -6,58 +6,35 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3130 - Градация СМД принятого для исчисления выплаты'
-report_code = '3130'
+report_name = '3131 - Градация размеров получателей'
+report_code = '3131'
 
 stmt_report = """
 SELECT
-  mzp_from,
-  mzp_to,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07020101' THEN sipr_id END) CNT01,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07020102' THEN sipr_id END) CNT02,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07020103' THEN sipr_id END) CNT03,
-  COUNT(DISTINCT sipr_id) CNT
+  sum_from,
+  sum_to,
+  COUNT(DISTINCT CASE WHEN rfpm = '07020101' THEN PNCD_ID END) CNT01,
+  COUNT(DISTINCT CASE WHEN rfpm = '07020102' THEN PNCD_ID END) CNT02,
+  COUNT(DISTINCT CASE WHEN rfpm = '07020103' THEN PNCD_ID END) CNT03,
+  COUNT(DISTINCT PNCD_ID) CNT
 FROM(
-SELECT
-  rfpm_id,
-  sipr_id,
-  sfa.sum_avg / sfa.mrzp,
-  CASE
-    WHEN sfa.sum_avg / sfa.mrzp > 0 AND sfa.sum_avg / sfa.mrzp < 1 THEN 0
-    WHEN sfa.sum_avg / sfa.mrzp = 1 THEN 1
-    WHEN sfa.sum_avg / sfa.mrzp > 1 AND sfa.sum_avg / sfa.mrzp <= 2 THEN 1
-    WHEN sfa.sum_avg / sfa.mrzp > 2 AND sfa.sum_avg / sfa.mrzp <= 3 THEN 2
-    WHEN sfa.sum_avg / sfa.mrzp > 3 AND sfa.sum_avg / sfa.mrzp <= 4 THEN 3
-    WHEN sfa.sum_avg / sfa.mrzp > 4 AND sfa.sum_avg / sfa.mrzp <= 5 THEN 4
-    WHEN sfa.sum_avg / sfa.mrzp > 5 AND sfa.sum_avg / sfa.mrzp <= 6 THEN 5
-    WHEN sfa.sum_avg / sfa.mrzp > 6 AND sfa.sum_avg / sfa.mrzp <= 7 THEN 6
-    WHEN sfa.sum_avg / sfa.mrzp > 7 AND sfa.sum_avg / sfa.mrzp <= 8 THEN 7
-    WHEN sfa.sum_avg / sfa.mrzp > 8 AND sfa.sum_avg / sfa.mrzp <= 9 THEN 8
-    WHEN sfa.sum_avg / sfa.mrzp > 9 AND sfa.sum_avg / sfa.mrzp < 10 THEN 9
-    WHEN sfa.sum_avg / sfa.mrzp = 10 THEN 10
-    WHEN sfa.sum_avg / sfa.mrzp > 10 THEN 10
-  END mzp_from,
-  CASE
-    WHEN sfa.sum_avg / sfa.mrzp > 0 AND sfa.sum_avg / sfa.mrzp < 1 THEN 1
-    WHEN sfa.sum_avg / sfa.mrzp = 1 THEN 1
-    WHEN sfa.sum_avg / sfa.mrzp > 1 AND sfa.sum_avg / sfa.mrzp <= 2 THEN 2
-    WHEN sfa.sum_avg / sfa.mrzp > 2 AND sfa.sum_avg / sfa.mrzp <= 3 THEN 3
-    WHEN sfa.sum_avg / sfa.mrzp > 3 AND sfa.sum_avg / sfa.mrzp <= 4 THEN 4
-    WHEN sfa.sum_avg / sfa.mrzp > 4 AND sfa.sum_avg / sfa.mrzp <= 5 THEN 5
-    WHEN sfa.sum_avg / sfa.mrzp > 5 AND sfa.sum_avg / sfa.mrzp <= 6 THEN 6
-    WHEN sfa.sum_avg / sfa.mrzp > 6 AND sfa.sum_avg / sfa.mrzp <= 7 THEN 7
-    WHEN sfa.sum_avg / sfa.mrzp > 7 AND sfa.sum_avg / sfa.mrzp <= 8 THEN 8
-    WHEN sfa.sum_avg / sfa.mrzp > 8 AND sfa.sum_avg / sfa.mrzp <= 9 THEN 9
-    WHEN sfa.sum_avg / sfa.mrzp > 9 AND sfa.sum_avg / sfa.mrzp < 10 THEN 10
-    WHEN sfa.sum_avg / sfa.mrzp = 10 THEN 10
-    WHEN sfa.sum_avg / sfa.mrzp > 10 THEN NULL
-  END mzp_to
-  FROM SIPR_MAKET_FIRST_APPROVE_2 sfa
- WHERE RFPM_ID LIKE '0702%'
-   AND TRUNC(DATE_APPROVE) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
-) 
-GROUP BY mzp_from, mzp_to
-ORDER BY mzp_from, mzp_to
+SELECT unique
+  FIRST_VALUE(D.RFPM_ID) OVER(PARTITION BY D.PNCD_ID ORDER BY D.PNCP_DATE DESC) RFPM,
+  d.pncd_id,
+  ph.sum_pay,
+  TRUNC(ph.sum_pay / 1000) * 1000 sum_from,
+  (TRUNC(ph.sum_pay / 1000) + 1) * 1000 sum_to
+  FROM PNPD_DOCUMENT D, pnpt_payment PH
+ WHERE D.Source_Id = PH.pnpt_id(+)
+   AND d.knp <> '010'
+   AND D.PNCP_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+   AND D.RFPM_ID LIKE '0702%'
+   AND D.RIDT_ID IN (4, 6, 7, 8)
+   AND D.STATUS IN (0, 1, 2, 3, 5, 7)
+   AND D.PNSP_ID > 0
+)
+GROUP BY sum_from, sum_to
+ORDER BY sum_from, sum_to
 """
 
 
@@ -72,7 +49,7 @@ def format_worksheet(worksheet, common_format):
     worksheet.set_column(2, 4, 15)
     worksheet.set_column(5, 5, 20)
 
-    worksheet.merge_range(2, 0, 2, 1, 'МЗП', common_format)
+    worksheet.merge_range(2, 0, 2, 1, 'Градация, тг', common_format)
     worksheet.merge_range(
         2, 2, 2, 4,
         'Степень утраты трудоспособности',
@@ -213,7 +190,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             row_num = 4
 
-            for idx, record in enumerate(rows, start=1):
+            for record in rows:
                 worksheet[0].write(row_num, 0, record[0], digital_format)
                 worksheet[0].write(row_num, 1, record[1], digital_format)
 
@@ -229,6 +206,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             for col in range(2, 6):
                 col_letter = chr(ord('A') + col)
+
                 worksheet[0].write_formula(
                     row_num,
                     col,
