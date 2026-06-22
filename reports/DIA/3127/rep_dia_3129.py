@@ -212,9 +212,19 @@ def do_report(file_name: str, date_first: str, date_second: str):
             digital_format.set_border(1)
             digital_format.set_align('vcenter')
 
+            total_digital_format = workbook.add_format({'num_format': '#0', 'align': 'center'})
+            total_digital_format.set_border(1)
+            total_digital_format.set_align('vcenter')
+            total_digital_format.set_bold()
+
             money_format = workbook.add_format({'num_format': '# ### ### ##0.00', 'align': 'right'})
             money_format.set_border(1)
             money_format.set_align('vcenter')
+
+            total_money_format = workbook.add_format({'num_format': '# ### ### ##0.00', 'align': 'right'})
+            total_money_format.set_border(1)
+            total_money_format.set_align('vcenter')
+            total_money_format.set_bold()
 
             now = datetime.datetime.now()
             log.info(f'Начало формирования {file_name}: {now.strftime("%d-%m-%Y %H:%M:%S")}')
@@ -282,6 +292,21 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write(row_num, 9, record[9], money_format)
 
                 row_num += 1
+
+            # строка итогов
+            worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
+
+            for col in range(2, 10):
+                col_letter = chr(ord('A') + col)
+
+                fmt = total_digital_format if col in (2, 4, 6, 8) else total_money_format
+
+                worksheet[0].write_formula(
+                    row_num,
+                    col,
+                    f'=SUM({col_letter}5:{col_letter}{row_num})',
+                    fmt
+                )
 
             worksheet[0].freeze_panes(3, 0)
             worksheet[0].freeze_panes(4, 0)

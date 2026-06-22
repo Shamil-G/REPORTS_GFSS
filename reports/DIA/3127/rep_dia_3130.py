@@ -65,23 +65,28 @@ def format_worksheet(worksheet, common_format):
 
     worksheet.set_row(0, 24)
     worksheet.set_row(1, 24)
-    worksheet.set_row(2, 42)
+    worksheet.set_row(2, 24)
+    worksheet.set_row(3, 42)
 
-    worksheet.set_column(0, 1, 12)   # MZP от
-    worksheet.set_column(1, 2, 12)   # MZP до
-    worksheet.set_column(2, 6, 20)
+    worksheet.set_column(0, 1, 12)
+    worksheet.set_column(2, 4, 15)
+    worksheet.set_column(5, 5, 20)
 
-    headers = [
-        'МЗП от',
-        'МЗП до',
-        'Степень утраты трудоспособности 80-100%',
-        'Степень утраты трудоспособности 60-80%',
-        'Степень утраты трудоспособности 30-60%',
-        'Итого, человек'
-    ]
+    worksheet.merge_range(2, 0, 2, 1, 'МЗП', common_format)
+    worksheet.merge_range(
+        2, 2, 2, 4,
+        'Степень утраты трудоспособности',
+        common_format
+    )
+    worksheet.merge_range(2, 5, 3, 5, 'Итого, человек', common_format)
 
-    for col, header in enumerate(headers):
-        worksheet.write(2, col, header, common_format)
+    # Подзаголовки
+    worksheet.write(3, 0, 'от', common_format)
+    worksheet.write(3, 1, 'до', common_format)
+
+    worksheet.write(3, 2, '80-100%', common_format)
+    worksheet.write(3, 3, '60-80%', common_format)
+    worksheet.write(3, 4, '30-60%', common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
@@ -145,9 +150,19 @@ def do_report(file_name: str, date_first: str, date_second: str):
             digital_format.set_border(1)
             digital_format.set_align('vcenter')
 
+            total_digital_format = workbook.add_format({'num_format': '#0', 'align': 'center'})
+            total_digital_format.set_border(1)
+            total_digital_format.set_align('vcenter')
+            total_digital_format.set_bold()
+
             money_format = workbook.add_format({'num_format': '# ### ### ##0.00', 'align': 'right'})
             money_format.set_border(1)
             money_format.set_align('vcenter')
+
+            total_money_format = workbook.add_format({'num_format': '# ### ### ##0.00', 'align': 'right'})
+            total_money_format.set_border(1)
+            total_money_format.set_align('vcenter')
+            total_money_format.set_bold()
 
             now = datetime.datetime.now()
             log.info(f'Начало формирования {file_name}: {now.strftime("%d-%m-%Y %H:%M:%S")}')
@@ -196,7 +211,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = len(rows)
 
-            row_num = 3
+            row_num = 4
 
             for idx, record in enumerate(rows, start=1):
                 worksheet[0].write(row_num, 0, record[0], digital_format)
@@ -208,6 +223,18 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write(row_num, 5, record[5], digital_format)
 
                 row_num += 1
+
+            # строка итогов
+            worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
+
+            for col in range(2, 6):
+                col_letter = chr(ord('A') + col)
+                worksheet[0].write_formula(
+                    row_num,
+                    col,
+                    f'=SUM({col_letter}5:{col_letter}{row_num})',
+                    total_digital_format
+                )
 
             worksheet[0].freeze_panes(3, 0)
             worksheet[0].freeze_panes(4, 0)

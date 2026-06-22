@@ -143,9 +143,19 @@ def do_report(file_name: str, date_first: str, date_second: str):
             digital_format.set_border(1)
             digital_format.set_align('vcenter')
 
+            total_digital_format = workbook.add_format({'num_format': '#0', 'align': 'center'})
+            total_digital_format.set_border(1)
+            total_digital_format.set_align('vcenter')
+            total_digital_format.set_bold()
+
             money_format = workbook.add_format({'num_format': '# ### ### ##0.00', 'align': 'right'})
             money_format.set_border(1)
             money_format.set_align('vcenter')
+
+            total_money_format = workbook.add_format({'num_format': '# ### ### ##0.00', 'align': 'right'})
+            total_money_format.set_border(1)
+            total_money_format.set_align('vcenter')
+            total_money_format.set_bold()
 
             now = datetime.datetime.now()
             log.info(f'Начало формирования {file_name}: {now.strftime("%d-%m-%Y %H:%M:%S")}')
