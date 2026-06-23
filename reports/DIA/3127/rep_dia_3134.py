@@ -6,28 +6,32 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3133 - Количество месяцев принятых в расчет при назначении'
-report_code = '3133'
+report_name = '3134 - Количество лет, на которые назначена выплата'
+report_code = '3134'
 
 stmt_report = """
 SELECT
-  mc,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07020101' THEN sipr_id END) CNT01,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07020102' THEN sipr_id END) CNT02,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07020103' THEN sipr_id END) CNT03,
-  COUNT(sipr_id) CNT
-FROM (
-SELECT
-  sfa.sipr_id,
-  sfa.rfpm_id,
-  COUNT(DISTINCT pay_month) mc
-FROM SIPR_MAKET_FIRST_APPROVE_2 sfa, em5_sird_reckon_donation sird
- WHERE RFPM_ID LIKE '0702%'
-   AND TRUNC(DATE_APPROVE) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
-   AND sfa.sipr_id = sird.sipr_id
-GROUP BY sfa.sipr_id, sfa.rfpm_id)
-GROUP BY mc
-ORDER BY mc
+    y_from,
+    y_to,
+    COUNT(DISTINCT CASE WHEN rfpm_id = '07020101' THEN sipr_id END) CNT01,
+    COUNT(DISTINCT CASE WHEN rfpm_id = '07020102' THEN sipr_id END) CNT02,
+    COUNT(DISTINCT CASE WHEN rfpm_id = '07020103' THEN sipr_id END) CNT03,
+    COUNT(sipr_id) CNT
+  FROM (
+  SELECT
+    sfa.sipr_id,
+    sfa.rfpm_id,
+    y.stopdate,
+    CEIL(months_between(y.stopdate, sfa.risk_date)/12) - 1 y_from,
+    CEIL(months_between(y.stopdate, sfa.risk_date)/12) y_to
+  FROM sipr_maket_first_approve_2 sfa, ss_m_sol m, ss_M_PAY Y
+  WHERE
+    sfa.sipr_id = m.id
+    AND m.mpay = y.id
+    AND sfa.rfpm_id like '0702%'
+    AND trunc(sfa.date_approve) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')) t
+  GROUP BY t.y_from, y_to
+  ORDER BY t.y_from, y_to
 """
 
 
@@ -42,17 +46,21 @@ def format_worksheet(worksheet, common_format):
     worksheet.set_column(2, 4, 15)
     worksheet.set_column(5, 5, 20)
 
-    worksheet.merge_range(2, 0, 3, 0, 'Количество месяцев', common_format)
+    worksheet.merge_range(2, 0, 2, 1, 'Количество лет', common_format)
     worksheet.merge_range(
-        2, 1, 2, 3,
+        2, 2, 2, 4,
         'Степень утраты трудоспособности, %',
         common_format
     )
-    worksheet.merge_range(2, 4, 3, 4, 'Итого, человек', common_format)
+    worksheet.merge_range(2, 5, 3, 5, 'Итого, человек', common_format)
 
-    worksheet.write(3, 1, '80-100%', common_format)
-    worksheet.write(3, 2, '60-80%', common_format)
-    worksheet.write(3, 3, '30-60%', common_format)
+    # Подзаголовки
+    worksheet.write(3, 0, 'от', common_format)
+    worksheet.write(3, 1, 'до', common_format)
+
+    worksheet.write(3, 2, '80-100%', common_format)
+    worksheet.write(3, 3, '60-80%', common_format)
+    worksheet.write(3, 4, '30-60%', common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
@@ -186,13 +194,14 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write(row_num, 2, record[2], digital_format)
                 worksheet[0].write(row_num, 3, record[3], digital_format)
                 worksheet[0].write(row_num, 4, record[4], digital_format)
+                worksheet[0].write(row_num, 5, record[5], digital_format)
 
                 row_num += 1
 
             # строка итогов
-            worksheet[0].write(row_num, 0, 'ИТОГО', title_format)
+            worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
 
-            for col in range(2, 5):
+            for col in range(2, 6):
                 col_letter = chr(ord('A') + col)
 
                 worksheet[0].write_formula(
