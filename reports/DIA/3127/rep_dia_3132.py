@@ -6,35 +6,22 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3131 - Градация размеров получателей'
-report_code = '3131'
+report_name = '3132 - Градация назначенных размеров'
+report_code = '3132'
 
 stmt_report = """
 SELECT
-  sum_from,
-  sum_to,
-  COUNT(DISTINCT CASE WHEN rfpm = '07020101' THEN PNCD_ID END) CNT01,
-  COUNT(DISTINCT CASE WHEN rfpm = '07020102' THEN PNCD_ID END) CNT02,
-  COUNT(DISTINCT CASE WHEN rfpm = '07020103' THEN PNCD_ID END) CNT03,
-  COUNT(DISTINCT PNCD_ID) CNT
-FROM(
-SELECT unique
-  FIRST_VALUE(D.RFPM_ID) OVER(PARTITION BY D.PNCD_ID ORDER BY D.PNCP_DATE DESC) RFPM,
-  d.pncd_id,
-  ph.sum_pay,
-  TRUNC(ph.sum_pay / 1000) * 1000 sum_from,
-  (TRUNC(ph.sum_pay / 1000) + 1) * 1000 sum_to
-  FROM PNPD_DOCUMENT D, pnpt_payment PH
- WHERE D.Source_Id = PH.pnpt_id(+)
-   AND d.knp <> '010'
-   AND D.PNCP_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
-   AND D.RFPM_ID LIKE '0702%'
-   AND D.RIDT_ID IN (4, 6, 7, 8)
-   AND D.STATUS IN (0, 1, 2, 3, 5, 7)
-   AND D.PNSP_ID > 0
-)
-GROUP BY sum_from, sum_to
-ORDER BY sum_from, sum_to
+  TRUNC(sum_all / 1000) * 1000 sum_from,
+  (TRUNC(sum_all / 1000) + 1) * 1000 sum_to,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07020101' THEN sipr_id END) CNT01,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07020102' THEN sipr_id END) CNT02,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07020103' THEN sipr_id END) CNT03,
+  COUNT(sipr_id) CNT
+FROM SIPR_MAKET_FIRST_APPROVE_2 sfa
+ WHERE RFPM_ID LIKE '0702%'
+   AND TRUNC(DATE_APPROVE) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+GROUP BY TRUNC(sum_all / 1000)
+ORDER BY 1
 """
 
 
