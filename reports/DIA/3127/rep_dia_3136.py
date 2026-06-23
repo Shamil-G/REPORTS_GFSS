@@ -6,8 +6,8 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3135 - Сведения о назначенных средних размерах по областям'
-report_code = '3135'
+report_name = '3136 - Половозрастная структура получателей'
+report_code = '3136'
 
 stmt_report = """
 SELECT
@@ -43,23 +43,18 @@ def format_worksheet(worksheet, common_format):
     worksheet.set_column(2, 2, 15)
     worksheet.set_column(3, 3, 15)
 
-    # "Возраст, лет" — строки 2-4, колонка 0
     worksheet.merge_range(2, 0, 4, 0, 'Возраст,\nлет', common_format)
 
-    # Главный заголовок — строка 2, колонки 1-3
     worksheet.merge_range(
         2, 1, 2, 3,
         'Количество получателей социальной выплаты на случай утраты трудоспособности, человек',
         common_format
     )
 
-    # "Всего" — строки 3-4, колонка 1
     worksheet.merge_range(3, 1, 4, 1, 'Всего', common_format)
 
-    # "в том числе" — строка 3, колонки 2-3
     worksheet.merge_range(3, 2, 3, 3, 'в том числе', common_format)
 
-    # Подзаголовки — строка 4
     worksheet.write(4, 2, 'Мужчины', common_format)
     worksheet.write(4, 3, 'Женщины', common_format)
 
@@ -186,7 +181,8 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = len(rows)
 
-            row_num = 5
+            first_row = 5
+            row_num = first_row - 1
 
             for record in rows:
                 worksheet[0].write(row_num, 0, record[0], digital_format)
@@ -205,7 +201,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write_formula(
                     row_num,
                     col,
-                    f'=SUM({col_letter}5:{col_letter}{row_num})',
+                    f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
                     total_digital_format
                 )
 

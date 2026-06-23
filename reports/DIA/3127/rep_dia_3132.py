@@ -175,7 +175,8 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = len(rows)
 
-            row_num = 4
+            first_row = 4
+            row_num = first_row - 1
 
             for record in rows:
                 worksheet[0].write(row_num, 0, record[0], digital_format)
@@ -197,7 +198,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write_formula(
                     row_num,
                     col,
-                    f'=SUM({col_letter}5:{col_letter}{row_num})',
+                    f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
                     total_digital_format
                 )
 

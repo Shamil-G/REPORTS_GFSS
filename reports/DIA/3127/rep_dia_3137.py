@@ -6,149 +6,67 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3129 - Количество и средний размер в разрезе стажа участия'
-report_code = '3129'
+report_name = '3137 - Количество получателей и сумма выплаты по регионам'
+report_code = '3137'
 
 stmt_report = """
 SELECT
-   CASE
-     WHEN KSU = 0.1  THEN 'Менее 6 месяцев'
-     WHEN KSU = 0.7  THEN 'От 6 до 12 месяцев'
-     WHEN KSU = 0.75 THEN 'От 12 до 24 месяцев'
-     WHEN KSU = 0.85 THEN 'От 24 до 36 месяцев'
-     WHEN KSU = 0.9  THEN 'От 36 до 48 месяцев'
-     WHEN KSU = 0.95 THEN 'От 48 до 60 месяцев'
-     WHEN KSU = 1    THEN 'Более 60 месяцев'
-   END STAGE,
-   KSU,
-   COUNT(DISTINCT CASE WHEN RFPM_ID = '07020101' THEN SICP_ID END) CNT01,
-   ROUND(AVG(CASE WHEN RFPM_ID = '07020101' THEN SUM_ALL END),2) AVG01,
-   COUNT(DISTINCT CASE WHEN RFPM_ID = '07020102' THEN SICP_ID END) CNT02,
-   ROUND(AVG(CASE WHEN RFPM_ID = '07020102' THEN SUM_ALL END),2) AVG02,
-   COUNT(DISTINCT CASE WHEN RFPM_ID = '07020103' THEN SICP_ID END) CNT03,
-   ROUND(AVG(CASE WHEN RFPM_ID = '07020103' THEN SUM_ALL END),2) AVG03,
-   COUNT(DISTINCT SICP_ID) CNT,
-   ROUND(AVG(SUM_ALL),2) AVG_ALL
-FROM SIPR_MAKET_FIRST_APPROVE_2
-WHERE RFPM_ID LIKE '0702%'
-  AND TRUNC(DATE_APPROVE)
-      BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD')
-          AND TO_DATE(:dt_to,'YYYY-MM-DD')
-GROUP BY KSU
-ORDER BY KSU
+  rfbn,
+  br.name,
+  COUNT(DISTINCT CASE WHEN rfpm = '07020101' THEN PNCD_ID END) CNT01,
+  SUM(CASE WHEN rfpm = '07020101' THEN sm END) SUM01,
+  ROUND(SUM(CASE WHEN rfpm = '07020101' THEN sm END)/COUNT(DISTINCT CASE WHEN rfpm = '07020101' THEN PNCD_ID END)/Months_Between(trunc(TO_DATE(:dt_to,'YYYY-MM-DD'), 'MM'), trunc(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')) + 1) avg01,
+  COUNT(DISTINCT CASE WHEN rfpm = '07020102' THEN PNCD_ID END) CNT02,
+  SUM(CASE WHEN rfpm = '07020102' THEN sm END) SUM02,
+  ROUND(SUM(CASE WHEN rfpm = '07020102' THEN sm END)/COUNT(DISTINCT CASE WHEN rfpm = '07020102' THEN PNCD_ID END)/Months_Between(trunc(TO_DATE(:dt_to,'YYYY-MM-DD'), 'MM'), trunc(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')) + 1) avg02,
+  COUNT(DISTINCT CASE WHEN rfpm = '07020103' THEN PNCD_ID END) CNT03,
+  SUM(CASE WHEN rfpm = '07020103' THEN sm END) SUM03,
+  ROUND(SUM(CASE WHEN rfpm = '07020103' THEN sm END)/COUNT(DISTINCT CASE WHEN rfpm = '07020103' THEN PNCD_ID END)/Months_Between(trunc(TO_DATE(:dt_to,'YYYY-MM-DD'), 'MM'), trunc(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')) + 1) avg03,
+  COUNT(DISTINCT PNCD_ID ) CNTA,
+  SUM(sm) SUMA,
+  ROUND(SUM(sm)/COUNT(DISTINCT PNCD_ID)) avga
+FROM(
+SELECT
+  d.pncd_id,
+  d.source_id,
+  FIRST_VALUE(substr(D.RFBN_ID, 1, 2) || '00') OVER(PARTITION BY D.PNCD_ID ORDER BY D.PNCP_DATE DESC) rfbn,
+  FIRST_VALUE(D.RFPM_ID) OVER(PARTITION BY D.PNCD_ID ORDER BY D.PNCP_DATE DESC) rfpm,
+  d.pay_sum + d.sum_debt sm
+  FROM PNPD_DOCUMENT D 
+ WHERE D.PNCP_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+   AND D.RFPM_ID LIKE '0702%'
+   AND D.RIDT_ID IN (4, 6, 7, 8)
+   AND D.STATUS IN (0, 1, 2, 3, 5, 7)
+   AND D.PNSP_ID > 0) t, rfbn_branch br
+WHERE t.rfbn = br.RFBN_ID
+GROUP BY rfbn, br.name
+ORDER BY rfbn
 """
 
 
 def format_worksheet(worksheet, common_format):
 
-    worksheet.set_row(0, 24)
-    worksheet.set_row(1, 24)
-    worksheet.set_row(2, 40)
-    worksheet.set_row(3, 32)
-    worksheet.set_row(4, 48)
+    worksheet.set_row(2, 30)
+    worksheet.set_row(3, 24)
+    worksheet.set_row(4, 42)
 
-    worksheet.set_column(0, 0, 30)   # Стаж участия
-    worksheet.set_column(1, 1, 10)   # КСУ
+    worksheet.set_column(0, 0, 22)
+    worksheet.set_column(1, 12, 14)
 
-    worksheet.set_column(2, 2, 14)
-    worksheet.set_column(3, 3, 18)
+    worksheet.merge_range(2, 0, 4, 0, 'Наименование\nрегиона', common_format)
 
-    worksheet.set_column(4, 4, 14)
-    worksheet.set_column(5, 5, 18)
+    worksheet.merge_range(2, 1, 2, 9, 'Степень утраты трудоспособности, %', common_format)
 
-    worksheet.set_column(6, 6, 14)
-    worksheet.set_column(7, 7, 18)
+    worksheet.merge_range(2, 10, 3, 12, 'Всего', common_format)
 
-    worksheet.set_column(8, 8, 14)
-    worksheet.set_column(9, 9, 18)
+    worksheet.merge_range(3, 1, 3, 3, '80-100', common_format)
+    worksheet.merge_range(3, 4, 3, 6, '60-80', common_format)
+    worksheet.merge_range(3, 7, 3, 9, '30-60', common_format)
 
-    # Стаж участия и КСУ
-    worksheet.merge_range('A3:A5', 'Стаж участия', common_format)
-    worksheet.merge_range('B3:B5', 'КСУ', common_format)
-
-    # Общий заголовок
-    worksheet.merge_range(
-        'C3:H3',
-        'Степень утраты трудоспособности, %',
-        common_format
-    )
-
-    # Всего
-    worksheet.merge_range(
-        'I3:J3',
-        'Всего',
-        common_format
-    )
-
-    # 80-100
-    worksheet.merge_range(
-        'C4:D4',
-        '80-100',
-        common_format
-    )
-
-    worksheet.write(
-        4, 2,
-        'Количество,\nчеловек',
-        common_format
-    )
-
-    worksheet.write(
-        4, 3,
-        'Средний\nразмер,\nтенге',
-        common_format
-    )
-
-    # 60-80
-    worksheet.merge_range(
-        'E4:F4',
-        '60-80',
-        common_format
-    )
-
-    worksheet.write(
-        4, 4,
-        'Количество,\nчеловек',
-        common_format
-    )
-
-    worksheet.write(
-        4, 5,
-        'Средний\nразмер,\nтенге',
-        common_format
-    )
-
-    # 30-60
-    worksheet.merge_range(
-        'G4:H4',
-        '30-60',
-        common_format
-    )
-
-    worksheet.write(
-        4, 6,
-        'Количество,\nчеловек',
-        common_format
-    )
-
-    worksheet.write(
-        4, 7,
-        'Средний\nразмер,\nтенге',
-        common_format
-    )
-
-    # Всего
-    worksheet.merge_range(
-        'I4:I5',
-        'Количество,\nчеловек',
-        common_format
-    )
-
-    worksheet.merge_range(
-        'J4:J5',
-        'Средний\nразмер,\nтенге',
-        common_format
-    )
+    for start_col in [1, 4, 7, 10]:
+        worksheet.write(4, start_col,     'Количество,\nчеловек', common_format)
+        worksheet.write(4, start_col + 1, 'Сумма,\nтенге',        common_format)
+        worksheet.write(4, start_col + 2, 'Средний размер,\nтенге', common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
@@ -273,34 +191,36 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = len(rows)
 
-            first_row = 5
+            first_row = 6
             row_num = first_row - 1
 
-            for idx, record in enumerate(rows, start=1):
-                worksheet[0].write(row_num, 0, record[0], region_name_format)
-                worksheet[0].write(row_num, 1, record[1], money_format)
-
-                worksheet[0].write(row_num, 2, record[2], digital_format)
-                worksheet[0].write(row_num, 3, record[3], money_format)
-
-                worksheet[0].write(row_num, 4, record[4], digital_format)
-                worksheet[0].write(row_num, 5, record[5], money_format)
-
-                worksheet[0].write(row_num, 6, record[6], digital_format)
-                worksheet[0].write(row_num, 7, record[7], money_format)
-
-                worksheet[0].write(row_num, 8, record[8], digital_format)
-                worksheet[0].write(row_num, 9, record[9], money_format)
+            for record in rows:
+                worksheet[0].write(row_num, 0, record[1], digital_format)
+                worksheet[0].write(row_num, 1, record[2], digital_format)
+                worksheet[0].write(row_num, 2, record[3], money_format)
+                worksheet[0].write(row_num, 3, record[4], money_format)
+                worksheet[0].write(row_num, 4, record[5], digital_format)
+                worksheet[0].write(row_num, 5, record[6], money_format)
+                worksheet[0].write(row_num, 6, record[7], money_format)
+                worksheet[0].write(row_num, 7, record[8], digital_format)
+                worksheet[0].write(row_num, 8, record[9], money_format)
+                worksheet[0].write(row_num, 9, record[10], money_format)
+                worksheet[0].write(row_num, 10, record[11], digital_format)
+                worksheet[0].write(row_num, 11, record[12], money_format)
+                worksheet[0].write(row_num, 12, record[13], money_format)
 
                 row_num += 1
 
             # строка итогов
-            worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
+            worksheet[0].write(row_num, 0, 'ИТОГО', title_format)
 
-            for col in range(2, 10):
+            for col in range(1, 13):
                 col_letter = chr(ord('A') + col)
+                fmt = total_money_format if col in (2, 3, 5, 6, 8, 9, 11, 12) else total_digital_format
 
-                fmt = total_digital_format if col in (2, 4, 6, 8) else total_money_format
+                if col in (3, 6, 9, 12):
+                    worksheet[0].write_blank(row_num, col, fmt)
+                    continue
 
                 worksheet[0].write_formula(
                     row_num,
