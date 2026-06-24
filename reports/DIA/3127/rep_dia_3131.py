@@ -188,7 +188,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = len(rows)
 
-            first_row = 4
+            first_row = 5
             row_num = first_row - 1
 
             for record in rows:

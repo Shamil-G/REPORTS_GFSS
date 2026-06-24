@@ -273,7 +273,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = len(rows)
 
-            first_row = 5
+            first_row = 6
             row_num = first_row - 1
 
             for idx, record in enumerate(rows, start=1):
