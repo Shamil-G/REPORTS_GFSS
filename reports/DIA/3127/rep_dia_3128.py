@@ -54,32 +54,28 @@ FROM (
 
 def format_worksheet(worksheet, common_format):
 
-    worksheet.set_row(0, 24)
-    worksheet.set_row(1, 24)
+    worksheet.set_row(2, 30)
+    worksheet.set_row(3, 24)
+    worksheet.set_row(4, 42)
 
-    worksheet.set_column(0, 0, 6)
-    worksheet.set_column(1, 14, 18)
+    worksheet.set_column(0, 0, 22)
+    worksheet.set_column(1, 13, 14)
 
-    headers = [
-        '№',
-        'Дата с',
-        'Дата по',
-        'Кол-во 07020101',
-        'Сумма 07020101',
-        'Средняя 07020101',
-        'Кол-во 07020102',
-        'Сумма 07020102',
-        'Средняя 07020102',
-        'Кол-во 07020103',
-        'Сумма 07020103',
-        'Средняя 07020103',
-        'Общее кол-во',
-        'Общая сумма',
-        'Среднее'
-    ]
+    worksheet.merge_range(2, 0, 4, 0, 'Дата с', common_format)
+    worksheet.merge_range(2, 1, 4, 1, 'Дата по', common_format)
 
-    for col, header in enumerate(headers):
-        worksheet.write(2, col, header, common_format)
+    worksheet.merge_range(2, 2, 2, 10, 'Степень утраты трудоспособности, %', common_format)
+
+    worksheet.merge_range(3, 2, 3, 4, '80-100', common_format)
+    worksheet.merge_range(3, 5, 3, 7, '60-80', common_format)
+    worksheet.merge_range(3, 8, 3, 10, '30-60', common_format)
+    worksheet.merge_range(2, 11, 3, 13, 'Всего', common_format)
+
+
+    for start_col in [2, 5, 8, 11]:
+        worksheet.write(4, start_col,     'Количество,\nчеловек', common_format)
+        worksheet.write(4, start_col + 1, 'Сумма ,\nтенге',        common_format)
+        worksheet.write(4, start_col + 2, 'Средний размер ,\nтенге',        common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
@@ -204,26 +200,24 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = 1
 
-            worksheet[page_num - 1].write(3, 0, 1, digital_format)
+            worksheet[page_num - 1].write(5, 0, record[0], date_format)
+            worksheet[page_num - 1].write(5, 1, record[1], date_format)
 
-            worksheet[page_num - 1].write(3, 1, record[0], date_format)
-            worksheet[page_num - 1].write(3, 2, record[1], date_format)
+            worksheet[page_num - 1].write(5, 2, record[2], digital_format)
+            worksheet[page_num - 1].write(5, 3, record[3], money_format)
+            worksheet[page_num - 1].write(5, 4, record[4], money_format)
 
-            worksheet[page_num - 1].write(3, 3, record[2], digital_format)
-            worksheet[page_num - 1].write(3, 4, record[3], money_format)
-            worksheet[page_num - 1].write(3, 5, record[4], money_format)
+            worksheet[page_num - 1].write(5, 5, record[5], digital_format)
+            worksheet[page_num - 1].write(5, 6, record[6], money_format)
+            worksheet[page_num - 1].write(5, 7, record[7], money_format)
 
-            worksheet[page_num - 1].write(3, 6, record[5], digital_format)
-            worksheet[page_num - 1].write(3, 7, record[6], money_format)
-            worksheet[page_num - 1].write(3, 8, record[7], money_format)
+            worksheet[page_num - 1].write(5, 8, record[8], digital_format)
+            worksheet[page_num - 1].write(5, 9, record[9], money_format)
+            worksheet[page_num - 1].write(5, 10, record[10], money_format)
 
-            worksheet[page_num - 1].write(3, 9, record[8], digital_format)
-            worksheet[page_num - 1].write(3, 10, record[9], money_format)
-            worksheet[page_num - 1].write(3, 11, record[10], money_format)
-
-            worksheet[page_num - 1].write(3, 12, record[11], digital_format)
-            worksheet[page_num - 1].write(3, 13, record[12], money_format)
-            worksheet[page_num - 1].write(3, 14, record[13], money_format)
+            worksheet[page_num - 1].write(5, 11, record[11], digital_format)
+            worksheet[page_num - 1].write(5, 12, record[12], money_format)
+            worksheet[page_num - 1].write(5, 13, record[13], money_format)
 
             now = datetime.datetime.now()
             stop_time = now.strftime("%H:%M:%S")
