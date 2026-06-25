@@ -300,13 +300,15 @@ def do_report(file_name: str, date_first: str, date_second: str):
             for col in range(2, 10):
                 col_letter = chr(ord('A') + col)
 
-                fmt = total_digital_format if col in (2, 4, 6, 8) else total_money_format
+                if col in (3, 5, 7, 9):
+                    worksheet[0].write(row_num, col, '', total_money_format)
+                    continue
 
                 worksheet[0].write_formula(
                     row_num,
                     col,
                     f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
-                    fmt
+                    total_digital_format
                 )
 
             worksheet[0].freeze_panes(3, 0)

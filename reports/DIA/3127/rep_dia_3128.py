@@ -11,23 +11,23 @@ report_code = '3128'
 
 stmt_report = """
 SELECT
-       TO_DATE(:dt_from,'YYYY-MM-DD') f,
-       TO_DATE(:dt_to,'YYYY-MM-DD') t,
-       COUNT(DISTINCT CASE WHEN rfpm = '07020101' THEN PNCD_ID END) CNT01,
-       SUM(CASE WHEN rfpm = '07020101' THEN SUM_PAY ELSE 0 END) SUM01,
-       ROUND(AVG(CASE WHEN rfpm = '07020101' THEN ps END), 2) AVG01,
+   TO_DATE(:dt_from,'YYYY-MM-DD') f,
+   TO_DATE(:dt_to,'YYYY-MM-DD') t,
+   COUNT(DISTINCT CASE WHEN rfpm = '07020101' THEN PNCD_ID END) CNT01,
+   SUM(CASE WHEN rfpm = '07020101' THEN SUM_PAY ELSE 0 END) SUM01,
+   ROUND(AVG(CASE WHEN rfpm = '07020101' THEN ps END), 2) AVG01,
 
-       COUNT(DISTINCT CASE WHEN rfpm = '07020102' THEN PNCD_ID END) CNT02,
-       SUM(CASE WHEN rfpm = '07020102' THEN SUM_PAY ELSE 0 END) SUM02,
-       ROUND(AVG(CASE WHEN rfpm = '07020102' THEN ps END), 2) AVG02,
+   COUNT(DISTINCT CASE WHEN rfpm = '07020102' THEN PNCD_ID END) CNT02,
+   SUM(CASE WHEN rfpm = '07020102' THEN SUM_PAY ELSE 0 END) SUM02,
+   ROUND(AVG(CASE WHEN rfpm = '07020102' THEN ps END), 2) AVG02,
 
-       COUNT(DISTINCT CASE WHEN rfpm = '07020103' THEN PNCD_ID END) CNT03,
-       SUM(CASE WHEN rfpm = '07020103' THEN SUM_PAY ELSE 0 END) SUM03,
-       ROUND(AVG(CASE WHEN rfpm = '07020103' THEN ps END), 2) AVG03,
+   COUNT(DISTINCT CASE WHEN rfpm = '07020103' THEN PNCD_ID END) CNT03,
+   SUM(CASE WHEN rfpm = '07020103' THEN SUM_PAY ELSE 0 END) SUM03,
+   ROUND(AVG(CASE WHEN rfpm = '07020103' THEN ps END), 2) AVG03,
 
-       COUNT(DISTINCT PNCD_ID) CNT,
-       SUM(SUM_PAY) SUM_PAY,
-       ROUND(AVG(ps), 2) AVG_ALL
+   COUNT(DISTINCT PNCD_ID) CNT,
+   SUM(SUM_PAY) SUM_PAY,
+   ROUND(AVG(ps), 2) AVG_ALL
 FROM (
     SELECT
            FIRST_VALUE(D.RFPM_ID)
@@ -74,8 +74,8 @@ def format_worksheet(worksheet, common_format):
 
     for start_col in [2, 5, 8, 11]:
         worksheet.write(4, start_col,     'Количество,\nчеловек', common_format)
-        worksheet.write(4, start_col + 1, 'Сумма ,\nтенге',        common_format)
-        worksheet.write(4, start_col + 2, 'Средний размер ,\nтенге',        common_format)
+        worksheet.write(4, start_col + 1, 'Сумма,\nтенге',        common_format)
+        worksheet.write(4, start_col + 2, 'Средний размер,\nтенге',        common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
