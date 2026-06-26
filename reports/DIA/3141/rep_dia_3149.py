@@ -6,29 +6,25 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3147 - Количество месяцев принятых в расчет при назначении'
-report_code = '3147'
+report_name = '3149 - Сведения о назначенных средних размерах по областям'
+report_code = '3149'
 
 stmt_report = """
 SELECT
-  mc,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07010101' THEN sipr_id END) CNT01,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07010102' THEN sipr_id END) CNT02,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07010103' THEN sipr_id END) CNT03,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07010104' THEN sipr_id END) CNT04,
-  COUNT(sipr_id) CNT
-FROM (
-SELECT
-  sfa.sipr_id,
-  sfa.rfpm_id,
-  COUNT(DISTINCT pay_month) mc
-FROM SIPR_MAKET_FIRST_APPROVE_2 sfa, em5_sird_reckon_donation sird
- WHERE RFPM_ID LIKE '0701%'
-   AND TRUNC(DATE_APPROVE) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
-   AND sfa.sipr_id = sird.sipr_id
-GROUP BY sfa.sipr_id, sfa.rfpm_id)
-GROUP BY mc
-ORDER BY mc
+    br.RFBN_ID,
+    br.NAME,
+    round(AVG(DISTINCT CASE WHEN rfpm_id = '07010101' THEN sfa.sum_all END), 2) AV01,
+    round(AVG(DISTINCT CASE WHEN rfpm_id = '07010102' THEN sfa.sum_all END), 2) AV02,
+    round(AVG(DISTINCT CASE WHEN rfpm_id = '07010103' THEN sfa.sum_all END), 2) AV03,
+    round(AVG(DISTINCT CASE WHEN rfpm_id = '07010104' THEN sfa.sum_all END), 2) AV04,
+    round(AVG(sfa.sum_all), 2) AV
+  FROM SIPR_MAKET_FIRST_APPROVE_2 sfa, rfbn_branch br
+   WHERE
+     SUBSTR(sfa.RFBN_ID, 1, 2) || '00' = br.RFBN_ID
+     AND RFPM_ID LIKE '0701%'
+     AND TRUNC(DATE_APPROVE) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+  GROUP BY GROUPING SETS (1, (br.RFBN_ID, br.NAME))
+  ORDER BY br.RFBN_ID
 """
 
 
@@ -39,16 +35,16 @@ def format_worksheet(worksheet, common_format):
     worksheet.set_row(2, 24)
     worksheet.set_row(3, 42)
 
-    worksheet.set_column(0, 0, 12)
+    worksheet.set_column(0, 0, 30)
     worksheet.set_column(1, 6, 15)
 
-    worksheet.merge_range(2, 0, 3, 0, 'Количество\nмесяцев', common_format)
+    worksheet.merge_range(2, 0, 3, 0, 'Области', common_format)
     worksheet.merge_range(
         2, 1, 2, 4,
-        'Количество иждивенцев',
+        'Средние размеры СВпк,\nтенге',
         common_format
     )
-    worksheet.merge_range(2, 5, 3, 5, 'Итого,\nчеловек', common_format)
+    worksheet.merge_range(2, 5, 3, 5, 'По области,\nтенге', common_format)
 
     worksheet.write(3, 1, '1 иждивенец', common_format)
     worksheet.write(3, 2, '2 иждивенца', common_format)
@@ -182,13 +178,12 @@ def do_report(file_name: str, date_first: str, date_second: str):
             row_num = first_row - 1
 
             for record in rows:
-                worksheet[0].write(row_num, 0, record[0], digital_format)
-                worksheet[0].write(row_num, 1, record[1], digital_format)
-
-                worksheet[0].write(row_num, 2, record[2], digital_format)
-                worksheet[0].write(row_num, 3, record[3], digital_format)
-                worksheet[0].write(row_num, 4, record[4], digital_format)
-                worksheet[0].write(row_num, 5, record[5], digital_format)
+                worksheet[0].write(row_num, 0, record[1], common_format)
+                worksheet[0].write(row_num, 1, record[2], money_format)
+                worksheet[0].write(row_num, 2, record[3], money_format)
+                worksheet[0].write(row_num, 3, record[4], money_format)
+                worksheet[0].write(row_num, 4, record[5], money_format)
+                worksheet[0].write(row_num, 5, record[6], money_format)
 
                 row_num += 1
 
@@ -201,7 +196,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
                     row_num,
                     col,
                     f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
-                    total_digital_format
+                    total_money_format
                 )
 
             worksheet[0].freeze_panes(3, 0)
