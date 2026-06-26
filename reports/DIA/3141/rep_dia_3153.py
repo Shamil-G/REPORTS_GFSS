@@ -6,8 +6,8 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3140 - Количество получателей по году назначения'
-report_code = '3140'
+report_name = '3153 - Количество получателей по году назначения'
+report_code = '3153'
 
 stmt_report = """
 SELECT
@@ -20,11 +20,11 @@ SELECT
   d.pncd_id,
   p.sex,
   extract(YEAR FROM ph.appointdate) y
-  FROM loader.PNPD_DOCUMENT D, PAYMENT_HISTORY PH, person p
+  FROM PNPD_DOCUMENT D, PAYMENT_HISTORY PH, person p
  WHERE D.PNPD_ID = PH.PNPD_ID
    AND d.pncd_id = p.sicid
    AND D.PNCP_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
-   AND D.RFPM_ID LIKE '0702%'
+   AND D.RFPM_ID LIKE '0701%'
    AND D.RIDT_ID IN (4, 6, 7, 8)
    AND D.STATUS IN (0, 1, 2, 3, 5, 7)
    AND D.PNSP_ID > 0)
