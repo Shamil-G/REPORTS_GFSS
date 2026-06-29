@@ -561,6 +561,135 @@ dict_reports = {
                 }
         },
 
+"3154 - Потеря работы": {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.3154",
+            "live_time": 0,
+            "reports":
+                {
+                    "01": {
+                        "name": "3155 - Количество получателей и сумма в разрезе количества месяцев",
+                        "proc": "rep_dia_3155",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "02": {
+                        "name": "3156 - Количество и средний размер в разрезе стажа участия",
+                        "proc": "rep_dia_3156",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "03": {
+                        "name": "3157 - Градация СМД принятого для исчисления выплаты",
+                        "proc": "rep_dia_3157",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "04": {
+                        "name": "3158 - Градация размеров получателей",
+                        "proc": "rep_dia_3158",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "05": {
+                        "name": "3159 - Градация назначенных размеров",
+                        "proc": "rep_dia_3159",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "06": {
+                        "name": "3160 - Количество месяцев принятых в расчет при назначении",
+                        "proc": "rep_dia_3160",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "07": {
+                        "name": "3161 - Сведения о назначенных средних размерах по областям",
+                        "proc": "rep_dia_3161",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "08": {
+                        "name": "3162 - Половозрастная структура получателей",
+                        "proc": "rep_dia_3162",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "09": {
+                        "name": "3163 - Количество получателей и сумма выплаты по регионам",
+                        "proc": "rep_dia_3163",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "10": {
+                        "name": "3164 - Структура получателей в разрезе пола",
+                        "proc": "rep_dia_3164",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+
+                }
+        },
+
         "6020": { 
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6020",
             "live_time":  0,
