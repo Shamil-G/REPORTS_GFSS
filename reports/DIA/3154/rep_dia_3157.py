@@ -6,17 +6,19 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3144 - Градация СМД принятого для исчисления выплаты'
-report_code = '3144'
+report_name = '3157 - Градация СМД принятого для исчисления выплаты'
+report_code = '3157'
 
 stmt_report = """
 SELECT
   mzp_from,
   mzp_to,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07010101' THEN sipr_id END) CNT01,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07010102' THEN sipr_id END) CNT02,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07010103' THEN sipr_id END) CNT03,
-  COUNT(DISTINCT CASE WHEN rfpm_id = '07010104' THEN sipr_id END) CNT04,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07030101' THEN sipr_id END) CNT01,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07030102' THEN sipr_id END) CNT02,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07030103' THEN sipr_id END) CNT03,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07030104' THEN sipr_id END) CNT04,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07030105' THEN sipr_id END) CNT05,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07030106' THEN sipr_id END) CNT06,
   COUNT(DISTINCT sipr_id) CNT
 FROM(
 SELECT
@@ -54,8 +56,8 @@ SELECT
     WHEN sfa.sum_avg / sfa.mrzp > 10 THEN NULL
   END mzp_to
   FROM SIPR_MAKET_FIRST_APPROVE_2 sfa
- WHERE RFPM_ID LIKE '0701%'
-   AND TRUNC(DATE_APPROVE) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+  WHERE substr(RFPM_ID,1,4)='0703'
+  AND TRUNC(DATE_APPROVE) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
 ) GROUP BY mzp_from, mzp_to
 ORDER BY mzp_from, mzp_to
 """
@@ -69,24 +71,26 @@ def format_worksheet(worksheet, common_format):
     worksheet.set_row(3, 42)
 
     worksheet.set_column(0, 1, 12)
-    worksheet.set_column(2, 6, 15)
+    worksheet.set_column(2, 8, 15)
 
     worksheet.merge_range(2, 0, 2, 1, 'Градация,\nМЗП', common_format)
     worksheet.merge_range(
-        2, 2, 2, 5,
-        'Количество иждивенцев',
+        2, 2, 2, 7,
+        'Количество месяцев назначения',
         common_format
     )
-    worksheet.merge_range(2, 6, 3, 6, 'Итого,\nчеловек', common_format)
+    worksheet.merge_range(2, 8, 3, 8, 'Итого,\nчеловек', common_format)
 
     # Подзаголовки
     worksheet.write(3, 0, 'От', common_format)
     worksheet.write(3, 1, 'До', common_format)
 
-    worksheet.write(3, 2, '1 иждивенец', common_format)
-    worksheet.write(3, 3, '2 иждивенца', common_format)
-    worksheet.write(3, 4, '3 иждивенца', common_format)
-    worksheet.write(3, 5, '4 и более иждивенца', common_format)
+    worksheet.write(3, 2, '1 месяц', common_format)
+    worksheet.write(3, 3, '2 месяца', common_format)
+    worksheet.write(3, 4, '3 месяца', common_format)
+    worksheet.write(3, 5, '4 месяца', common_format)
+    worksheet.write(3, 6, '5 месяцев', common_format)
+    worksheet.write(3, 7, '6 месяцев', common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
@@ -223,13 +227,15 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write(row_num, 4, record[4], digital_format)
                 worksheet[0].write(row_num, 5, record[5], digital_format)
                 worksheet[0].write(row_num, 6, record[6], digital_format)
+                worksheet[0].write(row_num, 7, record[7], digital_format)
+                worksheet[0].write(row_num, 8, record[8], digital_format)
 
                 row_num += 1
 
             # строка итогов
             worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
 
-            for col in range(2, 7):
+            for col in range(2, 9):
                 col_letter = chr(ord('A') + col)
                 worksheet[0].write_formula(
                     row_num,
