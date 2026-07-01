@@ -1,6 +1,9 @@
 from configparser import ConfigParser
 import xlsxwriter
 import datetime
+
+from xlsxwriter.utility import xl_col_to_name
+
 from util.logger import log
 import oracledb
 import os.path
@@ -243,7 +246,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
             worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
 
             for col in range(2, 16):
-                col_letter = chr(ord('A') + col)
+                col_letter = xl_col_to_name(col)
 
                 if col in [3, 5, 7, 9, 11, 13, 15]:
                     worksheet[0].write(row_num, col, '', total_money_format)
