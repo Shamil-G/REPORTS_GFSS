@@ -1,84 +1,74 @@
 from configparser import ConfigParser
 import xlsxwriter
 import datetime
+
+from xlsxwriter.utility import xl_col_to_name
+
 from util.logger import log
 import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3155 - Количество получателей и сумма в разрезе количества месяцев'
-report_code = '3155'
+report_name = '3168 - Градация размеров получателей'
+report_code = '3168'
 
 stmt_report = """
 SELECT
-   TO_DATE(:dt_from,'YYYY-MM-DD') f,
-   TO_DATE(:dt_to,'YYYY-MM-DD') t,
-   COUNT(UNIQUE CASE WHEN rfpm = '07030101' THEN PNCD_ID END) CNT01,
-   SUM(CASE WHEN rfpm = '07030101' THEN SUM_PAY ELSE 0 END) SUM01,
-   round(AVG(CASE WHEN rfpm = '07030101' THEN ps ELSE NULL END), 2) AVG01,
-   COUNT(UNIQUE CASE WHEN rfpm = '07030102' THEN PNCD_ID END) CNT02,
-   SUM(CASE WHEN rfpm = '07030102' THEN SUM_PAY ELSE 0 END) SUM02,
-   round(AVG(CASE WHEN rfpm = '07030102' THEN ps ELSE NULL END), 2) AVG02,
-   COUNT(UNIQUE CASE WHEN rfpm = '07030103' THEN PNCD_ID END) CNT03,
-   SUM(CASE WHEN rfpm = '07030103' THEN SUM_PAY ELSE 0 END) SUM03,
-   round(AVG(CASE WHEN rfpm = '07030103' THEN ps ELSE NULL END), 2) AVG03,
-   COUNT(UNIQUE CASE WHEN rfpm = '07030104' THEN PNCD_ID END) CNT04,
-   SUM(CASE WHEN rfpm = '07030104' THEN SUM_PAY ELSE 0 END) SUM04,
-   round(AVG(CASE WHEN rfpm = '07030104' THEN ps ELSE NULL END), 2) AVG04,
-   COUNT(UNIQUE CASE WHEN rfpm = '07030105' THEN PNCD_ID END) CNT05,
-   SUM(CASE WHEN rfpm = '07030105' THEN SUM_PAY ELSE 0 END) SUM05,
-   round(AVG(CASE WHEN rfpm = '07030105' THEN ps ELSE NULL END), 2) AVG05,
-   COUNT(UNIQUE CASE WHEN rfpm = '07030106' THEN PNCD_ID END) CNT06,
-   SUM(CASE WHEN rfpm = '07030106' THEN SUM_PAY ELSE 0 END) SUM06,
-   round(AVG(CASE WHEN rfpm = '07030106' THEN ps ELSE NULL END), 2) AVG06,
-   COUNT(UNIQUE PNCD_ID) CNT,
-   SUM(SUM_PAY) SUM_PAY,
-   round(AVG(ps), 2) AV
-FROM (SELECT
-           FIRST_VALUE(D.RFPM_ID) OVER(PARTITION BY D.PNCD_ID ORDER BY D.PNCP_DATE DESC) RFPM,
-           PP.PNPT_ID,
-           D.PNCD_ID,
-           D.PAY_SUM + D.SUM_DEBT sum_pay,
-           ph.sum_pay ps
-      FROM PNPD_DOCUMENT D, PNPT_PAYMENT PP, payment_history ph
-     WHERE D.SOURCE_ID = PP.PNPT_ID(+)
-       AND d.pnpd_id = ph.pnpd_id(+)
-       AND D.PNCP_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') 
-       AND D.PNCP_DATE < TO_DATE(:dt_to,'YYYY-MM-DD') + 1
-       AND substr(D.RFPM_ID,1,4) = '0703'
-       AND D.RIDT_ID IN (4, 6, 7, 8)
-       AND D.STATUS IN (0, 1, 2, 3, 5, 7)
-       AND D.PNSP_ID > 0)
+  sum_from,
+  sum_to,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07040101' THEN PNCD_ID END) CNT01,
+  COUNT(DISTINCT CASE WHEN rfpm_id IN ('07040102', '07040103', '07040104', '07040105') THEN PNCD_ID END) CNT02,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07040201' THEN PNCD_ID END) CNT03,
+  COUNT(DISTINCT CASE WHEN rfpm_id IN ('07040202', '07040203', '07040204', '07040205') THEN PNCD_ID END) CNT04,
+  COUNT(DISTINCT CASE WHEN rfpm_id = '07040301' THEN PNCD_ID END) CNT05,
+  COUNT(PNCD_ID) CNT
+FROM(
+SELECT
+  D.RFPM_ID,
+  d.pncd_id,
+  d.source_id,
+  ph.sum_pay,
+  TRUNC(ph.sum_pay / 1000) * 1000 sum_from,
+  (TRUNC(ph.sum_pay / 1000) + 1) * 1000 sum_to
+  FROM PNPD_DOCUMENT D, PAYMENT_HISTORY PH
+ WHERE D.PNPD_ID = PH.PNPD_ID
+   AND D.PNCP_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+   AND D.RFPM_ID LIKE '0704%'
+   AND D.RIDT_ID IN (4, 6, 7, 8)
+   AND D.STATUS IN (0, 1, 2, 3, 5, 7)
+   AND D.PNSP_ID > 0)
+GROUP BY sum_from, sum_to
+ORDER BY sum_from, sum_to
 """
 
 
 def format_worksheet(worksheet, common_format):
 
-    worksheet.set_row(2, 30)
-    worksheet.set_row(3, 24)
-    worksheet.set_row(4, 42)
+    worksheet.set_row(0, 24)
+    worksheet.set_row(1, 24)
+    worksheet.set_row(2, 24)
+    worksheet.set_row(3, 42)
 
-    worksheet.set_column(0, 1, 10)
-    worksheet.set_column(2, 22, 15)
+    worksheet.set_column(0, 1, 12)
+    worksheet.set_column(2, 7, 15)
 
-    worksheet.merge_range(2, 0, 4, 0, 'Дата с', common_format)
-    worksheet.merge_range(2, 1, 4, 1, 'Дата по', common_format)
+    worksheet.merge_range(2, 0, 2, 1, 'Градация,\nтг', common_format)
+    worksheet.merge_range(
+        2, 2, 2, 6,
+        'Виды выплат (СВбр)',
+        common_format
+    )
+    worksheet.merge_range(2, 7, 3, 7, 'Итого,\nчеловек', common_format)
 
-    worksheet.merge_range(2, 2, 2, 19, 'Количество месяцев назначения', common_format)
+    # Подзаголовки
+    worksheet.write(3, 0, 'От', common_format)
+    worksheet.write(3, 1, 'До', common_format)
 
-    worksheet.merge_range(3, 2, 3, 4, '1 месяц', common_format)
-    worksheet.merge_range(3, 5, 3, 7, '2 месяца', common_format)
-    worksheet.merge_range(3, 8, 3, 10, '3 месяца', common_format)
-    worksheet.merge_range(3, 11, 3, 13, '4 месяца', common_format)
-    worksheet.merge_range(3, 14, 3, 16, '5 месяцев', common_format)
-    worksheet.merge_range(3, 17, 3, 19, '6 месяцев', common_format)
-    worksheet.merge_range(2, 20, 3, 22, 'Всего', common_format)
-
-
-    for start_col in [2, 5, 8, 11, 14, 17, 20]:
-        worksheet.write(4, start_col,     'Количество,\nчеловек', common_format)
-        worksheet.write(4, start_col + 1, 'Сумма,\nтенге',        common_format)
-        worksheet.write(4, start_col + 2, 'Средний размер,\nтенге',        common_format)
+    worksheet.write(3, 2, 'По беременности и родам', common_format)
+    worksheet.write(3, 3, 'Доплата за осложненные роды', common_format)
+    worksheet.write(3, 4, 'По беременности и родам (СИЯП)', common_format)
+    worksheet.write(3, 5, 'Доплата за осложненные роды (СИЯП)', common_format)
+    worksheet.write(3, 6, 'Усыновление (удочерение) ребенка', common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
@@ -193,46 +183,47 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             log.info(f'REPORT: {report_code}. Формируем выходную EXCEL таблицу')
 
-            record = cursor.fetchone()
+            rows = cursor.fetchall()
 
-            if not record:
+            if not rows:
                 log.warning(f'REPORT {report_code}. Данные отсутствуют')
                 workbook.close()
                 set_status_report(file_name, 2)
                 return None
 
-            all_cnt = 1
+            all_cnt = len(rows)
 
-            worksheet[page_num - 1].write(5, 0, record[0], date_format)
-            worksheet[page_num - 1].write(5, 1, record[1], date_format)
+            first_row = 5
+            row_num = first_row - 1
 
-            worksheet[page_num - 1].write(5, 2, record[2], digital_format)
-            worksheet[page_num - 1].write(5, 3, record[3], money_format)
-            worksheet[page_num - 1].write(5, 4, record[4], money_format)
+            for record in rows:
+                worksheet[0].write(row_num, 0, record[0], digital_format)
+                worksheet[0].write(row_num, 1, record[1], digital_format)
 
-            worksheet[page_num - 1].write(5, 5, record[5], digital_format)
-            worksheet[page_num - 1].write(5, 6, record[6], money_format)
-            worksheet[page_num - 1].write(5, 7, record[7], money_format)
+                worksheet[0].write(row_num, 2, record[2], digital_format)
+                worksheet[0].write(row_num, 3, record[3], digital_format)
+                worksheet[0].write(row_num, 4, record[4], digital_format)
+                worksheet[0].write(row_num, 5, record[5], digital_format)
+                worksheet[0].write(row_num, 6, record[6], digital_format)
+                worksheet[0].write(row_num, 7, record[7], digital_format)
 
-            worksheet[page_num - 1].write(5, 8, record[8], digital_format)
-            worksheet[page_num - 1].write(5, 9, record[9], money_format)
-            worksheet[page_num - 1].write(5, 10, record[10], money_format)
+                row_num += 1
 
-            worksheet[page_num - 1].write(5, 11, record[11], digital_format)
-            worksheet[page_num - 1].write(5, 12, record[12], money_format)
-            worksheet[page_num - 1].write(5, 13, record[13], money_format)
+            # строка итогов
+            worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
 
-            worksheet[page_num - 1].write(5, 14, record[14], digital_format)
-            worksheet[page_num - 1].write(5, 15, record[15], money_format)
-            worksheet[page_num - 1].write(5, 16, record[16], money_format)
+            for col in range(2, 8):
+                col_letter = xl_col_to_name(col)
 
-            worksheet[page_num - 1].write(5, 17, record[17], digital_format)
-            worksheet[page_num - 1].write(5, 18, record[18], money_format)
-            worksheet[page_num - 1].write(5, 19, record[19], money_format)
+                worksheet[0].write_formula(
+                    row_num,
+                    col,
+                    f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
+                    total_digital_format
+                )
 
-            worksheet[page_num - 1].write(5, 20, record[20], digital_format)
-            worksheet[page_num - 1].write(5, 21, record[21], money_format)
-            worksheet[page_num - 1].write(5, 22, record[22], money_format)
+            worksheet[0].freeze_panes(3, 0)
+            worksheet[0].freeze_panes(4, 0)
 
             now = datetime.datetime.now()
             stop_time = now.strftime("%H:%M:%S")
