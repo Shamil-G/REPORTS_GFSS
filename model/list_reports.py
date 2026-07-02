@@ -690,6 +690,110 @@ dict_reports = {
                 }
         },
 
+"3165 - По беременности и родам": {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.3165",
+            "live_time": 0,
+            "reports":
+                {
+                    "01": {
+                        "name": "3166 - Количество получателей и сумма в разрезе видов",
+                        "proc": "rep_dia_3166",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "02": {
+                        "name": "3167 - Градация СМД принятого для исчисления выплаты",
+                        "proc": "rep_dia_3167",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "03": {
+                        "name": "3168 - Градация размеров получателей",
+                        "proc": "rep_dia_3168",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "04": {
+                        "name": "3169 - Градация назначенных размеров",
+                        "proc": "rep_dia_3169",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "05": {
+                        "name": "3170 - Количество месяцев принятых в расчет при назначении",
+                        "proc": "rep_dia_3170",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "06": {
+                        "name": "3171 - Сведения о назначенных средних размерах по областям",
+                        "proc": "rep_dia_3171",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "07": {
+                        "name": "3172 - Возрастная структура получателей",
+                        "proc": "rep_dia_3172",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "08": {
+                        "name": "3173 - Количество получателей и сумма выплаты по регионам",
+                        "proc": "rep_dia_3173",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                }
+        },
+
         "6020": { 
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6020",
             "live_time":  0,
