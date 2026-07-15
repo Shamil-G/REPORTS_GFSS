@@ -946,6 +946,87 @@ dict_reports = {
                 }
         },
 
+"3190 - Получатели СВ": {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.3190",
+            "live_time": 0,
+            "reports":
+                {
+                    "01": {
+                        "name": "3191 - Утрата трудоспособности",
+                        "proc": "rep_dia_3191",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "02": {
+                        "name": "3192 - Потеря кормильца",
+                        "proc": "rep_dia_3192",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "03": {
+                        "name": "3193 - Потеря работы",
+                        "proc": "rep_dia_3193",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "04": {
+                        "name": "3194 - По беременности и родам",
+                        "proc": "rep_dia_3194",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "05": {
+                        "name": "3195 - По уходу за ребенком",
+                        "proc": "rep_dia_3195",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+                    "06": {
+                        "name": "3196 - Назначение по всем видам выплаты",
+                        "proc": "rep_dia_3196",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "params": {"date_first": "С", "date_second": "по"},
+                        "meta_params":
+                            {
+                                "date_first": DATE_FROM,
+                                "date_second": DATE_TO
+                            }
+                    },
+
+                }
+        },
+
         "6020": { 
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6020",
             "live_time":  0,
