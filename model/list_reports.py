@@ -482,6 +482,18 @@ dict_reports = {
                             "date_second": DATE_TO
                         }
                 },
+                "231": {
+                    "name": "3123 - Сведения о числе получателей по районам",
+                    "proc": "rep_dia_3123",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO
+                        }
+                },
             }
         },
         "3127 - Утрата трудоспособности": {
