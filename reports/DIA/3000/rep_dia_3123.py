@@ -47,7 +47,7 @@ SELECT
        And ridt_id In (4, 6, 7, 8)
        And status In (0, 1, 2, 3, 5, 7)
        And pnsp_id > 0
-       AND rfbn_id = :rfbn_id ) d, pnpt_payment pp
+       AND substr(rfbn_id,1,2) = :rfbn_id ) d, pnpt_payment pp
      Where d.source_id = pp.pnpt_id(+)
      Group By substr(d.rfpm_id, 1, 4), d.rfbn_id
    ) t, rfbn_branch rfbn
