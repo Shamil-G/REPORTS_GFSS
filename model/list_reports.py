@@ -507,6 +507,56 @@ dict_reports = {
                             }
                         }
                 },
+                "232": {
+                    "name": "3124 - Сведения о размерах выплат по районам",
+                    "proc": "rep_dia_3124",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            },
+                            "rfbn_id": {
+                                "display_name": "Код области",
+                                "type": "string",
+                                "length": 2,
+                                "required": True
+                            }
+                        }
+                },
+                "233": {
+                    "name": "3125 - Сведения о числе получателей по полу по районам",
+                    "proc": "rep_dia_3125",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            },
+                            "rfbn_id": {
+                                "display_name": "Код области",
+                                "type": "string",
+                                "length": 2,
+                                "required": True
+                            }
+                        }
+                },
             }
         },
         "3127 - Утрата трудоспособности": {
