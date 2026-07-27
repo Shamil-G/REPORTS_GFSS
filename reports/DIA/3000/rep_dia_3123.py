@@ -47,7 +47,7 @@ SELECT
        And ridt_id In (4, 6, 7, 8)
        And status In (0, 1, 2, 3, 5, 7)
        And pnsp_id > 0
-       AND rfbn_id LIKE pRfbn || '%') d, pnpt_payment pp
+       AND rfbn_id = :rfbn_id ) d, pnpt_payment pp
      Where d.source_id = pp.pnpt_id(+)
      Group By substr(d.rfpm_id, 1, 4), d.rfbn_id
    ) t, rfbn_branch rfbn
@@ -82,7 +82,7 @@ def format_worksheet(worksheet, common_format):
         worksheet.write(3, start_col + 1, 'Сумма,\nтенге', common_format)
 
 
-def do_report(file_name: str, date_first: str, date_second: str):
+def do_report(file_name: str, date_first: str, date_second: str, rfbn_id: str):
     if os.path.isfile(file_name):
         log.info(f'Отчет уже существует {file_name}')
         return file_name
@@ -182,7 +182,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
             log.info(f'REPORT {report_code}. CREATING REPORT')
 
             try:
-                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second)
+                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second, rfbn_id=rfbn_id)
             except oracledb.DatabaseError as e:
                 error, = e.args
                 log.error(f"ERROR. REPORT {report_code}. error_code: {error.code}, error: {error.message}")
@@ -265,11 +265,11 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 f'REPORT: {report_code}. Формирование отчета {file_name} завершено ({s_date} - {stop_time}). Загружено {all_cnt} записей')
 
 
-def thread_report(file_name: str, date_first: str, date_second: str):
+def thread_report(file_name: str, date_first: str, date_second: str, rfbn_id :str):
     import threading
     log.info(f'THREAD REPORT. {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} -> {file_name}')
     log.info(f'THREAD REPORT. PARAMS: date_from: {date_first}')
-    threading.Thread(target=do_report, args=(file_name, date_first, date_second), daemon=True).start()
+    threading.Thread(target=do_report, args=(file_name, date_first, date_second, rfbn_id), daemon=True).start()
     return {"status": 1, "file_path": file_name}
 
 

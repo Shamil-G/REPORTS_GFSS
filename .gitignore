@@ -10,3 +10,4 @@ venv/
 ais_gfss_parameter.py
 1.sql
 /spool
+.vscode
