@@ -458,6 +458,18 @@ dict_reports = {
                             "date_second": DATE_TO
                         }
                 },
+                "216": {
+                    "name": "3109 - Количество взносов участников СОСС",
+                    "proc": "rep_dia_3109",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO
+                        }
+                },
                 "217": {
                     "name": "3110 - Численность участников СОСС, в разрезе пола и возраста",
                     "proc": "rep_dia_3110",
