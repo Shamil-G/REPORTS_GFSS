@@ -458,6 +458,42 @@ dict_reports = {
                             "date_second": DATE_TO
                         }
                 },
+                "217": {
+                    "name": "3110 - Численность участников СОСС, в разрезе пола и возраста",
+                    "proc": "rep_dia_3110",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO
+                        }
+                },
+                "218": {
+                    "name": "3111 - Женщины-участники СОСС 50+, СО по БИН и ИИН",
+                    "proc": "rep_dia_3111",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO
+                        }
+                },
+                "219": {
+                    "name": "3112 - Женщины-участники СОСС 50+, СО от нескольких работодателей",
+                    "proc": "rep_dia_3112",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO
+                        }
+                },
                 "220": {
                     "name": "3113 - Перевод денежных средств в АО 'ГФСС'",
                     "proc": "rep_dia_3113",
