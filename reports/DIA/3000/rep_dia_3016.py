@@ -9,29 +9,30 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3107 - Реестр сумм возвратов социальных выплат'
-report_code = '3107'
+report_name = '3016 - Реестр сумм возвратов социальных выплат(3107)'
+report_code = '3016'
 
 stmt_report = """
-  SELECT
+SELECT
     rownum rn,
-    cb.rfbn_id reg,
+    reg.rfbn_id,
     pd.doc_date,
     pd.doc_nmb,
     pd.cipher_id_knp,
     pd.pay_sum,
     pd.p_name,
-    substr(pd.doc_assign, 1, 150) as doc_assign,
+    pd.doc_assign,
     pd.rfbk_mfo_pbank,
     pd.p_rnn
-  FROM pmpd_pay_doc pd, 
-       rfon_organization o, 
-       cato_branch cb
-  WHERE pd.pay_date = TO_DATE(:dt_from,'YYYY-MM-DD')
-  and   pd.p_rnn=o.bin(+)
-  and   o.cato=cb.code(+)
-  and   pd.tmst_id=5
-  AND pd.cipher_id_knp IN ('020', '028', '047', '049', '092', '097')
+  FROM pmpd_pay_doc pd,
+  RFRR_ID_REGION REG
+  WHERE
+  pd.pay_date between TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+  and pd.tmst_id=5
+  AND pd.cipher_id_knp IN ('020', '028', '047', '049', '092', '097','039','120')
+  AND PD.P_RNN = REG.ID(+)
+  AND ((reg.typ = 'I') OR (reg.typ IS NULL) OR (reg.typ = 'R' AND pd.p_rnn = '000000000000'))
+  order by reg.rfbn_id desc
 """
 
 
@@ -40,14 +41,14 @@ def format_worksheet(worksheet, common_format):
     worksheet.set_row(2, 40)
     worksheet.set_row(3, 30)
 
-    worksheet.set_column(0, 0, 8)
-    worksheet.set_column(1, 5, 15)
+    worksheet.set_column(0, 1, 8)
+    worksheet.set_column(2, 5, 15)
     worksheet.set_column(8, 9, 15)
     worksheet.set_column(6, 6, 40)
     worksheet.set_column(7, 7, 60)
 
     worksheet.write(2, 0,'№ п/п', common_format)
-    worksheet.write(2, 1,'Наименование региона', common_format)
+    worksheet.write(2, 1,'Код региона', common_format)
     worksheet.write(2, 2,'Дата платежного поручения', common_format)
     worksheet.write(2, 3,'Номер платежного поручения', common_format)
     worksheet.write(2, 4,'КНП', common_format)
@@ -58,14 +59,14 @@ def format_worksheet(worksheet, common_format):
     worksheet.write(2, 9,'БИН/ИИН платежного поручения', common_format)
 
 
-def do_report(file_name: str, date_first: str):
+def do_report(file_name: str, date_first: str, date_second: str):
     if os.path.isfile(file_name):
         log.info(f'Отчет уже существует {file_name}')
         return file_name
 
     s_date = datetime.datetime.now().strftime("%H:%M:%S")
 
-    log.info(f'DO REPORT. START {report_code}. DATE_FROM: {date_first}, FILE_PATH: {file_name}')
+    log.info(f'DO REPORT. START {report_code}. DATE_FROM: {date_first}, DATE_TO: {date_second}, FILE_PATH: {file_name}')
 
     config = ConfigParser()
     config.read('db_config.ini')
@@ -153,12 +154,12 @@ def do_report(file_name: str, date_first: str):
             format_worksheet(worksheet=worksheet[page_num - 1], common_format=title_format)
 
             worksheet[page_num - 1].write(0, 0, report_name, title_name_report)
-            worksheet[page_num - 1].write(1, 0, f'За период: {date_first}', title_name_report)
+            worksheet[page_num - 1].write(1, 0, f'За период: {date_first} - {date_second}', title_name_report)
 
             log.info(f'REPORT {report_code}. CREATING REPORT')
 
             try:
-                cursor.execute(stmt_report, dt_from=date_first)
+                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second)
             except oracledb.DatabaseError as e:
                 error, = e.args
                 log.error(f"ERROR. REPORT {report_code}. error_code: {error.code}, error: {error.message}")
@@ -228,11 +229,11 @@ def do_report(file_name: str, date_first: str):
                 f'REPORT: {report_code}. Формирование отчета {file_name} завершено ({s_date} - {stop_time}). Загружено {all_cnt} записей')
 
 
-def thread_report(file_name: str, date_first: str):
+def thread_report(file_name: str, date_first: str, date_second: str):
     import threading
     log.info(f'THREAD REPORT. {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} -> {file_name}')
-    log.info(f'THREAD REPORT. PARAMS: date_from: {date_first}')
-    threading.Thread(target=do_report, args=(file_name, date_first), daemon=True).start()
+    log.info(f'THREAD REPORT. PARAMS: date_from: {date_first}, date_to: {date_second}')
+    threading.Thread(target=do_report, args=(file_name, date_first, date_second), daemon=True).start()
     return {"status": 1, "file_path": file_name}
 
 
