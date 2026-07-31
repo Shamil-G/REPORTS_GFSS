@@ -458,6 +458,20 @@ dict_reports = {
                             "date_second": DATE_TO
                         }
                 },
+                "25": {
+                    "name": "3107 - Реестр сумм возвратов социальных выплат",
+                    "proc": "rep_dia_3107",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
                 "216": {
                     "name": "3109 - Количество взносов участников СОСС",
                     "proc": "rep_dia_3109",
