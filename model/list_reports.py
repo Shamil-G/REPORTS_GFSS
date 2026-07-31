@@ -374,11 +374,24 @@ dict_reports = {
                     "proc": "rep_dia_3020",
                     "data_approve": "14.03.2025",
                     "author": "Туржанова Ж.Е.",
-                    "params": {"date_first": "С", "date_second": "по"},
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            },
+                            "knp": {
+                                "display_name": "Код области",
+                                "type": "string",
+                                "length": 3,
+                                "required": True
+                            }
                         }
                 },
                 "16": {
