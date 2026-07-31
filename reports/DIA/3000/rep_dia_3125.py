@@ -10,7 +10,7 @@ import os.path
 from model.manage_reports import set_status_report
 
 report_name = '3125 - Сведения о числе получателей по полу по районам'
-report_code = '3124'
+report_code = '3125'
 
 stmt_report = """
 Select
@@ -85,14 +85,14 @@ From (Select
                Group By reg_id, rfpm, sex ) t, rfbn_branch rfbn
     WHERE t.reg_id = rfbn.RFBN_ID
     GROUP BY reg_id, rfbn.NAME
-    ORDER BY reg_id;
+    ORDER BY reg_id
 """
 
 
 def format_worksheet(worksheet, common_format):
 
     worksheet.set_row(2, 40)
-    worksheet.set_row(3, 30)
+    worksheet.set_row(3, 40)
 
     worksheet.set_column(0, 0, 8)
     worksheet.set_column(1, 1, 30)
@@ -110,7 +110,7 @@ def format_worksheet(worksheet, common_format):
     worksheet.merge_range(2, 35, 2, 37, 'Сумма выплат (тенге)', common_format)
 
 
-    for start_col in [2, 8, 14, 20, 26]:
+    for start_col in [2, 8, 14, 20, 26, 32]:
         worksheet.write(3, start_col,     'всего', common_format)
         worksheet.write(3, start_col + 1, 'мужчин', common_format)
         worksheet.write(3, start_col + 2, 'женщин', common_format)
