@@ -280,7 +280,7 @@ dict_reports = {
                 },
                 "08": {
                     "name": "3007 - Сведения о градации по годам назначения",
-                    "proc": "rep_dia_3107",
+                    "proc": "rep_dia_3007",
                     "data_approve": "14.03.2025",
                     "author": "Туржанова Ж.Е.",
                     "params": {"date_first": "С", "date_second": "по"},
@@ -487,6 +487,25 @@ dict_reports = {
                         {
                             "date_first": {
                                 "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "26": {
+                    "name": "3108 - Отчет по платежам в разрезе КНП",
+                    "proc": "rep_dia_3108",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
                                 "type": "date",
                                 "required": True
                             }
