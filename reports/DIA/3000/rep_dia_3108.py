@@ -264,12 +264,35 @@ def do_report(file_name: str, date_first: str, date_second: str):
             first_row = 4
             row_num = first_row - 1
 
-            err_row = proc_row = deliv_row = None
-            err_cnt = err_rec = err_sum = 0
-            proc_cnt = proc_rec = proc_sum = 0
-            deliv_cnt = deliv_rec = deliv_sum = 0
+            current_group = None
+            cnt = rec = sm = 0
 
             for record in rows:
+
+                if 'Ошибочные' in record[3]:
+                    group = 'Ошибочные'
+                elif 'Обработанные' in record[3]:
+                    group = 'Обработанные'
+                elif 'Доставленные' in record[3]:
+                    group = 'Доставленные'
+                else:
+                    group = ''
+
+                # если группа изменилась — печатаем итог предыдущей
+                if current_group is not None and group != current_group:
+                    worksheet[0].merge_range(row_num, 0, row_num, 2,
+                                             f'ИТОГО {current_group}', title_format)
+                    worksheet[0].write(row_num, 3, cnt, total_digital_format)
+                    worksheet[0].write(row_num, 4, rec, total_digital_format)
+                    worksheet[0].write(row_num, 5, sm, total_money_format)
+
+                    row_num += 1
+
+                    cnt = rec = sm = 0
+
+                current_group = group
+
+                # вывод строки
                 worksheet[0].write(row_num, 0, record[0], region_name_format)
                 worksheet[0].write(row_num, 1, record[2], digital_format)
                 worksheet[0].write(row_num, 2, record[3], region_name_format)
@@ -277,42 +300,19 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write(row_num, 4, record[5], digital_format)
                 worksheet[0].write(row_num, 5, record[6], money_format)
 
-                status = record[3]
-
-                if 'Ошибочные' in status:
-                    if err_row is None:
-                        err_row = row_num
-                    err_cnt += record[4]
-                    err_rec += record[5]
-                    err_sum += record[6]
-
-                elif 'Обработанные' in status:
-                    if proc_row is None:
-                        proc_row = row_num
-                    proc_cnt += record[4]
-                    proc_rec += record[5]
-                    proc_sum += record[6]
-
-                elif 'Доставленные' in status:
-                    if deliv_row is None:
-                        deliv_row = row_num
-                    deliv_cnt += record[4]
-                    deliv_rec += record[5]
-                    deliv_sum += record[6]
+                cnt += record[4]
+                rec += record[5]
+                sm += record[6]
 
                 row_num += 1
 
-            # строка итогов
-            def write_total(row, title, cnt, rec, sm):
-                worksheet[0].merge_range(row, 0, row, 2, title, title_format)
-                worksheet[0].write(row, 3, cnt, total_digital_format)
-                worksheet[0].write(row, 4, rec, total_digital_format)
-                worksheet[0].write(row, 5, sm, total_money_format)
-                return row + 1
+            # итог последней группы
+            worksheet[0].merge_range(row_num, 0, row_num, 2,
+                                     f'ИТОГО {current_group}', title_format)
+            worksheet[0].write(row_num, 3, cnt, total_digital_format)
+            worksheet[0].write(row_num, 4, rec, total_digital_format)
+            worksheet[0].write(row_num, 5, sm, total_money_format)
 
-            row_num = write_total(row_num, 'ИТОГО Ошибочные', err_cnt, err_rec, err_sum)
-            row_num = write_total(row_num, 'ИТОГО Обработанные', proc_cnt, proc_rec, proc_sum)
-            row_num = write_total(row_num, 'ИТОГО Доставленные', deliv_cnt, deliv_rec, deliv_sum)
 
             worksheet[0].freeze_panes(3, 0)
 
