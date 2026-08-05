@@ -286,7 +286,7 @@ dict_reports = {
                 },
                 "08": {
                     "name": "3007 - Сведения о градации по годам назначения",
-                    "proc": "rep_dia_3107",
+                    "proc": "rep_dia_3007",
                     "data_approve": "14.03.2025",
                     "author": "Туржанова Ж.Е.",
                     "params": {"date_first": "С", "date_second": "по"},
@@ -349,11 +349,18 @@ dict_reports = {
                     "proc": "rep_dia_3016",
                     "data_approve": "14.03.2025",
                     "author": "Туржанова Ж.Е.",
-                    "params": {"date_first": "С", "date_second": "по"},
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "14": {
@@ -373,11 +380,24 @@ dict_reports = {
                     "proc": "rep_dia_3020",
                     "data_approve": "14.03.2025",
                     "author": "Туржанова Ж.Е.",
-                    "params": {"date_first": "С", "date_second": "по"},
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            },
+                            "knp": {
+                                "display_name": "Код области",
+                                "type": "string",
+                                "length": 3,
+                                "required": True
+                            }
                         }
                 },
                 "16": {
@@ -464,6 +484,87 @@ dict_reports = {
                             "date_second": DATE_TO
                         }
                 },
+                "25": {
+                    "name": "3107 - Реестр сумм возвратов социальных выплат",
+                    "proc": "rep_dia_3107",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "26": {
+                    "name": "3108 - Отчет по платежам в разрезе КНП",
+                    "proc": "rep_dia_3108",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "216": {
+                    "name": "3109 - Количество взносов участников СОСС",
+                    "proc": "rep_dia_3109",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO
+                        }
+                },
+                "217": {
+                    "name": "3110 - Численность участников СОСС, в разрезе пола и возраста",
+                    "proc": "rep_dia_3110",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO
+                        }
+                },
+                "218": {
+                    "name": "3111 - Женщины-участники СОСС 50+, СО по БИН и ИИН",
+                    "proc": "rep_dia_3111",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO
+                        }
+                },
+                "219": {
+                    "name": "3112 - Женщины-участники СОСС 50+, СО от нескольких работодателей",
+                    "proc": "rep_dia_3112",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO
+                        }
+                },
                 "220": {
                     "name": "3113 - Перевод денежных средств в АО 'ГФСС'",
                     "proc": "rep_dia_3113",
@@ -510,6 +611,56 @@ dict_reports = {
                                 "type": "list",
                                 "length": 2,
                                 "values": LIST_REGION,
+                                "required": True
+                            }
+                        }
+                },
+                "232": {
+                    "name": "3124 - Сведения о размерах выплат по районам",
+                    "proc": "rep_dia_3124",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            },
+                            "rfbn_id": {
+                                "display_name": "Код области",
+                                "type": "string",
+                                "length": 2,
+                                "required": True
+                            }
+                        }
+                },
+                "233": {
+                    "name": "3125 - Сведения о числе получателей по полу по районам",
+                    "proc": "rep_dia_3125",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            },
+                            "rfbn_id": {
+                                "display_name": "Код области",
+                                "type": "string",
+                                "length": 2,
                                 "required": True
                             }
                         }
