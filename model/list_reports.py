@@ -1,5 +1,6 @@
 from app_config import REPORT_MODULE_PATH
 from regions import regions
+import re
 
 # live_time - время жизни отчета в часах, может указываться с 2 знаками после запятой
 # в этом случае минимальное время жизни отчета составляет 36 секунд
@@ -14,7 +15,14 @@ DATE_TO = {
     "type": "date",
     "length": None
 }
-LIST_REGION = {code[:2]: data['legacy_name'] for code, data in regions.items()}
+
+# Создание словаря регионов для выпадающего списка:
+LIST_REGION = {}
+for code, data in regions.items():
+    name = data.get('legacy_name', '')
+    name = re.sub(r'^\s*\d{2}\s*-\s*', '', name).strip()
+    LIST_REGION[code[:2]] = f"{code[:2]} - {name}"
+
 
 dict_reports = {
     "ДИА": 
