@@ -102,6 +102,24 @@
                             {% endfor %}
                         </select>
                     {% endif %}
+
+                    {% if input_type == 'list' and enum_values %}
+                        <select class="input_s" id="{{ key }}" name="{{ key }}" 
+                                onfocus="restoreRegionLabels(this)" onchange="applyRegionCode(this)"
+                                {% if is_required %} required {% endif %}>
+                            <option value="">-- Выберите значение --</option>
+                            {% if enum_values is mapping %}
+                                {% for code, name in enum_values.items() %}
+                                    <option value="{{ code }}" data-label="{{ name }}">{{ name }}</option>
+                                {% endfor %}
+                            {% else %}
+                                {% for option in enum_values %}
+                                    <option value="{{ option }}">{{ option }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    {% endif %}      
+
                 </td>
             </tr>
             {% endfor %}
@@ -110,4 +128,27 @@
     <br />
     <button type="submit" name="edit_parms">{{ res_value('REPORT_REQUEST') }}</button>
 </form>
+
+<script>
+// Восстанавливает названия регионов при открытии списка
+function restoreRegionLabels(selectElement) {
+    for (let option of selectElement.options) {
+        if (option.dataset.label) {
+            option.text = option.dataset.label;
+        }
+    }
+}
+
+// Применяет код региона при выборе и закрывает список
+function applyRegionCode(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const val = selectedOption.value;
+    
+    if (val && selectedOption.dataset.label) {
+        selectedOption.text = val; // показываем код
+    }
+    
+    selectElement.blur(); // закрываем список
+}
+</script>
 {% endblock %}

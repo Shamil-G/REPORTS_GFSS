@@ -1,4 +1,5 @@
 from app_config import REPORT_MODULE_PATH
+from regions import regions
 
 # live_time - время жизни отчета в часах, может указываться с 2 знаками после запятой
 # в этом случае минимальное время жизни отчета составляет 36 секунд
@@ -13,7 +14,7 @@ DATE_TO = {
     "type": "date",
     "length": None
 }
-
+LIST_REGION = {code[:2]: data['legacy_name'] for code, data in regions.items()}
 
 dict_reports = {
     "ДИА": 
@@ -84,11 +85,16 @@ dict_reports = {
                     "proc": "rep_0702_03",
                     "data_approve": "20.01.2026",
                     "author": "Гусейнов Ш.",
-                    "params": {"date_first": "С", "date_second": "по"},
 
                     "meta_params": {
-                       "date_first": DATE_FROM,
-                       "date_second": DATE_TO
+                       "date_first": {
+                           "display_name": "C",
+                           "type": "date",
+                       },
+                       "date_second": {
+                           "display_name": "по",
+                           "type": "date",
+                       },
                     }
                 }
             }
@@ -500,9 +506,10 @@ dict_reports = {
                                 "required": True
                             },
                             "rfbn_id": {
-                                "display_name": "Код области",
-                                "type": "string",
+                                "display_name": "Области",
+                                "type": "list",
                                 "length": 2,
+                                "values": LIST_REGION,
                                 "required": True
                             }
                         }
@@ -1600,10 +1607,15 @@ dict_reports = {
                     "proc": "rep_dia_list_01",
                     "data_approve": "14.10.2025",
                     "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по", "rfpm_id": "Код выплаты"},
                     "meta_params": {
-                        "date_first": DATE_FROM,
-                        "date_second": DATE_TO,
+                        "date_first": {
+                            "display_name": "C",
+                            "type": "date",
+                        },
+                        "date_second": {
+                            "display_name": "по",
+                            "type": "date",
+                        },
                         "rfpm_id":{
                             "display_name": "Код выплаты",
                             "type": "string",
