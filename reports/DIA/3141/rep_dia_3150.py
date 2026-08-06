@@ -9,7 +9,7 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3150 - Половозрастная структура получателей'
+report_name = '3150 - Случай потери кормильца'
 report_code = '3150'
 
 stmt_report = """
