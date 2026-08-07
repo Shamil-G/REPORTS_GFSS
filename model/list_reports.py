@@ -615,7 +615,7 @@ dict_reports = {
                                 "required": True
                             },
                             "rfbn_id": {
-                                "display_name": "Области",
+                                "display_name": "Выберите область",
                                 "type": "list",
                                 "length": 2,
                                 "values": LIST_REGION,
@@ -641,9 +641,10 @@ dict_reports = {
                                 "required": True
                             },
                             "rfbn_id": {
-                                "display_name": "Код области",
-                                "type": "string",
+                                "display_name": "Выберите область",
+                                "type": "list",
                                 "length": 2,
+                                "values": LIST_REGION,
                                 "required": True
                             }
                         }
@@ -666,9 +667,10 @@ dict_reports = {
                                 "required": True
                             },
                             "rfbn_id": {
-                                "display_name": "Код области",
-                                "type": "string",
+                                "display_name": "Выберите область",
+                                "type": "list",
                                 "length": 2,
+                                "values": LIST_REGION,
                                 "required": True
                             }
                         }
@@ -1525,13 +1527,13 @@ dict_reports = {
                     "proc": "rep_dia_cp_02",
                     "data_approve": "10.06.2023",
                     "author": "Адильханова А.К.",
-                    "params": {"date_first": "С", "date_second": "по", "srfbn_id": "Код региона:2"},
                     "meta_params": 
                     {
                         "rfbn_id":{
-                            "display_name": "Код региона",
-                            "type": "string",
+                            "display_name": "Выберите область",
+                            "type": "list",
                             "length": 2,
+                            "values": LIST_REGION,
                             "required": False
                         },
                         "date_first": DATE_FROM,
@@ -1578,12 +1580,12 @@ dict_reports = {
                     "proc": "rep_dia_pz_02",
                     "data_approve": "26.11.2024",
                     "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по", "srfbn_id": "Код региона:2"},
                     "meta_params": {
                         "rfbn_id":{
-                            "display_name": "Код региона",
-                            "type": "string",
+                            "display_name": "Выберите область",
+                            "type": "list",
                             "length": 2,
+                            "values": LIST_REGION,
                             "required": False
                         },
                         "date_first": DATE_FROM,
@@ -1613,6 +1615,58 @@ dict_reports = {
                 }
             }
         },
+        "Самозанятые": {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.sz",
+            "live_time":  0,
+            "reports": 
+            {
+                "01": {
+                    "name": "Сведения о численности Самозанятых участников и сумм их СО",
+                    "proc": "rep_dia_sz_01",
+                    "data_approve": "26.11.2024",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "02": {
+                    "name": "Самозанятые участники, в разрезе пола и возраста",
+                    "proc": "rep_dia_sz_02",
+                    "data_approve": "26.11.2024",
+                    "author": "Гусейнов Ш.А.",
+                    "meta_params": {
+                        "rfbn_id":{
+                            "display_name": "Выберите область",
+                            "type": "list",
+                            "length": 2,
+                            "values": LIST_REGION,
+                            "required": False
+                        },
+                        "date_first": DATE_FROM,
+                        "date_second": DATE_TO
+                    }
+                },
+                "03": {
+                    "name": "Самозанятые участники, в разрезе регионов",
+                    "proc": "rep_dia_sz_03",
+                    "data_approve": "26.11.2024",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "04": {
+                    "name": "Списочная часть чистых Самозаняты участников (СЗ)",
+                    "proc": "rep_dia_sz_04",
+                    "data_approve": "26.11.2024",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "05": {
+                    "name": "Списочная часть смешанных Самозанятых участников (СЗ)",
+                    "proc": "rep_dia_sz_05",
+                    "data_approve": "26.11.2024",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                }
+            }
+        },        
         "ЕСП": {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.esp",
             "live_time":  0,
