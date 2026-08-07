@@ -7,8 +7,8 @@ from   util.logger import log
 from   model.manage_reports import set_status_report
 
 
-report_name = 'Поступления от участников ПЗ'
-report_code = 'ПЗ.02'
+report_name = 'Поступления от Самозанятых участников'
+report_code = 'СЗ.02'
 
 stmt_1 = """
       Select  
@@ -24,7 +24,7 @@ stmt_1 = """
                 p.sex, si.sum_pay, p.sicid
             from  si_member_2 si, person p, rfrg_region rg
             where si.sicid = p.sicid
-            and si.type_payment = 'P'
+            and si.type_payer = 'SZ'
             and si.knp = '012'
             and si.pay_date_gfss >= to_date(:dt_from, 'yyyy-mm-dd') 
 			and si.pay_date_gfss <  to_date(:dt_to, 'yyyy-mm-dd') + 1

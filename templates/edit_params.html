@@ -73,24 +73,17 @@
 
                     {% if input_type == 'string' %}
                         {% if maxlength is not none %}
-                            <input class="input_s" type="text" id="{{ key }}" name="{{ key }}" 
-                                   style="width: {{ width }}ch;" maxlength="{{ maxlength }}" size="{{ maxlength }}"
-                                   {% if is_required %} required {% endif %}">
+                            <input class="input_s" type="text" id="{{ key }}" name="{{ key }}" size="{{ width }}" maxlength="{{ maxlength }}" {% if is_required %} required {% endif %}>
                         {% else %}
-                            <input style="width: {{ width }}ch;" class="input_s" type="text" 
-                                   id="{{ key }}" name="{{ key }}" {% if is_required %} required {% endif %}>
+                            <input class="input_s" type="text" id="{{ key }}" name="{{ key }}" size="{{ width }}" {% if is_required %} required {% endif %}>
                         {% endif %}
                     {% endif %}
 
                     {% if input_type == 'number' %}
                         {% if maxlength is not none %}
-                            <input id="{{ key }}" name="{{ key }}" class="input_s" 
-                                   type="number"   
-                                   style="width:{{ width }}ch;" size="{{ maxlength }}" max="{{ maxlength }}" 
-                                   inputmode="numeric" pattern="\d*" {% if is_required %} required {% endif %} >
+                            <input id="{{ key }}" name="{{ key }}" class="input_s" type="number" style="--w: {{ width }}; width: calc(var(--w) * 1ch);" max="{{ maxlength }}" inputmode="numeric" pattern="\d*" {% if is_required %} required {% endif %}>
                         {% else %}
-                            <input class="input_s" type="number" id="{{ key }}" name="{{ key }}" inputmode="numeric" pattern="\d*"
-                                   style="width: {{ width }}ch;" size="{{ maxlength }}" max="{{ maxlength }}" {% if is_required %} required {% endif %}>
+                            <input class="input_s" type="number" id="{{ key }}" name="{{ key }}" inputmode="numeric" pattern="\d*" style="--w: {{ width }}; width: calc(var(--w) * 1ch);" {% if is_required %} required {% endif %}>
                         {% endif %}
                     {% endif %}
 
@@ -102,6 +95,23 @@
                             {% endfor %}
                         </select>
                     {% endif %}
+
+                    {% if input_type == 'list' and enum_values %}
+                        <select class="input_s" id="{{ key }}" name="{{ key }}"
+                                {% if is_required %} required {% endif %}>
+                            <option value="">-- Выберите значение --</option>
+                            {% if enum_values is mapping %}
+                                {% for code, name in enum_values.items() %}
+                                    <option value="{{ code }}" data-label="{{ name }}">{{ name }}</option>
+                                {% endfor %}
+                            {% else %}
+                                {% for option in enum_values %}
+                                    <option value="{{ option }}">{{ option }}</option>
+                                {% endfor %}
+                            {% endif %}
+                        </select>
+                    {% endif %}      
+
                 </td>
             </tr>
             {% endfor %}
