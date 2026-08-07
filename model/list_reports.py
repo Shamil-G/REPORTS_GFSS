@@ -199,38 +199,6 @@ dict_reports = {
                 }
             }
         },
-        "500 - Отчеты для сайта": {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.500",
-            "live_time": 0,
-            "reports":
-                {
-                    "01": {
-                        "name": "501 - Сведения о количестве участников СОСС",
-                        "proc": "rep_dia_501",
-                        "data_approve": "14.03.2025",
-                        "author": "Туржанова Ж.Е.",
-                        "meta_params":
-                            {
-                                "date_first": {
-                                    "display_name": "C",
-                                    "type": "date",
-                                    "required": True
-                                },
-                                "date_second": {
-                                    "display_name": "по",
-                                    "type": "date",
-                                    "required": True
-                                },
-                                "rfbn_id": {
-                                    "display_name": "Филиал",
-                                    "type": "string",
-                                    "length": 4,
-                                    "required": True
-                                },
-                            }
-                    },
-                }
-        },
         "3000": { 
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.3000",
             "live_time":  0,
