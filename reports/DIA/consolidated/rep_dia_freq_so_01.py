@@ -62,6 +62,15 @@ with src as (
   from src s 
   where nvl(type_payment,'X')!='P'
 ) 
+, sz_list as (
+  select /*+parallel(4)*/ unique sicid
+  from src s 
+  where type_payer='SZ'
+  minus
+  select /*+parallel(4)*/ unique sicid 
+  from src s 
+  where type_payer!='SZ'
+)
 , boss_ip as (
   select /*+parallel(4)*/ unique sicid
   from src s 
@@ -146,6 +155,9 @@ people_cat as (
     union
     select /*+parallel(4)*/ '7. ЕСП', sicid -- !!!
     from esp_emp
+	union
+    select /*+parallel(4)*/ '8. Самозанятые', sicid -- !!!
+    from sz_list
   ) a, src
   where src.sicid=a.sicid
   group by a.cat, a.sicid
