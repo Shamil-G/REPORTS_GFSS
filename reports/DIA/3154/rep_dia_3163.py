@@ -248,15 +248,17 @@ def do_report(file_name: str, date_first: str, date_second: str):
             for col in range(1, 22):
                 col_letter = xl_col_to_name(col)
 
+                fmt = total_money_format if col in (2, 5, 8, 11, 14, 17, 20) else total_digital_format
+
                 if col in [3, 6, 9, 12, 15, 18, 21]:
-                    worksheet[0].write(row_num, col, '', total_money_format)
+                    worksheet[0].write(row_num, col, '', fmt)
                     continue
 
                 worksheet[0].write_formula(
                     row_num,
                     col,
                     f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
-                    total_digital_format
+                    fmt
                 )
 
             worksheet[0].freeze_panes(3, 0)
