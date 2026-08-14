@@ -13,43 +13,28 @@ report_name = '3020 - Список возвратов СВ перечислен�
 report_code = '3020'
 
 stmt_report = """
-with main_src as (
-SELECT
--- ROWNUM rn,
--- NVL(doc.rfbn_id, ' ') AS rfbn_id,
-pd.doc_date,
-pd.doc_nmb,
-pd.cipher_id_knp,
-pd.refer,
-dl.pay_sum,
-NVL(dl.period, pd.period) AS period,
-dl.fm || ' ' || dl.nm || ' ' || dl.ft AS fio,
-pd.doc_assign,
-pd.rfbk_mfo_pbank,
-dl.rnn,
-dl.sicid
-FROM pmpd_pay_doc pd, pmdl_doc_list dl--, pnpd_document doc
-
-WHERE pd.pay_date >= TO_DATE('2026-07-01','YYYY-MM-DD')
-and pd.pay_date = dl.pay_date
-and pd.mhmh_id = dl.mhmh_id
--- and doc.pncd_id = dl.sicid
--- AND doc.knp NOT IN ('039', '049')
-AND TRUNC(pd.pay_date) <= TO_DATE(:dt_to,'YYYY-MM-DD')
-AND dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
-AND TRUNC(dl.pay_date) <= TO_DATE(:dt_to,'YYYY-MM-DD')
-AND pd.cipher_id_knp = :knp
-AND pd.r_account = 'KZ70125KZT1001300134'
-),
-rfbn as (
-select unique doc.rfbn_id, doc.pncd_id as sicid
-from pnpd_document doc, main_src s
-where doc.pncd_id = s.sicid
---and substr(doc.rfpm_id,1,4) = '0706'
-and doc.knp not in ('039','049')
-)
-select ROWNUM rn, b.rfbn_id, s.*
-from main_src s, rfbn b
+select ROWNUM rn,
+       '    ' rfbn_id,  
+       pd.doc_date, 
+       pd.doc_nmb, 
+       pd.cipher_id_knp,
+       pd.refer, 
+       dl.pay_sum,
+       nvl(dl.period, pd.period) as period, 
+       dl.fm || ' ' || dl.nm || ' ' || dl.ft as fio, 
+       pd.doc_assign, 
+       pd.rfbk_mfo_pbank,
+       dl.rnn
+from pmpd_pay_doc pd,  
+     pmdl_doc_list dl   
+where pd.pay_date = dl.pay_date 
+  and pd.mhmh_id = dl.mhmh_id
+  and pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
+  and trunc(pd.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
+  and dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
+  and trunc(dl.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
+  and pd.cipher_id_knp = :knp
+  and pd.r_account = 'KZ70125KZT1001300134'
 """
 
 

@@ -9,80 +9,44 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3101 - Ведомость перечисленных ОПВ'
-report_code = '3101'
+report_name = '3100 - Ведомость перечисленных социальных выплат в разрезе БВУ'
+report_code = '3100'
 
 stmt_report = """
-SELECT
-  br.RFBN_ID,
-  br.NAME,
-  SUM(CASE WHEN t.rfpm = '0702' THEN cnt ELSE 0 END) c0702,
-  SUM(CASE WHEN t.rfpm = '0702' THEN dbt ELSE 0 END) s0702,
-  SUM(CASE WHEN t.rfpm = '0703' THEN cnt ELSE 0 END) c0703,
-  SUM(CASE WHEN t.rfpm = '0703' THEN dbt ELSE 0 END) s0703,
-  SUM(CASE WHEN t.rfpm = '0704' THEN cnt ELSE 0 END) c0704,
-  SUM(CASE WHEN t.rfpm = '0704' THEN dbt ELSE 0 END) s0704,
-  SUM(CASE WHEN t.rfpm = '0705' THEN cnt ELSE 0 END) c0705,
-  SUM(CASE WHEN t.rfpm = '0705' THEN dbt ELSE 0 END) s0705,
-  SUM(CASE WHEN t.rfpm = '0706' THEN cnt ELSE 0 END) c0706,
-  SUM(CASE WHEN t.rfpm = '0706' THEN dbt ELSE 0 END) s0706,
-  SUM(CASE WHEN t.rfpm = '0707' THEN cnt ELSE 0 END) c0707,
-  SUM(CASE WHEN t.rfpm = '0707' THEN dbt ELSE 0 END) s0707,
-  SUM(CASE WHEN t.rfpm = '0708' THEN cnt ELSE 0 END) c0708,
-  SUM(CASE WHEN t.rfpm = '0708' THEN dbt ELSE 0 END) s0708,
-  SUM(CASE WHEN t.rfpm = '0709' THEN cnt ELSE 0 END) c0709,
-  SUM(CASE WHEN t.rfpm = '0709' THEN dbt ELSE 0 END) s0709,
-  SUM(CASE WHEN t.rfpm in ('0702','0701','0703','0704','0705','0706','0707','0708','0709') then cnt else 0 end) c_all,
-  SUM(CASE WHEN t.rfpm in ('0702','0701','0703','0704','0705','0706','0707','0708','0709') then dbt else 0 end) s_all
-FROM
-(SELECT
-       SUBSTR(PD.RFBN_ID, 1, 2) rfbn,
-       COUNT(DISTINCT source_id) CNT,
-       SUBSTR(PD.RFPM_ID, 1, 4) rfpm,
-       SUM(pd.pay_sum+pd.sum_debt) dbt
-  FROM PNPD_DOCUMENT PD, pmpd_pay_doc_s pmpd--, SIFL_FILE SF
- WHERE
-   pd.pncp_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
-   AND pmpd.PAY_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
-   AND pd.mhmh_id = pmpd.mhmh_id
-   AND PD.PNSP_ID > 0
-   AND pd.knp = '010'
-   AND PD.RIDT_ID IN (4, 6, 7, 8)
-   AND PD.STATUS IN (0, 1, 2, 3, 5, 7)
- GROUP BY SUBSTR(PD.RFBN_ID, 1, 2), SUBSTR(PD.RFPM_ID, 1, 4), pmpd.cipher_id_knp
-) t, rfbn_branch br
-WHERE br.RFBN_ID = t.rfbn || '00'
-GROUP BY br.NAME, br.RFBN_ID
-ORDER BY br.RFBN_ID
+  Select nvl(r.knp, 'ВСЕГО:') knp,
+         bt.Name,
+         r.rfpw_id r,
+     sum(r.cnt) cnt,
+     sum(r.col_p) col,
+     sum(r.summa) SM,
+     nvl(CASE WHEN r.rfpm_group = '0701' THEN '2'
+        WHEN r.rfpm_group = '0702' THEN '1'
+        ELSE substr(r.rfpm_group, 4, 1)-- извращение для сортировки
+          END, 'Z') ord
+    From ss_decoding r, rfrc_recipient_last rc, rfbl_bank_list bt, rfpm_payments rfpm
+   Where r.PAY_DATE Between TO_DATE(:dt_from,'YYYY-MM-DD') And TO_DATE(:dt_to,'YYYY-MM-DD')
+     And r.TMST_ID = 103
+     And r.rfrc_id = rc.RFRC_ID
+     And rc.BANK_TYPE = bt.rfbl_Id
+     AND r.rfpm_group = rfpm.rfpm_id
+  Group By Grouping Sets (1,(bt.rfbl_id, bt.Name, r.rfpw_id, r.knp, r.rfpm_group, rfpm.name ))
+  Order By ord, rfpm_group, knp, rfbl_id
 """
 
 
 def format_worksheet(worksheet, common_format):
 
-    worksheet.set_row(2, 40)
-    worksheet.set_row(3, 30)
+    worksheet.set_row(2, 30)
 
     worksheet.set_column(0, 0, 8)
-    worksheet.set_column(1, 1, 30)
-    worksheet.set_column(1, 31, 15)
+    worksheet.set_column(1, 5, 15)
 
-    worksheet.merge_range(2, 0, 3, 0, 'Код региона', common_format)
-    worksheet.merge_range(2, 1, 3, 1, 'Наименование региона', common_format)
-
-
-    worksheet.merge_range(2, 2, 2, 3, 'Социальная выплата на случай утраты трудоспособности', common_format)
-    worksheet.merge_range(2, 4, 2, 5, 'Социальная выплата на случай потери работы', common_format)
-    worksheet.merge_range(2, 6, 2, 7, 'Социальная выплата на случай потери дохода в связи с беременностью и родами', common_format)
-    worksheet.merge_range(2, 8, 2, 9, 'Социальная выплата на случай потери дохода в связи с уходом за ребенком до года', common_format)
-    worksheet.merge_range(2, 10, 2, 11, 'Социальная выплата участникам системы обязательного социального страхования на период чрезвычайного положения', common_format)
-    worksheet.merge_range(2, 12, 2, 13, 'социальная выплата работникам организаций здравоохранения, задействованным в противоэпидемических мероприятиях по борьбе с коронавирусной инфекцией СOVID-19, в случае заражения', common_format)
-    worksheet.merge_range(2, 14, 2, 15, 'Социальная выплата работникам организаций здравоохранения, задействованным в противоэпидемических мероприятиях по борьбе с коронавирусной инфекцией СOVID-19, в случае смерти', common_format)
-    worksheet.merge_range(2, 16, 2, 17, 'Социальная выплата на период ввода ограничительных мероприятий', common_format)
-    worksheet.merge_range(2, 18, 2, 19, 'Всего по области', common_format)
-
-    for start_col in [2, 4, 6, 8, 10, 12, 14, 16, 18]:
-        worksheet.write(3, start_col,     'Численность,\nчеловек', common_format)
-        worksheet.write(3, start_col + 1, 'Сумма,\nтенге', common_format)
+    worksheet.write(2, 0,'КНП', common_format)
+    worksheet.write(2, 1,'Наименование банка', common_format)
+    worksheet.write(2, 2,'Способ выплаты', common_format)
+    worksheet.write(2, 3,'Кол-во платежей', common_format)
+    worksheet.write(2, 4,'Кол-во получателей', common_format)
+    worksheet.write(2, 5,'Сумма', common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
@@ -207,7 +171,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = len(rows)
 
-            first_row = 5
+            first_row = 4
             row_num = first_row - 1
 
             for record in rows:
@@ -215,41 +179,20 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write(row_num, 1, record[1], region_name_format)
 
                 worksheet[0].write(row_num, 2, record[2], digital_format)
-                worksheet[0].write(row_num, 3, record[3], money_format)
+                worksheet[0].write(row_num, 3, record[3], digital_format)
 
                 worksheet[0].write(row_num, 4, record[4], digital_format)
                 worksheet[0].write(row_num, 5, record[5], money_format)
-
-                worksheet[0].write(row_num, 6, record[6], digital_format)
-                worksheet[0].write(row_num, 7, record[7], money_format)
-
-                worksheet[0].write(row_num, 8, record[8], digital_format)
-                worksheet[0].write(row_num, 9, record[9], money_format)
-
-                worksheet[0].write(row_num, 10, record[10], digital_format)
-                worksheet[0].write(row_num, 11, record[11], money_format)
-
-                worksheet[0].write(row_num, 12, record[12], digital_format)
-                worksheet[0].write(row_num, 13, record[13], money_format)
-
-                worksheet[0].write(row_num, 14, record[14], digital_format)
-                worksheet[0].write(row_num, 15, record[15], money_format)
-
-                worksheet[0].write(row_num, 16, record[16], digital_format)
-                worksheet[0].write(row_num, 17, record[17], money_format)
-
-                worksheet[0].write(row_num, 18, record[18], digital_format)
-                worksheet[0].write(row_num, 19, record[19], money_format)
 
                 row_num += 1
 
             # строка итогов
             worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
 
-            for col in range(1, 20):
+            for col in range(1, 6):
                 col_letter = xl_col_to_name(col)
 
-                fmt = total_money_format if col in (3, 5, 7, 9, 11, 13, 15, 17, 19) else total_digital_format
+                fmt = total_money_format if col == 5 else total_digital_format
 
                 worksheet[0].write_formula(
                     row_num,
@@ -259,7 +202,6 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 )
 
             worksheet[0].freeze_panes(3, 0)
-            worksheet[0].freeze_panes(4, 0)
 
             now = datetime.datetime.now()
             stop_time = now.strftime("%H:%M:%S")
