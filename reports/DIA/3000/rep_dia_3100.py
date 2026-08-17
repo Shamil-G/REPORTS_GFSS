@@ -174,7 +174,41 @@ def do_report(file_name: str, date_first: str, date_second: str):
             first_row = 4
             row_num = first_row - 1
 
+            # Метки подытогов по кодам КНП
+            knp_subtotal_labels = {
+                '027': 'Итого по утрате трудоспособности',
+                '046': 'Итого по потере кормильца',
+                '048': 'Итого по потере работы',
+                '096': 'Итого по беременности и родам',
+                '091': 'Итого по уходу за ребенком до года/до полутора лет',
+            }
+
+            def write_subtotal(target_row: int, start_row: int, end_row: int, label: str):
+                worksheet[0].merge_range(target_row, 0, target_row, 1, label, title_format)
+                for col in range(2, 6):
+                    col_letter = xl_col_to_name(col)
+                    fmt = total_money_format if col == 5 else total_digital_format
+                    worksheet[0].write_formula(
+                        target_row,
+                        col,
+                        f'=SUM({col_letter}{start_row+1}:{col_letter}{end_row+1})',
+                        fmt
+                    )
+
+            group_start_row = row_num
+            current_knp_code = None
+
             for record in rows:
+                knp_code = str(record[0]).strip() if record[0] is not None else None
+
+                # КНП сменился
+                if current_knp_code is not None and knp_code != current_knp_code:
+                    if current_knp_code in knp_subtotal_labels:
+                        write_subtotal(row_num, group_start_row, row_num - 1, knp_subtotal_labels[current_knp_code])
+                        row_num += 1
+                    # группа сменилась в любом случае — сбрасываем начало новой группы
+                    group_start_row = row_num
+
                 worksheet[0].write(row_num, 0, record[0], digital_format)
                 worksheet[0].write(row_num, 1, record[1], region_name_format)
 
@@ -184,22 +218,13 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write(row_num, 4, record[4], digital_format)
                 worksheet[0].write(row_num, 5, record[5], money_format)
 
+                current_knp_code = knp_code
                 row_num += 1
 
-            # строка итогов
-            worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
-
-            for col in range(1, 6):
-                col_letter = xl_col_to_name(col)
-
-                fmt = total_money_format if col == 5 else total_digital_format
-
-                worksheet[0].write_formula(
-                    row_num,
-                    col,
-                    f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
-                    fmt
-                )
+            # Последняя группа перед 'ВСЕГО:'
+            if current_knp_code in knp_subtotal_labels:
+                write_subtotal(row_num, group_start_row, row_num - 1, knp_subtotal_labels[current_knp_code])
+                row_num += 1
 
             worksheet[0].freeze_panes(3, 0)
 
