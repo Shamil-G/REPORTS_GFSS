@@ -1,4 +1,7 @@
 from os import environ
+from os.path import dirname, abspath, join
+from dotenv import load_dotenv
+
 
 debug = True
 app_name = "REPORTS_GFSS"
@@ -6,6 +9,9 @@ public_name = "Большие отчеты в АО ГФСС"
 SSO_LOGIN = True
 http_ip_context='HTTP_X_FORWARDED_FOR'
 #http_ip_context='HTTP_X_REAL_IP'
+
+# Загружаем параметры из переменной окружения
+load_dotenv(join(dirname(abspath(__file__)), 'reports.env'))
 
 # 
 app_home="C:/Projects"
