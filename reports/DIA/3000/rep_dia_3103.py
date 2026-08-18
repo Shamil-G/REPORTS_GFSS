@@ -15,7 +15,7 @@ report_code = '3103'
 stmt_report = """
 SELECT
   t.rg,
-  CASE WHEN nvl(t.rg,'99') = '99' THEN '?? ??????????' ELSE r.name END rname,
+  CASE WHEN nvl(t.rg,'99') = '99' THEN 'Не определена' ELSE r.name END rname,
   SUM(CASE WHEN t.knp = '012' THEN t.cnt ELSE 0 END) c012,
   SUM(CASE WHEN t.knp = '012' THEN t.sm ELSE 0 END) s012,
   SUM(CASE WHEN t.knp = '017' THEN t.cnt ELSE 0 END) c017,

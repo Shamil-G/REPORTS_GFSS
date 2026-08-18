@@ -635,11 +635,6 @@ dict_reports = {
                                 "display_name": "C",
                                 "type": "date",
                                 "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
                             }
                         }
                 },
