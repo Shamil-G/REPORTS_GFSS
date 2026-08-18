@@ -2,7 +2,7 @@ import importlib
 from os import path, mkdir
 
 from   db.connect import select_one, get_connection, plsql_execute
-from   main_app import log
+from   util.logger import log
 from   app_config import REPORT_PATH
 from   gfss_parameter import platform, BASE
 from   model.list_reports import dict_reports

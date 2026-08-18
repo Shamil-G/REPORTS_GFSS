@@ -1,4 +1,4 @@
-from main_app import log
+from util.logger import log
 from db.connect import get_connection
 from datetime import datetime
 from model.manage_reports import set_status_report, remove_report
