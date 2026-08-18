@@ -25,7 +25,7 @@ SELECT
   SELECT
     d.pncd_id,
     d.rfpm_id,
-    Trunc(Months_between(pDateTo, p.birthdate) / 12) let
+    Trunc(Months_between(TO_DATE(:dt_to,'YYYY-MM-DD'), p.birthdate) / 12) let
     FROM PNPD_DOCUMENT D, person p
    WHERE D.pncd_ID = P.SICID
      AND D.PNCP_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
@@ -188,7 +188,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = len(rows)
 
-            first_row = 6
+            first_row = 5
             row_num = first_row - 1
 
             for record in rows:
@@ -205,7 +205,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
             # строка итогов
             worksheet[0].write(row_num, 0, 'ИТОГО', title_format)
 
-            for col in range(1, 4):
+            for col in range(1, 7):
                 col_letter = xl_col_to_name(col)
 
                 worksheet[0].write_formula(
@@ -217,7 +217,6 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             worksheet[0].freeze_panes(3, 0)
             worksheet[0].freeze_panes(4, 0)
-            worksheet[0].freeze_panes(5, 0)
 
             now = datetime.datetime.now()
             stop_time = now.strftime("%H:%M:%S")

@@ -196,18 +196,6 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
                 row_num += 1
 
-            # строка итогов
-            worksheet[0].write(row_num, 0, 'ИТОГО', title_format)
-
-            for col in range(1, 8):
-                col_letter = xl_col_to_name(col)
-                worksheet[0].write_formula(
-                    row_num,
-                    col,
-                    f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
-                    total_money_format
-                )
-
             worksheet[0].freeze_panes(3, 0)
             worksheet[0].freeze_panes(4, 0)
 

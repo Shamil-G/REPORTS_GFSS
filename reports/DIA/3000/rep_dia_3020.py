@@ -13,32 +13,28 @@ report_name = '3020 - Список возвратов СВ перечислен�
 report_code = '3020'
 
 stmt_report = """
-SELECT
-    ROWNUM rn,
-    NVL(doc.rfbn_id, '    ') AS rfbn_id,
-    pd.doc_date,
-    pd.doc_nmb,
-    pd.cipher_id_knp,
-    pd.refer,
-    dl.pay_sum,
-    NVL(dl.period, pd.period) AS period,
-    dl.fm || ' ' || dl.nm || ' ' || dl.ft AS fio,
-    pd.doc_assign,
-    pd.rfbk_mfo_pbank,
-    dl.rnn
-FROM pmpd_pay_doc pd
-JOIN pmdl_doc_list dl
-    ON pd.pay_date = dl.pay_date
-   AND pd.mhmh_id = dl.mhmh_id
-LEFT JOIN pnpd_document doc
-    ON doc.pncd_id = dl.sicid
-   AND doc.knp NOT IN ('039', '049')
-WHERE pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
-  AND TRUNC(pd.pay_date) <= TO_DATE(:dt_to,'YYYY-MM-DD')
-  AND dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
-  AND TRUNC(dl.pay_date) <= TO_DATE(:dt_to,'YYYY-MM-DD')
-  AND pd.cipher_id_knp = :knp
-  AND pd.r_account = 'KZ70125KZT1001300134'
+select ROWNUM rn,
+       '    ' rfbn_id,  
+       pd.doc_date, 
+       pd.doc_nmb, 
+       pd.cipher_id_knp,
+       pd.refer, 
+       dl.pay_sum,
+       nvl(dl.period, pd.period) as period, 
+       dl.fm || ' ' || dl.nm || ' ' || dl.ft as fio, 
+       pd.doc_assign, 
+       pd.rfbk_mfo_pbank,
+       dl.rnn
+from pmpd_pay_doc pd,  
+     pmdl_doc_list dl   
+where pd.pay_date = dl.pay_date 
+  and pd.mhmh_id = dl.mhmh_id
+  and pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
+  and trunc(pd.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
+  and dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
+  and trunc(dl.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
+  and pd.cipher_id_knp = :knp
+  and pd.r_account = 'KZ70125KZT1001300134'
 """
 
 

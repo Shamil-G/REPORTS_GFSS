@@ -9,102 +9,44 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3030 - Отчет 9V (для Министерства)'
-report_code = '3030'
+report_name = '3100 - Ведомость перечисленных социальных выплат в разрезе БВУ'
+report_code = '3100'
 
 stmt_report = """
-with main_src as (
-select rownum num,
-substr(pd.doc_assign, 2, 2) rfbn_id,
-pd.doc_date,
-pd.doc_nmb,
-pd.cipher_id_knp knp,
-pd.refer,
-dl.pay_sum,
-nvl(dl.period,pd.period) as period,
-dl.fm|| ' ' ||dl.nm|| ' ' ||dl.ft as fio ,
-pd.doc_assign,
-pd.rfbk_mfo_pbank,
-dl.rnn,
-dl.sicid
-from pmpd_pay_doc pd,
-pmdl_doc_list dl
-where pd.pay_date=dl.pay_date
-and pd.mhmh_id=dl.mhmh_id
-and (
-pd.cipher_id_knp in ('028', '047', '092', '097')
-or
-( pd.cipher_id_knp = '049'
-and pd.doc_assign like '%Возврат сумм%'
-)
-)
-and pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
-and trunc(pd.pay_date) < TO_DATE(:dt_to,'YYYY-MM-DD') 
-and dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
-and trunc(dl.pay_date) < TO_DATE(:dt_to,'YYYY-MM-DD') 
-and pd.r_account= 'KZ70125KZT1001300134'
-)
-select rownum num, coalesce(reg_name,'Итого:') reg_name, cnt_all, sum_all, cnt_028, sum_028,
-cnt_047, sum_047, cnt_049, sum_049, cnt_097, sum_097, cnt_092, sum_092
-from (
-select a.rfbn_id ||'. '|| b.NAME as reg_name,
-sum(cnt_028+cnt_047+cnt_049+cnt_097+cnt_092) cnt_all,
-sum(sum_028+sum_047+sum_049+sum_097+sum_092) sum_all,
-sum(cnt_028) cnt_028, sum(sum_028) sum_028,
-sum(cnt_047) cnt_047, sum(sum_047) sum_047,
-sum(cnt_049) cnt_049, sum(sum_049) sum_049,
-sum(cnt_097) cnt_097, sum(sum_097) sum_097,
-sum(cnt_092) cnt_092, sum(sum_092) sum_092
-from (
-select case when knp='028' then cnt else 0 end cnt_028,
-case when knp='028' then sum_pay else 0 end sum_028,
-case when knp='047' then cnt else 0 end cnt_047,
-case when knp='047' then sum_pay else 0 end sum_047,
-case when knp='049' then cnt else 0 end cnt_049,
-case when knp='049' then sum_pay else 0 end sum_049,
-case when knp='097' then cnt else 0 end cnt_097,
-case when knp='097' then sum_pay else 0 end sum_097,
-case when knp='092' then cnt else 0 end cnt_092,
-case when knp='092' then sum_pay else 0 end sum_092,
-substr(rfbn_id,1,2) rfbn_id
-from (
-select count(knp) cnt,
-sum(pay_sum) sum_pay,
-rfbn_id,
-knp
-from main_src
-group by rfbn_id, knp
-order by rfbn_id, knp
-)
-) a, rfbn_branch b
-where a.rfbn_id||'00'=b.RFBN_ID
-group by cube(a.rfbn_id ||'. '|| b.NAME)
-order by 1
-)
+  Select nvl(r.knp, 'ВСЕГО:') knp,
+         bt.Name,
+         r.rfpw_id r,
+     sum(r.cnt) cnt,
+     sum(r.col_p) col,
+     sum(r.summa) SM,
+     nvl(CASE WHEN r.rfpm_group = '0701' THEN '2'
+        WHEN r.rfpm_group = '0702' THEN '1'
+        ELSE substr(r.rfpm_group, 4, 1)-- извращение для сортировки
+          END, 'Z') ord
+    From ss_decoding r, rfrc_recipient_last rc, rfbl_bank_list bt, rfpm_payments rfpm
+   Where r.PAY_DATE Between TO_DATE(:dt_from,'YYYY-MM-DD') And TO_DATE(:dt_to,'YYYY-MM-DD')
+     And r.TMST_ID = 103
+     And r.rfrc_id = rc.RFRC_ID
+     And rc.BANK_TYPE = bt.rfbl_Id
+     AND r.rfpm_group = rfpm.rfpm_id
+  Group By Grouping Sets (1,(bt.rfbl_id, bt.Name, r.rfpw_id, r.knp, r.rfpm_group, rfpm.name ))
+  Order By ord, rfpm_group, knp, rfbl_id
 """
 
 
 def format_worksheet(worksheet, common_format):
 
-    worksheet.set_row(2, 40)
-    worksheet.set_row(3, 50)
+    worksheet.set_row(2, 30)
 
     worksheet.set_column(0, 0, 8)
-    worksheet.set_column(1, 1, 30)
-    worksheet.set_column(2, 14, 15)
+    worksheet.set_column(1, 5, 15)
 
-    worksheet.merge_range(2, 0, 3, 0, '№', common_format)
-    worksheet.merge_range(2, 1, 3, 1, 'Код региона', common_format)
-    worksheet.merge_range(2, 2, 2, 3, 'Всего', common_format)
-    worksheet.merge_range(2, 4, 2, 5,'На случай утраты трудоспособности КНП=028', common_format)
-    worksheet.merge_range(2, 6, 2, 7,'На случай потери кормильца КНП=047', common_format)
-    worksheet.merge_range(2, 8, 2, 9,'На случай потери работы КНП=049', common_format)
-    worksheet.merge_range(2, 10, 2, 11,'на случай потери дохода в связи с беременностью и родами, усыновлением (удочерением) новорожденного ребенка (детей) КНП=097', common_format)
-    worksheet.merge_range(2, 12, 2, 13,'на случай потери дохода в связи с уходом за ребенком по достижении им возраста 1,5 лет КНП=092', common_format)
-
-    for start_col in [2, 4, 6, 8, 10, 12]:
-        worksheet.write(3, start_col,     'Кол-во получателей\n(человек)', common_format)
-        worksheet.write(3, start_col + 1, 'Сумма возвратов\n(тыс. тенге)', common_format)
+    worksheet.write(2, 0,'КНП', common_format)
+    worksheet.write(2, 1,'Наименование банка', common_format)
+    worksheet.write(2, 2,'Способ выплаты', common_format)
+    worksheet.write(2, 3,'Кол-во платежей', common_format)
+    worksheet.write(2, 4,'Кол-во получателей', common_format)
+    worksheet.write(2, 5,'Сумма', common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
@@ -229,36 +171,62 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
             all_cnt = len(rows)
 
-            first_row = 5
+            first_row = 4
             row_num = first_row - 1
 
+            # Метки подытогов по кодам КНП
+            knp_subtotal_labels = {
+                '027': 'Итого по утрате трудоспособности',
+                '046': 'Итого по потере кормильца',
+                '048': 'Итого по потере работы',
+                '096': 'Итого по беременности и родам',
+                '091': 'Итого по уходу за ребенком до года/до полутора лет',
+            }
+
+            def write_subtotal(target_row: int, start_row: int, end_row: int, label: str):
+                worksheet[0].merge_range(target_row, 0, target_row, 1, label, title_format)
+                for col in range(2, 6):
+                    col_letter = xl_col_to_name(col)
+                    fmt = total_money_format if col == 5 else total_digital_format
+                    worksheet[0].write_formula(
+                        target_row,
+                        col,
+                        f'=SUM({col_letter}{start_row+1}:{col_letter}{end_row+1})',
+                        fmt
+                    )
+
+            group_start_row = row_num
+            current_knp_code = None
+
             for record in rows:
+                knp_code = str(record[0]).strip() if record[0] is not None else None
+
+                # КНП сменился
+                if current_knp_code is not None and knp_code != current_knp_code:
+                    if current_knp_code in knp_subtotal_labels:
+                        write_subtotal(row_num, group_start_row, row_num - 1, knp_subtotal_labels[current_knp_code])
+                        row_num += 1
+                    # группа сменилась в любом случае — сбрасываем начало новой группы
+                    group_start_row = row_num
+
                 worksheet[0].write(row_num, 0, record[0], digital_format)
                 worksheet[0].write(row_num, 1, record[1], region_name_format)
 
                 worksheet[0].write(row_num, 2, record[2], digital_format)
-                worksheet[0].write(row_num, 3, record[3], money_format)
+                worksheet[0].write(row_num, 3, record[3], digital_format)
 
                 worksheet[0].write(row_num, 4, record[4], digital_format)
                 worksheet[0].write(row_num, 5, record[5], money_format)
 
-                worksheet[0].write(row_num, 6, record[6], digital_format)
-                worksheet[0].write(row_num, 7, record[7], money_format)
-
-                worksheet[0].write(row_num, 8, record[8], digital_format)
-                worksheet[0].write(row_num, 9, record[9], money_format)
-
-                worksheet[0].write(row_num, 10, record[10], digital_format)
-                worksheet[0].write(row_num, 11, record[11], money_format)
-
-                worksheet[0].write(row_num, 12, record[12], digital_format)
-                worksheet[0].write(row_num, 13, record[13], money_format)
-
+                current_knp_code = knp_code
                 row_num += 1
 
+            # Последняя группа перед 'ВСЕГО:'
+            if current_knp_code in knp_subtotal_labels:
+                write_subtotal(row_num, group_start_row, row_num - 1, knp_subtotal_labels[current_knp_code])
+                row_num += 1
 
             worksheet[0].freeze_panes(3, 0)
-            worksheet[0].freeze_panes(4, 0)
 
             now = datetime.datetime.now()
             stop_time = now.strftime("%H:%M:%S")
@@ -283,3 +251,7 @@ def thread_report(file_name: str, date_first: str, date_second: str):
     threading.Thread(target=do_report, args=(file_name, date_first, date_second), daemon=True).start()
     return {"status": 1, "file_path": file_name}
 
+
+if __name__ == "__main__":
+    log.info(f'Отчет {report_code} запускается.')
+    do_report('minSO_01.xlsx', '01.10.2022', '31.10.2022')

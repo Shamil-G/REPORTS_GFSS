@@ -266,29 +266,41 @@ dict_reports = {
                     "params": {"date_first": "С", "date_second": "по"},
                 },
                 "04": {
-                    "name": "Возвраты социальных выплат по получателю",
+                    "name": "3030 - Отчет 9V (для Министерства)",
                     "proc": "rep_dia_3030",
                     "data_approve": "15.04.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "living_time": "at_once",
-                    "meta_params": {
-                        "iin":{
-                            "display_name": "ИИН",
-                            "type": "string",
-                            "length": 12,
-                            "required": True
-                        },
-                    }
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
                 },
                 "05": {
                     "name": "3003 - Оперативные сведения по социальным выплатам",
-                    "proc": "rep_dia_3103",
+                    "proc": "rep_dia_3003",
                     "data_approve": "14.03.2025",
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "06": {
@@ -298,8 +310,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "07": {
@@ -309,8 +329,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "08": {
@@ -320,8 +348,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "09": {
@@ -331,8 +367,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "10": {
@@ -342,8 +386,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "11": {
@@ -353,8 +405,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "12": {
@@ -364,8 +424,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "13": {
@@ -375,8 +443,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "14": {
@@ -386,8 +462,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "15": {
@@ -414,8 +498,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "17": {
@@ -425,19 +517,35 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "18": {
                     "name": "3100 - Ведомость перечисленных социальных выплат в разрезе БВУ",
-                    "proc": "rep_dia_3030",
+                    "proc": "rep_dia_3100",
                     "data_approve": "14.03.2025",
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "19": {
@@ -447,8 +555,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "20": {
@@ -458,8 +574,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "21": {
@@ -469,8 +593,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "24": {
@@ -480,8 +612,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "25": {
@@ -491,8 +631,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "26": {
@@ -513,8 +661,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "217": {
@@ -524,8 +680,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "218": {
@@ -535,8 +699,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "219": {
@@ -546,8 +718,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "220": {
@@ -557,8 +737,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "230": {
@@ -568,8 +756,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "231": {
@@ -624,8 +820,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "02": {
@@ -635,8 +839,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "03": {
@@ -646,8 +858,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "04": {
@@ -657,8 +877,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "05": {
@@ -668,8 +896,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "06": {
@@ -679,8 +915,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "07": {
@@ -690,8 +934,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "08": {
@@ -701,8 +953,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "09": {
@@ -712,8 +972,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "10": {
@@ -723,8 +991,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "11": {
@@ -734,8 +1010,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "12": {
@@ -745,8 +1029,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "13": {
@@ -756,8 +1048,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
             }
@@ -775,8 +1075,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "02": {
@@ -786,8 +1094,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "03": {
@@ -797,8 +1113,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "04": {
@@ -808,8 +1132,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "05": {
@@ -819,8 +1151,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "06": {
@@ -830,8 +1170,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "07": {
@@ -841,8 +1189,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "08": {
@@ -852,8 +1208,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "09": {
@@ -863,8 +1227,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "10": {
@@ -874,8 +1246,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "11": {
@@ -885,8 +1265,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "12": {
@@ -896,8 +1284,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
             }
@@ -915,8 +1311,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "02": {
@@ -926,8 +1330,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "03": {
@@ -937,8 +1349,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "04": {
@@ -948,8 +1368,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "05": {
@@ -959,8 +1387,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "06": {
@@ -970,8 +1406,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "07": {
@@ -981,8 +1425,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "08": {
@@ -992,8 +1444,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "09": {
@@ -1003,8 +1463,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "10": {
@@ -1014,8 +1482,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
             }
@@ -1033,8 +1509,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "02": {
@@ -1044,8 +1528,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "03": {
@@ -1055,8 +1547,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "04": {
@@ -1066,8 +1566,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "05": {
@@ -1077,8 +1585,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "06": {
@@ -1088,8 +1604,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "07": {
@@ -1099,8 +1623,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "08": {
@@ -1110,8 +1642,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
             }
@@ -1129,8 +1669,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "02": {
@@ -1140,8 +1688,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "03": {
@@ -1151,8 +1707,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "04": {
@@ -1162,8 +1726,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "05": {
@@ -1173,8 +1745,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "06": {
@@ -1184,8 +1764,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "07": {
@@ -1195,8 +1783,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "08": {
@@ -1206,8 +1802,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "09": {
@@ -1217,8 +1821,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "10": {
@@ -1228,8 +1840,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "11": {
@@ -1239,8 +1859,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "12": {
@@ -1250,8 +1878,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
             }
@@ -1269,8 +1905,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "02": {
@@ -1280,8 +1924,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "03": {
@@ -1291,8 +1943,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "04": {
@@ -1302,8 +1962,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "05": {
@@ -1313,8 +1981,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "06": {
@@ -1324,8 +2000,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
             }

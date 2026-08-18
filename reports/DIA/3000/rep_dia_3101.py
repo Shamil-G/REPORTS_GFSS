@@ -249,7 +249,7 @@ def do_report(file_name: str, date_first: str, date_second: str):
             for col in range(1, 20):
                 col_letter = xl_col_to_name(col)
 
-                fmt = total_money_format if col in (3, 5, 7, 9, 11, 13, 15, 17) else total_digital_format
+                fmt = total_money_format if col in (3, 5, 7, 9, 11, 13, 15, 17, 19) else total_digital_format
 
                 worksheet[0].write_formula(
                     row_num,
