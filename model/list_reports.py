@@ -266,19 +266,23 @@ dict_reports = {
                     "params": {"date_first": "С", "date_second": "по"},
                 },
                 "04": {
-                    "name": "Возвраты социальных выплат по получателю",
+                    "name": "3030 - Отчет 9V (для Министерства)",
                     "proc": "rep_dia_3030",
                     "data_approve": "15.04.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "living_time": "at_once",
-                    "meta_params": {
-                        "iin":{
-                            "display_name": "ИИН",
-                            "type": "string",
-                            "length": 12,
-                            "required": True
-                        },
-                    }
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
                 },
                 "05": {
                     "name": "3003 - Оперативные сведения по социальным выплатам",
