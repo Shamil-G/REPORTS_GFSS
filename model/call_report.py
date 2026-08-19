@@ -2,9 +2,9 @@ import importlib
 from os import path, mkdir
 
 from   db.connect import select_one, get_connection, plsql_execute
-from   main_app import log
+from   util.logger import log
 from   app_config import REPORT_PATH
-from   gfss_parameter import platform
+from   gfss_parameter import platform, BASE
 from   model.list_reports import dict_reports
 from   model.manage_reports import remove_report
 from   util.trunc_date import get_year
@@ -220,15 +220,33 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
     # Получаем полный путь к файлу - результату
     # log.info(f'CALL_REPORT. PARAMS: {params}')
     if platform == 'unix':
-        from os import fork
-        pid = fork()
-        if pid:
-            return {"status": 1, "file_path": file_name}
-        else:
-            log.info(f'CALL REPORT. CHILD FORK PROCESS. {file_name}')
-            loaded_module.do_report(**params)
+        # ПРЕЖДЕ было: os.fork() прямо внутри gevent-воркера gunicorn.
+        # Дочерний процесс наследовал "мёртвый" event loop (epoll fd, гринлеты)
+        # родителя и общие с ним TCP-сокеты пула Oracle - первый же сетевой
+        # вызов к БД в такой копии падал почти мгновенно (см. разбор логов:
+        # "Пул соединений БД Oracle закрыт (graceful shutdown, ...)" через
+        # 50-200мс после начала запроса, вместо реального завершения отчёта).
+        #
+        # Теперь вместо fork() запускаем ПОЛНОСТЬЮ НОВЫЙ процесс Python через
+        # subprocess - у него нет никакой унаследованной памяти/сокетов/event
+        # loop родительского воркера, поэтому проблема исчезает полностью, а
+        # не маскируется. Сам модуль отчёта (do_report(**params)) не меняется -
+        # report_runner.py просто вызывает его в чистом процессе.
+        import subprocess
+        import sys
+        import json
+
+        log.info(f'CALL REPORT. SPAWN CHILD PROCESS. {file_name}')
+        subprocess.Popen(
+            [sys.executable, '-m', 'report_runner', module_path, json.dumps(params)],
+            cwd=BASE,
+            start_new_session=True,   # не убьётся вместе с воркером при его рестарте
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,  # весь вывод и так идёт через util.logger.log в файл
+            stderr=subprocess.DEVNULL,
+        )
+        return {"status": 1, "file_path": file_name}
     else:
         log.info(f'CALL REPORT. THREAD PROCESS. \nBEG PARAMS ---------------------\n{params}\nEND PARAMS ---------------------')
         result = loaded_module.thread_report(**params)
         return result
-

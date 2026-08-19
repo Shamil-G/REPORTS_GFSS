@@ -1,5 +1,5 @@
 from  db.connect import get_connection, plsql_execute, select_one, plsql_proc_s
-from  main_app import log
+from util.logger import log
 import os
 
 

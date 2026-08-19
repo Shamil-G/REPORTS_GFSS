@@ -1,6 +1,6 @@
 from app_config import URL_LOGIN
 # from gfss_parameter import public_name
-from main_app import log
+from util.logger import log
 import requests
 
 
