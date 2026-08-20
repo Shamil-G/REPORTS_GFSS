@@ -96,7 +96,7 @@ def format_worksheet(worksheet, common_format):
 
     worksheet.set_column(0, 0, 8)
     worksheet.set_column(1, 1, 30)
-    worksheet.set_column(1, 14, 15)
+    worksheet.set_column(1, 40, 15)
 
     worksheet.merge_range(2, 0, 3, 0, 'Код региона', common_format)
     worksheet.merge_range(2, 1, 3, 1, 'Наименование региона', common_format)
