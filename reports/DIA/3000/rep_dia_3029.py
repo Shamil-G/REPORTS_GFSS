@@ -10,11 +10,18 @@ report_name = 'СО по категориям МЗП и регионам (3029)'
 report_code = '3029'
 
 stmt_report = """
-with mzp as (
+with period as(
+   select to_date(:dt_from,'YYYY-MM-DD') dt_from, 
+          to_date(:dt_to,'YYYY-MM-DD') + 1 as dt_to 
+--   select to_date('2026-07-01','YYYY-MM-DD') dt_from, 
+--          to_date('2026-07-31','YYYY-MM-DD') + 1 as dt_to 
+  from dual
+)
+,mzp as (
   Select /*+ PARALLEL(8)*/
       br, SICID, 
-	  --sex, 
-	  LAST_RNN, SUM_PAY, cnt_pay_mnth,
+    --sex, 
+    LAST_RNN, SUM_PAY, cnt_pay_mnth,
       --type_payer,
       case  when cnt_mzp/cnt_pay_mnth   < 1 then 1
             when cnt_mzp/cnt_pay_mnth = 1 then 2
@@ -47,12 +54,12 @@ with mzp as (
                      round(sm.cnt_mzp,3) cnt_mzp,
                      FIRST_VALUE(sm.P_RNN) OVER(PARTITION BY sm.sicid ORDER BY sm.pay_date_gfss DESC) LAST_RNN,
                      FIRST_VALUE(sm.pay_date_gfss) OVER(PARTITION BY sm.sicid ORDER BY sm.pay_date_gfss DESC) LAST_date_gfss
-              FROM SI_MEMBER_2 SM, PERSON P, rfon_organization rf, cato_branch cb
+              FROM SI_MEMBER_2 SM, PERSON P, rfon_organization rf, cato_branch cb, period p
               WHERE SM.KNP = '012'
-			  AND	SM.PAY_DATE_GFSS >= to_date(:dt_from,'YYYY-MM-DD')
-			  and	SM.PAY_DATE_GFSS < to_date(:dt_to,'YYYY-MM-DD') + 1
-              AND   SM.PAY_DATE >= add_months(to_date(:dt_from,'YYYY-MM-DD'),-1) 
-			  AND	SM.PAY_DATE < to_date(:dt_to,'YYYY-MM-DD') + 1
+        AND SM.PAY_DATE_GFSS >= p.dt_from
+        and SM.PAY_DATE_GFSS < p.dt_to
+        AND   SM.PAY_DATE >= add_months(p.dt_from,-1) 
+        AND SM.PAY_DATE < p.dt_to
               AND SM.TYPE_PAYER!='E'
               and sm.SICID = P.SICID
               AND sm.p_rnn=rf.bin(+)
@@ -65,43 +72,45 @@ type_co as
 (
   select /*+ parallel(4)*/
          Unique(s.sicid),
-         sum(case when per.iin=s.p_rnn then 1 else 0 end) sam,
+         sum(case when per.iin=s.p_rnn then 1 else 0 end) ip_sam,
          sum(case when per.iin!=s.p_rnn and substr(s.p_rnn,5,1) not in (0,1,2,3)  then 1 else 0 end) ur,
-         sum(case when per.iin!=s.p_rnn and substr(s.p_rnn,5,1)  in (0,1,2,3)  then 1 else 0 end) fiz
-  from si_member_2 S, person per
+         sum(case when per.iin!=s.p_rnn and S.TYPE_PAYER='I' then 1 else 0 end) fiz,
+         sum(case when S.TYPE_PAYER='SZ' then 1 else 0 end) sz,
+         sum(case when S.TYPE_PAYMENT='P' then 1 else 0 end) pz,
+         sum(case when S.TYPE_PAYMENT='O' then 1 else 0 end) o_pl
+  from si_member_2 S, person per, period p
   where s.sicid=per.sicid 
   AND   S.KNP = '012'
-  AND	S.PAY_DATE_GFSS >= to_date(:dt_from,'YYYY-MM-DD')
-  and	S.PAY_DATE_GFSS < to_date(:dt_to,'YYYY-MM-DD') + 1
-  AND   S.PAY_DATE >= add_months(to_date(:dt_from,'YYYY-MM-DD'),-1) 
-  AND	S.PAY_DATE < to_date(:dt_to,'YYYY-MM-DD') + 1
-  AND	S.TYPE_PAYER!='E'
+  AND S.PAY_DATE_GFSS >= p.dt_from
+  and S.PAY_DATE_GFSS < p.dt_to
+  AND   S.PAY_DATE >= add_months(p.dt_from,-1) 
+  AND S.PAY_DATE < p.dt_to
+  AND S.TYPE_PAYER!='E'
   GROUP BY s.sicid
 )
-SELECT /*+ parallel(4)*/
-	m.kat_mzp,
-    -- m.sex,
-    m.br rfbn_id,--"Код",
-    nvl(br.NAME, 'Не найден') name, --"Наименование",
-    case when a.sam>0 and a.ur=0 and a.fiz=0  then 'ИП'
-        when a.sam=0 and a.ur=0 and a.fiz>0  then 'Наемный физ'
-        when a.sam=0 and a.ur>0 and a.fiz=0  then 'Наемный юр'
-        else 'Смешанный' 
-    end type, 
-    count(a.sicid),
-    sum(m.sum_pay)
-FROM  type_co a, mzp m, rfbn_branch br 
-WHERE a.sicid = m.sicid
-AND   m.br||'00'= br.RFBN_ID(+)
-GROUP BY m.kat_mzp, 
-     -- m.sex,
-     m.br, 
-     nvl(br.NAME, 'Не найден'), 
-     case  when a.sam>0 and a.ur=0 and a.fiz=0  then 'ИП'
-           when a.sam=0 and a.ur=0 and a.fiz>0  then 'Наемный физ'
-           when a.sam=0 and a.ur>0 and a.fiz=0  then 'Наемный юр'
-           else 'Смешанный' 
-     end
+select kat_mzp, rfbn_id, type, count(sicid) as cnt_sicid, sum(sum_pay) as sum_pay
+from (
+  SELECT /*+ parallel(4)*/
+      m.kat_mzp,
+      -- m.sex,
+      m.br rfbn_id,--"Код",
+      nvl(br.NAME, 'Не найден') name, --"Наименование",
+      case when a.ip_sam>0 and a.fiz=0 and a.ur=0  and a.sz=0 and a.pz=0 and a.o_pl=0 then 'ИП'
+          when a.fiz>0 and a.ip_sam=0 and a.ur=0 and a.sz=0 and a.pz=0 and a.o_pl=0 then 'Наемный физ'
+          when a.ur>0 and a.ip_sam=0 and a.fiz=0 and a.sz=0 and a.pz=0 and a.o_pl=0 then 'Наемный юр'
+          when a.sz>0 and a.ip_sam=0 and a.fiz=0 and a.ur=0 and a.pz=0 and a.o_pl=0 then 'Самозанятые'
+          when a.pz>0 and a.ip_sam=0 and a.fiz=0 and a.ur=0 and a.sz=0 and a.o_pl=0 then 'Платформенная занятость'
+          when a.o_pl>0 and a.ip_sam=0 and a.fiz=0 and a.ur=0 and a.sz=0 and a.pz=0 then 'Объединенный платёж'
+          when a.fiz>0 and a.ur>0 and a.ip_sam=0 and a.sz=0 and a.pz=0 then 'Смешанный физ+юр'
+          else 'Смешанный' 
+      end type, 
+      a.sicid,
+      m.sum_pay
+  FROM  type_co a, mzp m, rfbn_branch br 
+  WHERE a.sicid = m.sicid
+  AND   m.br||'00'= br.RFBN_ID(+)
+)
+GROUP BY kat_mzp, rfbn_id, type
 ORDER BY 1,2,4
 """
 
