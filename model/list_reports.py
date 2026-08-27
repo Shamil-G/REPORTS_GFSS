@@ -605,6 +605,26 @@ dict_reports = {
                             }
                         }
                 },
+                "22": {
+                    "name": "3104 - Список, возвратов ОПВ",
+                    "proc": "rep_dia_3104",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "knp": {
+                                "display_name": "КНП",
+                                "type": "string",
+                                "length": 3,
+                                "required": True
+                            }
+                        }
+                },
                 "24": {
                     "name": "3106 - Отчет о возвратах СО в разрезе видов ошибок",
                     "proc": "rep_dia_3106",
@@ -635,11 +655,6 @@ dict_reports = {
                                 "display_name": "C",
                                 "type": "date",
                                 "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
                             }
                         }
                 },
@@ -654,7 +669,7 @@ dict_reports = {
                             "date_second": DATE_TO
                         }
                 },
-                "216": {
+                "27": {
                     "name": "3109 - Количество взносов участников СОСС",
                     "proc": "rep_dia_3109",
                     "data_approve": "14.03.2025",
@@ -673,7 +688,7 @@ dict_reports = {
                             }
                         }
                 },
-                "217": {
+                "28": {
                     "name": "3110 - Численность участников СОСС, в разрезе пола и возраста",
                     "proc": "rep_dia_3110",
                     "data_approve": "14.03.2025",
@@ -692,7 +707,7 @@ dict_reports = {
                             }
                         }
                 },
-                "218": {
+                "29": {
                     "name": "3111 - Женщины-участники СОСС 50+, СО по БИН и ИИН",
                     "proc": "rep_dia_3111",
                     "data_approve": "14.03.2025",
@@ -711,7 +726,7 @@ dict_reports = {
                             }
                         }
                 },
-                "219": {
+                "30": {
                     "name": "3112 - Женщины-участники СОСС 50+, СО от нескольких работодателей",
                     "proc": "rep_dia_3112",
                     "data_approve": "14.03.2025",
@@ -730,7 +745,7 @@ dict_reports = {
                             }
                         }
                 },
-                "220": {
+                "31": {
                     "name": "3113 - Перевод денежных средств в АО 'ГФСС'",
                     "proc": "rep_dia_3113",
                     "data_approve": "14.03.2025",
@@ -749,7 +764,7 @@ dict_reports = {
                             }
                         }
                 },
-                "230": {
+                "32": {
                     "name": "3122 - Сведения о числе получателей, количестве и суммах выплат",
                     "proc": "rep_dia_3122",
                     "data_approve": "14.03.2025",
@@ -768,7 +783,7 @@ dict_reports = {
                             }
                         }
                 },
-                "231": {
+                "33": {
                     "name": "3123 - Сведения о числе получателей по области",
                     "proc": "rep_dia_3123",
                     "data_approve": "14.03.2025",
@@ -780,7 +795,7 @@ dict_reports = {
                             "rfbn_id": { **LIST_REGION, "required": True }
                         }
                 },
-                "232": {
+                "34": {
                     "name": "3124 - Сведения о размерах выплат по районам",
                     "proc": "rep_dia_3124",
                     "data_approve": "14.03.2025",
@@ -792,7 +807,7 @@ dict_reports = {
                         "rfbn_id": { **LIST_REGION, "required": True }
                     }
                 },
-                "233": 
+                "35":
                 {
                     "name": "3125 - Сведения о числе получателей по полу по районам",
                     "proc": "rep_dia_3125",

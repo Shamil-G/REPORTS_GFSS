@@ -192,8 +192,8 @@ def do_report(file_name: str, date_first: str, date_second: str):
                 worksheet[0].write(row_num, 0, record[0], digital_format)
                 worksheet[0].write(row_num, 1, record[1], region_name_format)
                 worksheet[0].write(row_num, 2, record[2], digital_format)
-                worksheet[0].write(row_num, 3, record[3], digital_format)
-                worksheet[0].write(row_num, 4, record[4], money_format)
+                worksheet[0].write(row_num, 3, record[4], digital_format)
+                worksheet[0].write(row_num, 4, record[3], money_format)
 
                 row_num += 1
 
