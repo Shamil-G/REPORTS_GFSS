@@ -2374,9 +2374,24 @@ dict_reports = {
                             "required": True
                         }
                     }
-                }   
-            }
+                },  
+                "02": {
+                    "name": "Списки получателей выплат по регионам и кодам выплат",
+                    "proc": "rep_dia_list_02",
+                    "data_approve": "26.08.2026",
+                    "author": "Гусейнов Ш.А.",
+                    "meta_params": {
+                        "date_first": DATE_FROM,
+                        "date_second": DATE_TO,
+                        "rfbn_id": LIST_REGION,
+                        "rfpm_id": {**LIST_RFPM, "required": False},
+                    }
+                },                  
+            },
+            
+
         },
+      
     }
     ,
     "ДСР":
