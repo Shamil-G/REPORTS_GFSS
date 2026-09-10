@@ -54,6 +54,34 @@ LIST_RFPM = {
 dict_reports = {
     "ДИА": 
     {
+        "500":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.500",
+            "live_time": 0,
+            "reports":
+                {
+                    "01": {
+                        "name": "501 - Сведения о количестве участников СОСС",
+                        "proc": "rep_dia_501",
+                        "data_approve": "14.03.2025",
+                        "author": "Туржанова Ж.Е.",
+                        "meta_params":
+                            {
+                                "date_first": {
+                                    "display_name": "C",
+                                    "type": "date",
+                                    "required": True
+                                },
+                                "region": {
+                                    "display_name": "Филиал",
+                                    "type": "string",
+                                    "length": 4,
+                                    "required": True
+                                }
+                            }
+                    }
+                }
+        },
         "1501" : 
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.1501",
@@ -481,8 +509,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO,
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            },
                             "knp": {
                                 "display_name": "КНП",
                                 "type": "string",
@@ -665,8 +701,16 @@ dict_reports = {
                     "author": "Туржанова Ж.Е.",
                     "meta_params":
                         {
-                            "date_first": DATE_FROM,    
-                            "date_second": DATE_TO
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
                         }
                 },
                 "27": {
