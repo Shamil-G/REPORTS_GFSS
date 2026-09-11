@@ -34,7 +34,8 @@ s.* from (
       AND p.branchid = br.RFBN_ID
       AND pd.cipher_id_knp = :knp
       AND pd.tmst_id = 5
-      AND pd.pay_date = TO_DATE(:dt_from,'YYYY-MM-DD')
+      AND pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
+      AND pd.pay_date < TO_DATE(:dt_to,'YYYY-MM-DD')
     ORDER BY 1, 6, 7
 ) s
 """
@@ -63,7 +64,7 @@ def format_worksheet(worksheet, common_format):
     worksheet.write(3, 6,'Дата платежного поручения', common_format)
 
 
-def do_report(file_name: str, date_first: str, knp: str):
+def do_report(file_name: str, date_first: str, date_second: str, knp: str):
     if os.path.isfile(file_name):
         log.info(f'Отчет уже существует {file_name}')
         return file_name
@@ -163,7 +164,7 @@ def do_report(file_name: str, date_first: str, knp: str):
             log.info(f'REPORT {report_code}. CREATING REPORT')
 
             try:
-                cursor.execute(stmt_report, dt_from=date_first, knp=knp)
+                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second, knp=knp)
             except oracledb.DatabaseError as e:
                 error, = e.args
                 log.error(f"ERROR. REPORT {report_code}. error_code: {error.code}, error: {error.message}")
@@ -224,14 +225,14 @@ def do_report(file_name: str, date_first: str, knp: str):
                 f'REPORT: {report_code}. Формирование отчета {file_name} завершено ({s_date} - {stop_time}). Загружено {all_cnt} записей')
 
 
-def thread_report(file_name: str, date_first: str, knp: str):
+def thread_report(file_name: str, date_first: str, date_second: str, knp: str):
     import threading
     log.info(f'THREAD REPORT. {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} -> {file_name}')
-    log.info(f'THREAD REPORT. PARAMS: date_from: {date_first}')
-    threading.Thread(target=do_report, args=(file_name, date_first, knp), daemon=True).start()
+    log.info(f'THREAD REPORT. PARAMS: date_from: {date_first}, date_to: {date_second}')
+    threading.Thread(target=do_report, args=(file_name, date_first, date_second, knp), daemon=True).start()
     return {"status": 1, "file_path": file_name}
 
 
 if __name__ == "__main__":
     log.info(f'Отчет {report_code} запускается.')
-    do_report('minSO_01.xlsx', '01.10.2022')
+    do_report('minSO_01.xlsx', '01.10.2022', '31.10.2022', '012')
