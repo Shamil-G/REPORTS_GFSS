@@ -284,158 +284,158 @@ dict_reports = {
                             }
                         }
                 },
-                "05": {
-                    "name": "3003 - Оперативные сведения по социальным выплатам",
-                    "proc": "rep_dia_3003",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "06": {
-                    "name": "3004 - Сведения о градации состоявшихся получателей социальных выплат",
-                    "proc": "rep_dia_3104",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "07": {
-                    "name": "3005 - Сведения о градации вновь назначенных получателей социальных выплат",
-                    "proc": "rep_dia_3105",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "08": {
-                    "name": "3007 - Сведения о градации по годам назначения",
-                    "proc": "rep_dia_3007",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "09": {
-                    "name": "3008 - Сведения о половозрастной структуре получателей",
-                    "proc": "rep_dia_3108",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "10": {
-                    "name": "3009 - Сведения о численности получателей, за которых производятся ОПВ",
-                    "proc": "rep_dia_3109",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "11": {
-                    "name": "3011 - Сведения по первому разделу",
-                    "proc": "rep_dia_3011",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "12": {
-                    "name": "3012 - Сведения по первому разделу в разрезе областей",
-                    "proc": "rep_dia_3012",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
+                # "05": {
+                #     "name": "3003 - Оперативные сведения по социальным выплатам",
+                #     "proc": "rep_dia_3003",
+                #     "data_approve": "14.03.2025",
+                #     "author": "Туржанова Ж.Е.",
+                #     "meta_params":
+                #         {
+                #             "date_first": {
+                #                 "display_name": "C",
+                #                 "type": "date",
+                #                 "required": True
+                #             },
+                #             "date_second": {
+                #                 "display_name": "по",
+                #                 "type": "date",
+                #                 "required": True
+                #             }
+                #         }
+                # },
+                # "06": {
+                #     "name": "3004 - Сведения о градации состоявшихся получателей социальных выплат",
+                #     "proc": "rep_dia_3004",
+                #     "data_approve": "14.03.2025",
+                #     "author": "Туржанова Ж.Е.",
+                #     "meta_params":
+                #         {
+                #             "date_first": {
+                #                 "display_name": "C",
+                #                 "type": "date",
+                #                 "required": True
+                #             },
+                #             "date_second": {
+                #                 "display_name": "по",
+                #                 "type": "date",
+                #                 "required": True
+                #             }
+                #         }
+                # },
+                # "07": {
+                #     "name": "3005 - Сведения о градации вновь назначенных получателей социальных выплат",
+                #     "proc": "rep_dia_3105",
+                #     "data_approve": "14.03.2025",
+                #     "author": "Туржанова Ж.Е.",
+                #     "meta_params":
+                #         {
+                #             "date_first": {
+                #                 "display_name": "C",
+                #                 "type": "date",
+                #                 "required": True
+                #             },
+                #             "date_second": {
+                #                 "display_name": "по",
+                #                 "type": "date",
+                #                 "required": True
+                #             }
+                #         }
+                # },
+                # "08": {
+                #     "name": "3007 - Сведения о градации по годам назначения",
+                #     "proc": "rep_dia_3007",
+                #     "data_approve": "14.03.2025",
+                #     "author": "Туржанова Ж.Е.",
+                #     "meta_params":
+                #         {
+                #             "date_first": {
+                #                 "display_name": "C",
+                #                 "type": "date",
+                #                 "required": True
+                #             },
+                #             "date_second": {
+                #                 "display_name": "по",
+                #                 "type": "date",
+                #                 "required": True
+                #             }
+                #         }
+                # },
+                # "09": {
+                #     "name": "3008 - Сведения о половозрастной структуре получателей",
+                #     "proc": "rep_dia_3108",
+                #     "data_approve": "14.03.2025",
+                #     "author": "Туржанова Ж.Е.",
+                #     "meta_params":
+                #         {
+                #             "date_first": {
+                #                 "display_name": "C",
+                #                 "type": "date",
+                #                 "required": True
+                #             },
+                #             "date_second": {
+                #                 "display_name": "по",
+                #                 "type": "date",
+                #                 "required": True
+                #             }
+                #         }
+                # },
+                # "10": {
+                #     "name": "3009 - Сведения о численности получателей, за которых производятся ОПВ",
+                #     "proc": "rep_dia_3109",
+                #     "data_approve": "14.03.2025",
+                #     "author": "Туржанова Ж.Е.",
+                #     "meta_params":
+                #         {
+                #             "date_first": {
+                #                 "display_name": "C",
+                #                 "type": "date",
+                #                 "required": True
+                #             },
+                #             "date_second": {
+                #                 "display_name": "по",
+                #                 "type": "date",
+                #                 "required": True
+                #             }
+                #         }
+                # },
+                # "11": {
+                #     "name": "3011 - Сведения по первому разделу",
+                #     "proc": "rep_dia_3011",
+                #     "data_approve": "14.03.2025",
+                #     "author": "Туржанова Ж.Е.",
+                #     "meta_params":
+                #         {
+                #             "date_first": {
+                #                 "display_name": "C",
+                #                 "type": "date",
+                #                 "required": True
+                #             },
+                #             "date_second": {
+                #                 "display_name": "по",
+                #                 "type": "date",
+                #                 "required": True
+                #             }
+                #         }
+                # },
+                # "12": {
+                #     "name": "3012 - Сведения по первому разделу в разрезе областей",
+                #     "proc": "rep_dia_3012",
+                #     "data_approve": "14.03.2025",
+                #     "author": "Туржанова Ж.Е.",
+                #     "meta_params":
+                #         {
+                #             "date_first": {
+                #                 "display_name": "C",
+                #                 "type": "date",
+                #                 "required": True
+                #             },
+                #             "date_second": {
+                #                 "display_name": "по",
+                #                 "type": "date",
+                #                 "required": True
+                #             }
+                #         }
+                # },
                 "13": {
                     "name": "3016 - Реестр сумм возвратов социальных выплат(3107)",
                     "proc": "rep_dia_3016",
@@ -614,6 +614,11 @@ dict_reports = {
                         {
                             "date_first": {
                                 "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
                                 "type": "date",
                                 "required": True
                             },
