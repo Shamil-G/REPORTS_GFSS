@@ -87,6 +87,8 @@ def _build_formats(workbook):
             'align': 'left', 'valign': 'vcenter', 'font_size': 12, 'bold': True}),
         'period': workbook.add_format({
             'align': 'right', 'valign': 'vcenter', 'font_size': 11, 'italic': True}),
+        'subtitle': workbook.add_format({
+            'align': 'left', 'valign': 'vcenter', 'font_size': 11, 'italic': True}),
         'header': workbook.add_format({
             'bold': True, 'align': 'center', 'valign': 'vcenter', 'font_size': 11,
             'border': 1, 'bg_color': '#E0F7FF', 'text_wrap': True}),
@@ -192,8 +194,11 @@ def build_report(*, code, name, columns, stmt,
 
         _merge(ws, TITLE_ROW, 0, TITLE_ROW, total_cols - 1, title, fmt['title'])
         ws.write(CODE_ROW, 0, code, fmt['code'])
+        # Справа в этой же строке будет дата формирования - её пишет
+        # _write_stamp() уже после выгрузки данных, когда известно время
+        # окончания. Поэтому подпись периода стоит слева, рядом с кодом.
         if subtitle:
-            ws.write(CODE_ROW, total_cols - 1, subtitle, fmt['period'])
+            ws.write(CODE_ROW, 1, subtitle, fmt['subtitle'])
 
         ws.set_column(0, 0, 6)
         for i, c in enumerate(leaves, start=1):
@@ -242,6 +247,19 @@ def build_report(*, code, name, columns, stmt,
                                 else fmt['total_money'])
             else:
                 ws.write_blank(row, i, None, fmt['total_text'])
+
+    def _write_stamp(sheets, start_time):
+        """Дата и время формирования - справа в строке с кодом отчёта.
+
+        Формулировка и место как в остальных отчётах проекта (dsr_01,
+        rep_aktuar_0702_01 и др.). Пишется в самом конце: раньше время
+        окончания неизвестно.
+        """
+        stop_time = datetime.datetime.now()
+        stamp = (f'Дата формирования: {stop_time:%d.%m.%Y} '
+                 f'({start_time:%H:%M:%S} - {stop_time:%H:%M:%S})')
+        for ws in sheets:
+            ws.write(CODE_ROW, total_cols - 1, stamp, fmt['period'])
 
     def _write_sql_sheet(workbook):
         sheet = workbook.add_worksheet('SQL')
@@ -324,6 +342,7 @@ def build_report(*, code, name, columns, stmt,
                     sheets[-1].merge_range(row + 1, 0, row + 2, total_cols - 1,
                                            footnote, fmt['footnote'])
 
+                _write_stamp(sheets, start_time)
                 _write_sql_sheet(workbook)
                 sheets[0].activate()
 
