@@ -1,5 +1,7 @@
 from app_config import REPORT_MODULE_PATH
 from regions import regions
+from util.period import period_choices
+from datetime import date
 import re
 
 # live_time - время жизни отчета в часах, может указываться с 2 знаками после запятой
@@ -37,8 +39,43 @@ DATE_TO = {
     "length": None
 }
 
-# Список кодов вывыплаты для выпадающего списка:    
-LIST_RFPM = { 
+# Параметры отчётов, перенесённых из REP_STAT_EXTEND: вместо ~135 процедур-обёрток
+# app_NN_1m / _2k / _3hy / _4_9m / _5y отчётный период стал обычным параметром.
+#
+# Год и период - выпадающие списки, а не поля ввода: руками в поле можно набрать
+# что угодно, вплоть до букв.
+
+# Значения, зависящие от текущей даты. Считаются не здесь, а при каждом показе
+# формы (model/reports_info.py), иначе список годов застынет на дате импорта
+# модуля и после Нового года в нём не будет текущего года.
+DYNAMIC_VALUES = {
+    "years": lambda: {str(y): str(y)
+                      for y in range(date.today().year, 2004, -1)},
+    "current_year": lambda: str(date.today().year),
+    "current_month": lambda: f"1.{date.today().month}",
+}
+
+REP_YEAR = {
+    "display_name": "Год",
+    "type": "list",
+    "required": True,
+    "values": {},                  # заполняется из DYNAMIC_VALUES
+    "dynamic": {"values": "years", "default": "current_year"},
+}
+# Одно поле вместо пары "тип периода" + "№ периода": значение "2.3" несёт и то,
+# и другое (см. util/period.py). Номер периода сам по себе пользователю ничего
+# не говорит, поэтому отдельным полем не показывается.
+# По умолчанию текущий месяц: годовой отчёт снимается раз в год, месячный - всегда.
+PERIOD = {
+    "display_name": "Период",
+    "type": "list",
+    "required": True,
+    "values": period_choices(),
+    "dynamic": {"default": "current_month"},
+}
+
+# Список кодов вывыплаты для выпадающего списка:
+LIST_RFPM = {
             "display_name": "Выберите код выплаты",
             "type": "list",
             "length": 4,
@@ -2593,7 +2630,7 @@ dict_reports = {
                         "date_first": DATE_FROM,
                         "date_second": DATE_TO
                     }
-                } 
+                }
                 ,
                 "07": {
                     "name": "Необратившиеся отказные",
@@ -2605,9 +2642,32 @@ dict_reports = {
                         "date_first": DATE_FROM,
                         "date_second": DATE_TO
                     }
-                }                
+                }
             }
         }
     }
-    ,    
+    ,
+    # Перенос пакета REP_STAT_EXTEND. Ключ отчёта = номер приложения,
+    # он же group_id в старом реестре вызовов (32 -> 1320, 50 -> 1500).
+    "ДАУС":
+    {
+        "Приложения Минтруда": {
+            "live_time": 24,
+            "module_dir": f"{REPORT_MODULE_PATH}.DAUS",
+            "reports":
+            {
+                "32": {
+                    "name": "32 — Получатели и суммы СВ по видам риска",
+                    "proc": "app_32",
+                    "data_approve": "28.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+            }
+        }
+    }
+    ,
 }

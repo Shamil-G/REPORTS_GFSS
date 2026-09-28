@@ -1,0 +1,130 @@
+# -*- coding: utf-8 -*-
+"""Границы отчётного периода. Порт REP_STAT_EXTEND.SetDateBound.
+
+Интервал полуоткрытый: [d_from, d_to), верхняя граница исключительная.
+В SQL отчётов всегда `>= :d_from and < :d_to` - форма `between d_from and d_to`
+не даёт Oracle использовать индекс по дате и в переносимых отчётах заменяется.
+
+Одна эта функция заменяет ~135 процедур-обёрток app_NN_1m / _2k / _3hy /
+_4_9m / _5y: в PL/SQL тип периода был зашит в имя процедуры, здесь это параметр.
+"""
+from datetime import date, timedelta
+
+# Нумерацию менять нельзя: она зашита в параметры запуска у пользователей.
+PERIOD_NAMES = {
+    1: 'месяц',
+    2: 'квартал',
+    3: 'полугодие',
+    4: '9 месяцев',
+    5: 'год',
+    6: '24 месяца',
+    7: 'месяцев',
+}
+
+_LIMITS = {1: 12, 2: 4, 3: 2, 6: 4, 7: 12}   # допустимый date_start по типу
+_STEP = {1: 1, 2: 3, 3: 6}                   # длина периода в месяцах
+
+_MONTHS_RU = ('январь', 'февраль', 'март', 'апрель', 'май', 'июнь',
+              'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь', 'декабрь')
+_ROMAN = ('I', 'II', 'III', 'IV')
+
+STD_TYPES = (1, 2, 3, 4, 5)      # набор периодов, доступный обычному отчёту
+
+
+def _add_months(d: date, n: int) -> date:
+    m = d.month - 1 + n
+    return date(d.year + m // 12, m % 12 + 1, 1)
+
+
+def period_bounds(rep_year, date_type, date_start=None):
+    """Год + тип периода + номер -> (d_from, d_to), d_to исключительная."""
+    y, t = int(rep_year), int(date_type)
+    s = int(date_start) if date_start not in (None, '') else 0
+
+    if not 2005 <= y <= date.today().year:
+        raise ValueError(f'Неправильное значение года: {rep_year}')
+    if t not in PERIOD_NAMES:
+        raise ValueError(f'Неправильный тип периода: {date_type}')
+    if t in _LIMITS and not 1 <= s <= _LIMITS[t]:
+        raise ValueError(f'Неправильный номер периода: {date_start} '
+                         f'(тип {t}, допустимо 1..{_LIMITS[t]})')
+
+    jan = date(y, 1, 1)
+    if t in _STEP:
+        d_from = _add_months(jan, (s - 1) * _STEP[t])
+        return d_from, _add_months(d_from, _STEP[t])
+    if t == 4:
+        return jan, _add_months(jan, 9)
+    if t == 5:
+        return jan, _add_months(jan, 12)
+    if t == 6:
+        d_from = _add_months(jan, 3 * s - 24)
+        return d_from, _add_months(d_from, 24)
+    return jan, _add_months(jan, s)          # t == 7
+
+
+def year_start(rep_year) -> date:
+    """Начало года для колонок «с начала года». В PL/SQL: trunc(p_DatE,'YEAR')."""
+    return date(int(rep_year), 1, 1)
+
+
+def last_day(d_to: date) -> date:
+    """Последний день периода - только для показа в шапке, не для SQL."""
+    return d_to - timedelta(days=1)
+
+
+def period_choices(types=STD_TYPES) -> dict:
+    """Готовый список конкретных периодов для выпадающего списка формы.
+
+    Ключ - "<тип>.<номер>", то есть сразу пара аргументов period_bounds().
+    Два поля ("тип периода" и отдельно "номер периода") пользователю показывать
+    нельзя: номер сам по себе ничего не значит и читается как загадка.
+    """
+    out = {}
+    for t in types:
+        if t == 1:
+            out.update({f'1.{m}': _MONTHS_RU[m - 1] for m in range(1, 13)})
+        elif t == 2:
+            out.update({f'2.{q}': f'{_ROMAN[q - 1]} квартал' for q in range(1, 5)})
+        elif t == 3:
+            out.update({f'3.{h}': f'{h} полугодие' for h in (1, 2)})
+        elif t == 4:
+            out['4.0'] = '9 месяцев'
+        elif t == 5:
+            out['5.0'] = 'год'
+        elif t == 6:
+            out.update({f'6.{q}': f'24 месяца по {_ROMAN[q - 1]} квартал включительно'
+                        for q in range(1, 5)})
+        elif t == 7:
+            out.update({f'7.{m}': f'с начала года по {_MONTHS_RU[m - 1]}'
+                        for m in range(1, 13)})
+    return out
+
+
+_ALL_CHOICES = period_choices(tuple(PERIOD_NAMES))
+
+
+def split_period(value):
+    """"2.3" -> (2, 3). Разбор значения из выпадающего списка формы."""
+    t, _, s = str(value).partition('.')
+    return int(t), int(s or 0)
+
+
+def period_name(date_type, date_start=None) -> str:
+    """Короткое имя периода без года: "сентябрь", "II квартал", "год"."""
+    t = int(date_type)
+    s = int(date_start) if date_start not in (None, '') else 0
+    name = _ALL_CHOICES.get(f'{t}.{s}')
+    if name is None:
+        raise ValueError(f'Неправильный период: тип {date_type}, номер {date_start}')
+    return name
+
+
+def period_label(rep_year, date_type, date_start=None) -> str:
+    """Подпись периода для шапки отчёта - теми же словами, что в форме.
+
+    В PL/SQL собиралась вручную в каждом Rep_app_NN через v_rep_list_month.
+    """
+    y = int(rep_year)
+    name = period_name(date_type, date_start)
+    return f'{y} год' if int(date_type) == 5 else f'{name} {y} года'

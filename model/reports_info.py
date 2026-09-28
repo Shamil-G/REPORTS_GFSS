@@ -1,6 +1,25 @@
 from flask import session,redirect, url_for
 from util.logger import log
-from model.list_reports import dict_reports
+from model.list_reports import dict_reports, DYNAMIC_VALUES
+
+
+def resolve_dynamic(meta_params: dict) -> dict:
+    """Подставляет значения, зависящие от текущей даты.
+
+    Описание параметра может нести ключ "dynamic" - карту "имя поля -> имя
+    вычислителя из DYNAMIC_VALUES". Считать их при импорте нельзя: meta_params
+    живёт в dict_reports всё время работы процесса и попадает в сессию
+    пользователя, поэтому список годов застыл бы на дате старта приложения.
+    Результат - обычные словари, они нормально сериализуются в сессию.
+    """
+    resolved = {}
+    for key, val in meta_params.items():
+        if isinstance(val, dict) and "dynamic" in val:
+            val = {k: v for k, v in val.items() if k != "dynamic"}
+            for field, name in meta_params[key]["dynamic"].items():
+                val[field] = DYNAMIC_VALUES[name]()
+        resolved[key] = val
+    return resolved
 
 
 def get_owner_reports():
@@ -33,7 +52,7 @@ def get_list_reports():
             "num": num_rep,
             "name": rep["name"],
             "params": rep.get("params", {}),
-            "meta_params": rep.get("meta_params", {})
+            "meta_params": resolve_dynamic(rep.get("meta_params", {}))
         }
         for num_rep, rep in group["reports"].items()
     ]
