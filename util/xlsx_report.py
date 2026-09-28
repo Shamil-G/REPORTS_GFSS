@@ -24,8 +24,8 @@ import xlsxwriter
 from db.connect import select_2, DEFAULT_PROFILE
 from model.manage_reports import set_status_report
 from util.logger import log
-from util.period import (period_bounds, period_label, period_word,
-                         split_period, year_start)
+from util.period import (period_bounds, period_word, split_period, year_start,
+                         period_label as _default_period_label)
 
 STATUS_DONE = 2
 STATUS_ERROR = 3
@@ -177,9 +177,12 @@ def build_report(*, code, name, columns, stmt,
                  totals=False,
                  footnote=None,
                  blank_zero=False,
+                 period_label=None,   # см. make_period_label() в util/period.py
                  sheet_name='Отчёт',
                  max_rows=500_000):
     """Собирает отчёт из описания. Возвращает (do_report, thread_report)."""
+    # формулировка подписи периода у каждого отчёта своя, по умолчанию - общая
+    label_of = period_label or _default_period_label
     leaves = _leaves(columns)
     header_depth = _depth(columns)
     data_row0 = HEADER_ROW + header_depth
@@ -279,7 +282,7 @@ def build_report(*, code, name, columns, stmt,
             d_from, d_to = period_bounds(rep_year, date_type, date_start)
             candidates.update(d_from=d_from, d_to=d_to,
                               y_from=year_start(rep_year))
-            phrase = period_label(rep_year, date_type, date_start)
+            phrase = label_of(rep_year, date_type, date_start)
             word = period_word(date_type)
             # период либо встроен в название (как было в PL/SQL), либо
             # выводится отдельной подписью справа

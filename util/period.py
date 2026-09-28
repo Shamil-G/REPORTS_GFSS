@@ -132,18 +132,41 @@ def period_word(date_type) -> str:
     return _PERIOD_WORD[int(date_type)]
 
 
-def period_label(rep_year, date_type, date_start=None) -> str:
-    """Подпись периода для шапки отчёта.
+# Формулировка подписи периода у каждого отчёта своя: у приложения 32 это
+# "Август месяц 2026 года", у 52-го - ", за Август2026 года" (пробела перед
+# годом в оригинале нет). Тексты официальной отчётности согласованы, поэтому
+# шаблоны задаются в самом отчёте и копируются из исходника дословно.
+# Здесь - формулировки приложения 32, они же значения по умолчанию.
+PERIOD_LABEL_DEFAULT = {
+    1: '{Month} месяц {year} года',
+    2: '{roman} квартал {year} года',
+    3: '{n} полугодие {year} года',
+    4: '9 месяцев {year} года',
+    5: '{year} год',
+    6: '24 месяца по {roman} квартал {year} года',
+    7: 'с начала года по {month} {year} года',
+}
 
-    Для месяца повторяет формулировку PL/SQL дословно ("Август месяц 2026
-    года"): в Rep_app_NN она собиралась как v_rep_list_month.cap || ' месяц '
-    || год || ' года'. Тексты официальной отчётности согласованы, менять их
-    нельзя.
+
+def make_period_label(overrides=None):
+    """Возвращает функцию подписи периода по шаблонам отчёта.
+
+    Подстановки: {year} - 2026, {month} - август, {Month} - Август,
+    {n} - номер периода цифрой, {roman} - I..IV.
+    overrides перекрывает нужные типы периода, остальные берутся по умолчанию.
     """
-    y, t = int(rep_year), int(date_type)
-    name = period_name(t, date_start)
-    if t == 1:
-        return f'{name.capitalize()} месяц {y} года'
-    if t == 5:
-        return f'{y} год'
-    return f'{name} {y} года'
+    tpl = {**PERIOD_LABEL_DEFAULT, **(overrides or {})}
+
+    def label(rep_year, date_type, date_start=None) -> str:
+        y, t = int(rep_year), int(date_type)
+        s = int(date_start) if date_start not in (None, '') else 0
+        if t not in tpl:
+            raise ValueError(f'Нет шаблона подписи для типа периода {date_type}')
+        month = _MONTHS_RU[s - 1] if 1 <= s <= 12 else ''
+        return tpl[t].format(year=y, n=s, month=month,
+                             Month=month.capitalize(),
+                             roman=_ROMAN[s - 1] if 1 <= s <= 4 else '')
+    return label
+
+
+period_label = make_period_label()
