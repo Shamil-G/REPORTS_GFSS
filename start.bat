@@ -12,6 +12,6 @@ rem pip install openpyxl
 rem pip install requests
 rem pip install ldap3
 rem pip freeze > requirements.txt
-pip install dotenv
+rem pip install dotenv
 python main_app.py
 rem gunicorn
