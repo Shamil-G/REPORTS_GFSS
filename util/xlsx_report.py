@@ -24,7 +24,8 @@ import xlsxwriter
 from db.connect import select_2, DEFAULT_PROFILE
 from model.manage_reports import set_status_report
 from util.logger import log
-from util.period import period_bounds, period_label, split_period, year_start
+from util.period import (period_bounds, period_label, period_word,
+                         split_period, year_start)
 
 STATUS_DONE = 2
 STATUS_ERROR = 3
@@ -36,6 +37,13 @@ HEADER_ROW = 3          # первая строка шапки таблицы
 
 _BIND_RE = re.compile(r':([A-Za-z_]\w*)')
 
+# Подстановки в текстах отчёта. Нужны там, где формулировка официальной
+# отчётности зависит от выбранного периода: в PL/SQL период был зашит в
+# название ("... по состоянию на Август месяц 2026 года"), а подзаголовок
+# всегда читался "в отчетном месяце", потому что других периодов не было.
+PERIOD_SLOT = '{period}'            # в name: подставляется "Август месяц 2026 года"
+PERIOD_WORD_SLOT = '{period_word}'  # в заголовке колонки: "месяце", "квартале"
+
 
 @dataclass
 class Col:
@@ -44,8 +52,11 @@ class Col:
     key: str
     kind: str = 'text'        # text | center | int | money | avg | date
     width: int = 14
-    # только для kind='avg': (колонка суммы, колонка количества).
-    # Итог считается как sum(числитель)/sum(знаменатель), а не как сумма средних.
+    # Только для kind='avg'. Без него итог по колонке - обычная сумма, как её
+    # считал Rep.SetColSumTotal в PL/SQL: официальная отчётность сверяется с
+    # эталоном, поэтому по умолчанию воспроизводим оригинал.
+    # С avg_of=(колонка суммы, колонка количества) итог считается верно -
+    # sum(числитель)/sum(знаменатель); включать только после согласования с ДАУС.
     avg_of: tuple = None
 
 
@@ -128,20 +139,22 @@ def _merge(ws, r1, c1, r2, c2, text, fmt):
         ws.merge_range(r1, c1, r2, c2, text, fmt)
 
 
-def _draw_header_tree(ws, fmt, cols, row, col, rows_left):
+def _draw_header_tree(ws, fmt, cols, row, col, rows_left, word=''):
     """Рекурсивно рисует дерево заголовков. Возвращает занятое число колонок."""
     used = 0
     for c in cols:
+        title = c.title.replace(PERIOD_WORD_SLOT, word)
         if isinstance(c, Group):
             span = len(_leaves(c.cols))
             _merge(ws, row, col + used, row, col + used + span - 1,
-                   c.title, fmt['header'])
-            _draw_header_tree(ws, fmt, c.cols, row + 1, col + used, rows_left - 1)
+                   title, fmt['header'])
+            _draw_header_tree(ws, fmt, c.cols, row + 1, col + used,
+                              rows_left - 1, word)
             used += span
         else:
             # лист тянется вниз до конца шапки
             _merge(ws, row, col + used, row + rows_left - 1, col + used,
-                   c.title, fmt['header'])
+                   title, fmt['header'])
             used += 1
     return used
 
@@ -170,14 +183,14 @@ def build_report(*, code, name, columns, stmt,
     data_row0 = HEADER_ROW + header_depth
     total_cols = len(leaves) + 1          # +1 на колонку "№"
 
-    def _make_header(ws, subtitle):
+    def _make_header(ws, title, subtitle, word):
         ws.set_row(TITLE_ROW, 30)
         ws.set_row(CODE_ROW, 18)
         ws.set_row(COLNUM_ROW, 14)
         for r in range(HEADER_ROW, data_row0):
             ws.set_row(r, 32)
 
-        _merge(ws, TITLE_ROW, 0, TITLE_ROW, total_cols - 1, name, fmt['title'])
+        _merge(ws, TITLE_ROW, 0, TITLE_ROW, total_cols - 1, title, fmt['title'])
         ws.write(CODE_ROW, 0, code, fmt['code'])
         if subtitle:
             ws.write(CODE_ROW, total_cols - 1, subtitle, fmt['period'])
@@ -190,7 +203,7 @@ def build_report(*, code, name, columns, stmt,
             ws.write(COLNUM_ROW, i, str(i + 1), fmt['colnum'])
 
         _merge(ws, HEADER_ROW, 0, data_row0 - 1, 0, '№', fmt['header'])
-        _draw_header_tree(ws, fmt, columns, HEADER_ROW, 1, header_depth)
+        _draw_header_tree(ws, fmt, columns, HEADER_ROW, 1, header_depth, word)
 
         ws.freeze_panes(data_row0, 0)
         ws.repeat_rows(HEADER_ROW, data_row0 - 1)
@@ -214,12 +227,15 @@ def build_report(*, code, name, columns, stmt,
         for i, c in enumerate(leaves, start=1):
             if i <= last_label_col:
                 continue
-            if c.kind == 'avg':
+            if c.kind == 'avg' and c.avg_of:
+                # арифметически верный итог: сумма числителей / сумма знаменателей
                 num = sum(float(r.get(c.avg_of[0]) or 0) for r in records)
                 den = sum(float(r.get(c.avg_of[1]) or 0) for r in records)
                 value = num / den if den else 0
                 ws.write_number(row, i, value, fmt['total_money'])
-            elif c.kind in ('int', 'money'):
+            elif c.kind in ('int', 'money', 'avg'):
+                # 'avg' без avg_of складывается как есть - так делал
+                # Rep.SetColSumTotal; см. комментарий к Col.avg_of
                 value = sum(float(r.get(c.key) or 0) for r in records)
                 ws.write_number(row, i, value,
                                 fmt['total_int'] if c.kind == 'int'
@@ -237,7 +253,7 @@ def build_report(*, code, name, columns, stmt,
         """Кандидаты в бинды: параметры формы плюс границы периода."""
         candidates = {k: (v if v != '' else None)
                       for k, v in params.items() if k != 'file_name'}
-        subtitle = ''
+        title, subtitle, word = name, '', ''
         if period:
             rep_year = params['rep_year']
             # одно поле формы "период" несёт и тип, и номер: "2.3" = III квартал
@@ -245,8 +261,15 @@ def build_report(*, code, name, columns, stmt,
             d_from, d_to = period_bounds(rep_year, date_type, date_start)
             candidates.update(d_from=d_from, d_to=d_to,
                               y_from=year_start(rep_year))
-            subtitle = f'За период: {period_label(rep_year, date_type, date_start)}'
-        return _used_binds(stmt, candidates), subtitle
+            phrase = period_label(rep_year, date_type, date_start)
+            word = period_word(date_type)
+            # период либо встроен в название (как было в PL/SQL), либо
+            # выводится отдельной подписью справа
+            if PERIOD_SLOT in name:
+                title = name.replace(PERIOD_SLOT, phrase)
+            else:
+                subtitle = f'За период: {phrase}'
+        return _used_binds(stmt, candidates), title, subtitle, word
 
     fmt = None          # заполняется внутри do_report, живёт в замыкании
 
@@ -261,7 +284,7 @@ def build_report(*, code, name, columns, stmt,
         log.info(f'DO REPORT. START {code}. PARAMS: {params}, FILE: {file_name}')
 
         try:
-            binds, subtitle = _bind_values(params)
+            binds, title, subtitle, word = _bind_values(params)
             log.info(f'REPORT: {code}. BINDS: {binds}')
 
             # raise_on_error=True: пустой результат не должен маскировать ошибку
@@ -278,7 +301,7 @@ def build_report(*, code, name, columns, stmt,
                     if n % max_rows == 0:
                         suffix = f' {len(sheets) + 1}' if len(records) > max_rows else ''
                         sheet = workbook.add_worksheet(f'{sheet_name}{suffix}')
-                        _make_header(sheet, subtitle)
+                        _make_header(sheet, title, subtitle, word)
                         sheets.append(sheet)
                         row = data_row0
                     sheet.write_number(row, 0, n + 1, fmt['center'])
@@ -288,7 +311,7 @@ def build_report(*, code, name, columns, stmt,
 
                 if not sheets:
                     sheet = workbook.add_worksheet(sheet_name)
-                    _make_header(sheet, subtitle)
+                    _make_header(sheet, title, subtitle, word)
                     sheet.write(data_row0, 0, 'Нет данных для отображения')
                     sheets.append(sheet)
                     row = data_row0 + 1

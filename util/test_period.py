@@ -5,7 +5,7 @@ from datetime import date
 import pytest
 
 from util.period import (period_bounds, period_choices, period_label,
-                         last_day, split_period, year_start)
+                         last_day, period_word, split_period, year_start)
 
 
 @pytest.mark.parametrize('date_type, date_start, expected', [
@@ -79,7 +79,9 @@ def test_date_start_ignored_for_year_types(date_type, date_start):
 
 
 @pytest.mark.parametrize('date_type, date_start, expected', [
-    (1, 3, 'март 2026 года'),
+    # для месяца формулировка дословно как в PL/SQL: v_rep_list_month.cap
+    # || ' месяц ' || год || ' года'
+    (1, 3, 'Март месяц 2026 года'),
     (2, 2, 'II квартал 2026 года'),
     (3, 1, '1 полугодие 2026 года'),
     (4, None, '9 месяцев 2026 года'),
@@ -88,6 +90,13 @@ def test_date_start_ignored_for_year_types(date_type, date_start):
 ])
 def test_label(date_type, date_start, expected):
     assert period_label(2026, date_type, date_start) == expected
+
+
+@pytest.mark.parametrize('date_type, expected', [
+    (1, 'месяце'), (2, 'квартале'), (3, 'полугодии'), (5, 'году'), (7, 'периоде'),
+])
+def test_period_word(date_type, expected):
+    assert period_word(date_type) == expected
 
 
 def test_choices_default_set():

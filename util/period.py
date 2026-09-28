@@ -120,11 +120,30 @@ def period_name(date_type, date_start=None) -> str:
     return name
 
 
-def period_label(rep_year, date_type, date_start=None) -> str:
-    """Подпись периода для шапки отчёта - теми же словами, что в форме.
+# Предложный падеж для подзаголовков вида "в отчетном ...".
+# В PL/SQL стояло жёсткое "в отчетном месяце" - других периодов у отчётов
+# не было. Раз периоды теперь любые, слово согласуется с выбранным.
+_PERIOD_WORD = {1: 'месяце', 2: 'квартале', 3: 'полугодии',
+                4: 'периоде', 5: 'году', 6: 'периоде', 7: 'периоде'}
 
-    В PL/SQL собиралась вручную в каждом Rep_app_NN через v_rep_list_month.
+
+def period_word(date_type) -> str:
+    """Слово для подзаголовка "в отчетном ...": месяце, квартале, году."""
+    return _PERIOD_WORD[int(date_type)]
+
+
+def period_label(rep_year, date_type, date_start=None) -> str:
+    """Подпись периода для шапки отчёта.
+
+    Для месяца повторяет формулировку PL/SQL дословно ("Август месяц 2026
+    года"): в Rep_app_NN она собиралась как v_rep_list_month.cap || ' месяц '
+    || год || ' года'. Тексты официальной отчётности согласованы, менять их
+    нельзя.
     """
-    y = int(rep_year)
-    name = period_name(date_type, date_start)
-    return f'{y} год' if int(date_type) == 5 else f'{name} {y} года'
+    y, t = int(rep_year), int(date_type)
+    name = period_name(t, date_start)
+    if t == 1:
+        return f'{name.capitalize()} месяц {y} года'
+    if t == 5:
+        return f'{y} год'
+    return f'{name} {y} года'
