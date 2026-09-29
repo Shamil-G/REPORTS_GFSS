@@ -52,6 +52,9 @@ class Col:
     key: str
     kind: str = 'text'        # text | center | int | money | avg | date
     width: int = 14
+    # Выравнивание значений: left | center | right. None - по kind (текст влево,
+    # числа вправо). Меняет только вид: число остаётся числом и суммируется.
+    align: str = None
     # Только для kind='avg'. Без него итог по колонке - обычная сумма, как её
     # считал Rep.SetColSumTotal в PL/SQL: официальная отчётность сверяется с
     # эталоном, поэтому по умолчанию воспроизводим оригинал.
@@ -78,59 +81,157 @@ def _depth(cols):
     return max((1 + _depth(c.cols)) if isinstance(c, Group) else 1 for c in cols)
 
 
-def _build_formats(workbook):
-    return {
-        'title': workbook.add_format({
-            'align': 'center', 'valign': 'vcenter',
-            'font_size': 14, 'bold': True, 'text_wrap': True}),
-        'code': workbook.add_format({
-            'align': 'left', 'valign': 'vcenter', 'font_size': 12, 'bold': True}),
-        'period': workbook.add_format({
-            'align': 'right', 'valign': 'vcenter', 'font_size': 11, 'italic': True}),
-        'subtitle': workbook.add_format({
-            'align': 'left', 'valign': 'vcenter', 'font_size': 11, 'italic': True}),
-        'header': workbook.add_format({
-            'bold': True, 'align': 'center', 'valign': 'vcenter', 'font_size': 11,
-            'border': 1, 'bg_color': '#E0F7FF', 'text_wrap': True}),
-        'colnum': workbook.add_format({
-            'align': 'center', 'valign': 'vcenter', 'font_size': 9,
-            'border': 1, 'bg_color': '#E0F7FF'}),
-        'text': workbook.add_format({
-            'align': 'left', 'valign': 'vcenter', 'border': 1, 'bg_color': '#f2f2f2'}),
-        'center': workbook.add_format({
-            'align': 'center', 'valign': 'vcenter', 'border': 1,
-            'bg_color': '#f2f2f2', 'num_format': '@'}),
-        'int': workbook.add_format({
-            'align': 'right', 'valign': 'vcenter', 'border': 1,
-            'bg_color': '#f2f2f2', 'num_format': '### ### ##0'}),
-        'money': workbook.add_format({
-            'align': 'right', 'valign': 'vcenter', 'border': 1,
-            'bg_color': '#f2f2f2', 'num_format': '### ### ### ##0.00'}),
-        'date': workbook.add_format({
-            'align': 'center', 'valign': 'vcenter', 'border': 1,
-            'bg_color': '#f2f2f2', 'num_format': 'dd.mm.yyyy'}),
-        'total_text': workbook.add_format({
-            'bold': True, 'align': 'right', 'valign': 'vcenter',
-            'border': 1, 'bg_color': '#E0F7FF'}),
-        'total_int': workbook.add_format({
-            'bold': True, 'align': 'right', 'valign': 'vcenter', 'border': 1,
-            'bg_color': '#E0F7FF', 'num_format': '### ### ##0'}),
-        'total_money': workbook.add_format({
-            'bold': True, 'align': 'right', 'valign': 'vcenter', 'border': 1,
-            'bg_color': '#E0F7FF', 'num_format': '### ### ### ##0.00'}),
-        'footnote': workbook.add_format({
-            'align': 'left', 'valign': 'top', 'font_size': 9,
-            'italic': True, 'text_wrap': True}),
-        'sql': workbook.add_format({
-            'border': 1, 'align': 'left', 'valign': 'top',
-            'fg_color': '#FAFAD7', 'text_wrap': True}),
-    }
-
+_FORMATS = {
+    'title': {
+        'align': 'center', 'valign': 'vcenter',
+        'font_size': 14, 'bold': True, 'text_wrap': True},
+    'code': {
+        'align': 'left', 'valign': 'vcenter', 'font_size': 12, 'bold': True},
+    'period': {
+        'align': 'right', 'valign': 'vcenter', 'font_size': 11, 'italic': True},
+    'subtitle': {
+        'align': 'left', 'valign': 'vcenter', 'font_size': 11, 'italic': True},
+    'header': {
+        'bold': True, 'align': 'center', 'valign': 'vcenter', 'font_size': 11,
+        'border': 1, 'bg_color': '#E0F7FF', 'text_wrap': True},
+    'colnum': {
+        'align': 'center', 'valign': 'vcenter', 'font_size': 9,
+        'border': 1, 'bg_color': '#E0F7FF'},
+    'text': {
+        'align': 'left', 'valign': 'vcenter', 'border': 1, 'bg_color': '#f2f2f2'},
+    'center': {
+        'align': 'center', 'valign': 'vcenter', 'border': 1,
+        'bg_color': '#f2f2f2', 'num_format': '@'},
+    'int': {
+        'align': 'right', 'valign': 'vcenter', 'border': 1,
+        'bg_color': '#f2f2f2', 'num_format': '### ### ##0'},
+    'money': {
+        'align': 'right', 'valign': 'vcenter', 'border': 1,
+        'bg_color': '#f2f2f2', 'num_format': '### ### ### ##0.00'},
+    'date': {
+        'align': 'center', 'valign': 'vcenter', 'border': 1,
+        'bg_color': '#f2f2f2', 'num_format': 'dd.mm.yyyy'},
+    'total_text': {
+        'bold': True, 'align': 'right', 'valign': 'vcenter',
+        'border': 1, 'bg_color': '#E0F7FF'},
+    'total_int': {
+        'bold': True, 'align': 'right', 'valign': 'vcenter', 'border': 1,
+        'bg_color': '#E0F7FF', 'num_format': '### ### ##0'},
+    'total_money': {
+        'bold': True, 'align': 'right', 'valign': 'vcenter', 'border': 1,
+        'bg_color': '#E0F7FF', 'num_format': '### ### ### ##0.00'},
+    'footnote': {
+        'align': 'left', 'valign': 'top', 'font_size': 9,
+        'italic': True, 'text_wrap': True},
+    'sql': {
+        'border': 1, 'align': 'left', 'valign': 'top',
+        'fg_color': '#FAFAD7', 'text_wrap': True},
+}
 
 # 'avg' печатается как деньги; отдельный формат не нужен
 _CELL_FORMAT = {'text': 'text', 'center': 'center', 'int': 'int',
                 'money': 'money', 'avg': 'money', 'date': 'date'}
+_TOTAL_FORMAT = {'int': 'total_int', 'money': 'total_money',
+                 'avg': 'total_money'}
 _NUMERIC = ('int', 'money', 'avg')
+
+
+def _build_formats(workbook, leaves):
+    """Общие форматы плюс свои у колонок с явным align.
+
+    Формат колонки - копия формата её kind с другим выравниванием, ключ -
+    ('cell', номер колонки) и ('total', номер колонки) для строки итогов.
+    """
+    fmt = {k: workbook.add_format(v) for k, v in _FORMATS.items()}
+    for i, c in enumerate(leaves, start=1):
+        if not c.align:
+            continue
+        fmt['cell', i] = workbook.add_format(
+            {**_FORMATS[_CELL_FORMAT[c.kind]], 'align': c.align})
+        if c.kind in _TOTAL_FORMAT:
+            fmt['total', i] = workbook.add_format(
+                {**_FORMATS[_TOTAL_FORMAT[c.kind]], 'align': c.align})
+    return fmt
+
+
+# Высота строк названия и шапки. Excel не подбирает высоту под объединённые
+# ячейки, а xlsxwriter не умеет мерить текст, поэтому число строк переноса
+# оцениваем сами по ширине колонок. Константы подобраны по Calibri bold 11pt
+# (шрифт xlsxwriter по умолчанию) с небольшим запасом: лучше лишний отступ,
+# чем обрезанное слово.
+_PX_PER_WIDTH = 7       # пикселей на единицу ширины колонки (set_column)
+_PX_PER_CHAR = 7.0      # средняя ширина символа bold 11pt
+_CELL_PAD_PX = 6        # поля ячейки слева и справа
+_LINE_PT = 15           # высота строки текста 11pt, в пунктах
+_ROW_PAD_PT = 4         # поля ячейки сверху и снизу
+
+
+def _col_px(width):
+    return int(width * _PX_PER_WIDTH + 5)
+
+
+def _wrapped_lines(text, width_px, font_size):
+    """Сколько строк займёт текст при переносе по словам, как в Excel.
+
+    Явный '\\n' в тексте - принудительный перенос: им можно разбить заголовок
+    так, как нужно, а не как решит Excel.
+    """
+    per_line = max(1, int((width_px - _CELL_PAD_PX)
+                          / (_PX_PER_CHAR * font_size / 11)))
+    total = 0
+    for para in str(text).split('\n'):
+        lines, cur = 1, 0
+        for word in para.split():
+            if cur and cur + 1 + len(word) <= per_line:
+                cur += 1 + len(word)
+                continue
+            if cur:
+                lines += 1
+            lines += (len(word) - 1) // per_line   # слово длиннее строки режется
+            cur = len(word) % per_line or per_line
+        total += lines
+    return total
+
+
+def _text_height(text, width_px, font_size=11):
+    return (_wrapped_lines(text, width_px, font_size)
+            * _LINE_PT * font_size / 11 + _ROW_PAD_PT)
+
+
+def _header_heights(columns, depth, widths, word):
+    """Высоты строк шапки. widths - ширины листовых колонок по порядку.
+
+    Заголовок группы занимает одну строку - она должна вместить его целиком.
+    Лист тянется до низа шапки: если суммы строк под ним не хватает, недостача
+    раскладывается поровну на эти строки.
+    """
+    need = [_LINE_PT + _ROW_PAD_PT] * depth
+    tall = []           # (первая строка, нужная высота) у листьев выше низа
+
+    def walk(cols, row, col):
+        for c in cols:
+            title = c.title.replace(PERIOD_WORD_SLOT, word)
+            if isinstance(c, Group):
+                span = len(_leaves(c.cols))
+                px = sum(_col_px(w) for w in widths[col:col + span])
+                need[row] = max(need[row], _text_height(title, px))
+                walk(c.cols, row + 1, col)
+                col += span
+            else:
+                h = _text_height(title, _col_px(widths[col]))
+                if row == depth - 1:
+                    need[row] = max(need[row], h)
+                else:
+                    tall.append((row, h))
+                col += 1
+
+    walk(columns, 0, 0)
+    for row, h in tall:
+        short = h - sum(need[row:])
+        if short > 0:
+            for r in range(row, depth):
+                need[r] += short / (depth - row)
+    return need
 
 
 def _merge(ws, r1, c1, r2, c2, text, fmt):
@@ -178,9 +279,18 @@ def build_report(*, code, name, columns, stmt,
                  footnote=None,
                  blank_zero=False,
                  period_label=None,   # см. make_period_label() в util/period.py
+                 title_height=None,
+                 header_heights=None,
                  sheet_name='Отчёт',
                  max_rows=500_000):
-    """Собирает отчёт из описания. Возвращает (do_report, thread_report)."""
+    """Собирает отчёт из описания. Возвращает (do_report, thread_report).
+
+    Высота строки названия и строк шапки по умолчанию оценивается по длине
+    текста и ширине колонок. Если оценка промахнулась, её можно задать руками:
+    title_height - в пунктах, header_heights - список по строкам шапки сверху
+    вниз, None в списке оставляет строку на автоподборе. Например, для
+    двухуровневой шапки header_heights=[None, 60].
+    """
     # формулировка подписи периода у каждого отчёта своя, по умолчанию - общая
     label_of = period_label or _default_period_label
     leaves = _leaves(columns)
@@ -188,12 +298,20 @@ def build_report(*, code, name, columns, stmt,
     data_row0 = HEADER_ROW + header_depth
     total_cols = len(leaves) + 1          # +1 на колонку "№"
 
+    if header_heights is not None and len(header_heights) != header_depth:
+        raise ValueError(f'{code}: header_heights - {len(header_heights)} '
+                         f'знач., а строк в шапке {header_depth}')
+    widths = [c.width for c in leaves]
+    table_px = _col_px(6) + sum(_col_px(w) for w in widths)
+
     def _make_header(ws, title, subtitle, word):
-        ws.set_row(TITLE_ROW, 30)
+        ws.set_row(TITLE_ROW, title_height or _text_height(title, table_px, 14))
         ws.set_row(CODE_ROW, 18)
         ws.set_row(COLNUM_ROW, 14)
-        for r in range(HEADER_ROW, data_row0):
-            ws.set_row(r, 32)
+        auto = _header_heights(columns, header_depth, widths, word)
+        manual = header_heights or [None] * header_depth
+        for i, (a, m) in enumerate(zip(auto, manual)):
+            ws.set_row(HEADER_ROW + i, m or a)
 
         _merge(ws, TITLE_ROW, 0, TITLE_ROW, total_cols - 1, title, fmt['title'])
         ws.write(CODE_ROW, 0, code, fmt['code'])
@@ -217,7 +335,7 @@ def build_report(*, code, name, columns, stmt,
         ws.repeat_rows(HEADER_ROW, data_row0 - 1)
 
     def _write_cell(ws, row, col, value, kind):
-        f = fmt[_CELL_FORMAT[kind]]
+        f = fmt.get(('cell', col)) or fmt[_CELL_FORMAT[kind]]
         if value is None or (blank_zero and kind in _NUMERIC and not value):
             ws.write_blank(row, col, None, f)
         elif kind in _NUMERIC:
@@ -240,14 +358,15 @@ def build_report(*, code, name, columns, stmt,
                 num = sum(float(r.get(c.avg_of[0]) or 0) for r in records)
                 den = sum(float(r.get(c.avg_of[1]) or 0) for r in records)
                 value = num / den if den else 0
-                ws.write_number(row, i, value, fmt['total_money'])
+                ws.write_number(row, i, value,
+                                fmt.get(('total', i)) or fmt['total_money'])
             elif c.kind in ('int', 'money', 'avg'):
                 # 'avg' без avg_of складывается как есть - так делал
                 # Rep.SetColSumTotal; см. комментарий к Col.avg_of
                 value = sum(float(r.get(c.key) or 0) for r in records)
                 ws.write_number(row, i, value,
-                                fmt['total_int'] if c.kind == 'int'
-                                else fmt['total_money'])
+                                fmt.get(('total', i))
+                                or fmt[_TOTAL_FORMAT[c.kind]])
             else:
                 ws.write_blank(row, i, None, fmt['total_text'])
 
@@ -313,7 +432,7 @@ def build_report(*, code, name, columns, stmt,
             records = select_2(stmt, binds, profile=profile, raise_on_error=True)
 
             with xlsxwriter.Workbook(file_name) as workbook:
-                fmt = _build_formats(workbook)
+                fmt = _build_formats(workbook, leaves)
 
                 sheets = []
                 row = data_row0
