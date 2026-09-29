@@ -30,8 +30,8 @@ _YEAR = 'с начала года'
 COLUMNS = [
     Col('Вид риска', 'pay_name', 'text', 52),
     Group('Количество получателей, которым назначены СВ, чел.', [
-        Col(_PERIOD, 'cnt_om', 'int'),
-        Col(_YEAR,   'cnt_by', 'int'),
+        Col(_PERIOD, 'cnt_om', 'int', align='center'),
+        Col(_YEAR,   'cnt_by', 'int', align='center'),
     ]),
     # Итог по средним считается как sum(сумма)/sum(количество), а не сложением
     # средних, как это делал Rep.SetColSumTotal. Сложение средних арифметически

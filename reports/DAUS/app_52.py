@@ -35,7 +35,7 @@ report_name = ('Количество назначенных социальных
 # и полугодия. Двойной пробел у "9 месяцев" - тоже из оригинала
 # (', за ' || ' 9 месяцев ' - два пробела на стыке), сохранён дословно.
 _period_label = make_period_label({
-    1: ', за {Month}{year} года ',
+    1: ', за {Month} {year} года ',
     2: ', за {n} квартал {year} года ',
     3: ', за {n} полугодие {year} года ',
     4: ', за  9 месяцев {year} года ',
@@ -49,16 +49,16 @@ COLUMNS = [
     Col('Стаж участия в СОСС', 'stag', 'text', 20, align='center'),
     Col('Общая сумма социальных отчислений (тенге)', 'sum_co', 'money', 20),
     Group('по беременности и родам (СВбр)', [
-        Col(_COUNT_SUM, 'cnt4', 'int', align='center'),
+        Col(_COUNT_SUM, 'cnt4', 'int'),
         Col(_MONEY_SUM, 'sum4', 'money', 18),
     ]),
     Group('из них получают: по уходу за ребенком по достижении им возраста '
           'одного года', [
-        Col(_COUNT_SUM, 'cnt5', 'int', align='center'),
+        Col(_COUNT_SUM, 'cnt5', 'int'),
         Col(_MONEY_SUM, 'sum5', 'money', 18),
     ]),
     Group('по усыновлению(удочерению) новорожденного ребенка(детей)', [
-        Col(_COUNT_SUM, 'cnt3', 'int', align='center'),
+        Col(_COUNT_SUM, 'cnt3', 'int'),
         Col(_MONEY_SUM, 'sum3', 'money', 18),
     ]),
 ]

@@ -2679,6 +2679,50 @@ dict_reports = {
                         "period": PERIOD,
                     }
                 },
+                "03": {
+                    "name": "Сведения о половозрастном составе участников СОСС и суммах СО "
+                            "(34 — в разрезе пола)",
+                    "proc": "app_34",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "04": {
+                    "name": "Сведения о составе участников СОСС и суммах СО "
+                            "(35 — в разрезе возраста и пола)",
+                    "proc": "app_35",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "05": {
+                    "name": "Число страховых случаев и суммы СВ по видам "
+                            "(36 — в разрезе пола)",
+                    "proc": "app_36",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "06": {
+                    "name": "Число страховых случаев и суммы СВ по видам "
+                            "(37 — в разрезе пола и возраста)",
+                    "proc": "app_37",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
             }
         }
     }
