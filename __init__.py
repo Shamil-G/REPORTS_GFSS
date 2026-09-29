@@ -9,6 +9,14 @@ from secrets import token_hex
 
 app = Flask(__name__, template_folder='templates', static_folder='static')
 
+# Flask по умолчанию сортирует ключи словарей при сериализации в JSON, а через
+# JSON проходит и сессия. Из-за этого порядок, заданный в dict_reports, терялся:
+# поля формы шли по алфавиту (period раньше rep_year), годы - от 2005 к текущему,
+# месяцы - "январь, октябрь, ноябрь, декабрь, февраль". Порядок словарей здесь
+# несёт смысл - это порядок строк в выпадающих списках, поэтому сортировку
+# отключаем.
+app.json.sort_keys = False
+
 # Для куки нужен криптографический ключ
 app.secret_key = getenv('SECRET_KEY', default=token_hex())
 

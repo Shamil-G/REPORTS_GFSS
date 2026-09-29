@@ -8,6 +8,7 @@ from   gfss_parameter import platform, BASE
 from   model.list_reports import dict_reports
 from   model.manage_reports import remove_report
 from   util.trunc_date import get_year
+from   util.period import split_period, period_bounds, period_name, last_day
 from   datetime import date
 
 
@@ -167,12 +168,26 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
     rfpm_id = params.get("rfpm_id", "")
     rfbn_id = params.get("rfbn_id", "")
 
+    # Отчёты, перенесённые из REP_STAT_EXTEND, задают период одним параметром
+    # ("2.3" = III квартал), а дат не имеют вовсе. Разворачиваем его в границы:
+    # иначе в журнале отчётов все запуски одного отчёта - строки с одинаковым
+    # именем и пустыми датами, их не отличить друг от друга.
+    # naming - копия параметров для имени файла, где код периода заменён
+    # на человеческое название; сами params уходят в отчёт неизменными.
+    naming = dict(params)
+    if "period" in params and "rep_year" in params:
+        d_type, d_start = split_period(params["period"])
+        d_from, d_to = period_bounds(params["rep_year"], d_type, d_start)
+        date_first = d_from.strftime("%Y-%m-%d")
+        date_second = last_day(d_to).strftime("%Y-%m-%d")
+        naming["period"] = period_name(d_type, d_start)
+
     target_path = f'{REPORT_PATH}/{get_year(date_first) if date_first else str(date.today().year)}'
     check_dir(target_path)
 
     suffix = ".".join(
-        str(params[k]) for k in params
-        if params[k] not in [None, "", [], {}]
+        str(naming[k]) for k in naming
+        if naming[k] not in [None, "", [], {}]
     )
 
     target_file = f"{dep_name}.{group_name}.{num_rep}.{rep_code}"

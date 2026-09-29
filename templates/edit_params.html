@@ -62,6 +62,14 @@
                     {% set enum_values = [] %}
                 {% endif %}
 
+                {# 'default' - код заранее выбранного пункта списка; без него
+                   список открывается на "-- Выберите значение --" #}
+                {% if val is mapping and 'default' in val %}
+                    {% set default_value = val['default'] %}
+                {% else %}
+                    {% set default_value = none %}
+                {% endif %}
+
                 <td style="border: none; margin: 0px; padding: 0px; text-align: left;">
                     <label for="{{ key }}">{{ display_name }}</label>
                 </td>
@@ -99,14 +107,16 @@
                     {% if input_type == 'list' and enum_values %}
                         <select class="input_s" id="{{ key }}" name="{{ key }}"
                                 {% if is_required %} required {% endif %}>
-                            <option value="">-- Выберите значение --</option>
+                            {% if default_value is none %}
+                                <option value="">-- Выберите значение --</option>
+                            {% endif %}
                             {% if enum_values is mapping %}
                                 {% for code, name in enum_values.items() %}
-                                    <option value="{{ code }}" data-label="{{ name }}">{{ name }}</option>
+                                    <option value="{{ code }}" data-label="{{ name }}" {% if code == default_value %}selected{% endif %}>{{ name }}</option>
                                 {% endfor %}
                             {% else %}
                                 {% for option in enum_values %}
-                                    <option value="{{ option }}">{{ option }}</option>
+                                    <option value="{{ option }}" {% if option == default_value %}selected{% endif %}>{{ option }}</option>
                                 {% endfor %}
                             {% endif %}
                         </select>
