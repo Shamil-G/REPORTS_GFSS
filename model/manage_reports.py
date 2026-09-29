@@ -32,15 +32,18 @@ def remove_report(date_report: str, num_report: int):
 
 
 def set_status_report(file_path: str, status: int):
-    stmt_upd = f"""
+    # file_path - только через бинд: имя файла собирается из значений формы
+    # отчёта, и кавычка в любом поле ломала запрос (SQL-инъекция).
+    stmt_upd = """
       begin
           update LOAD_REPORT_STATUS st
           set st.status = :status,
               st.date_execute = sysdate
-          where st.file_path = '{file_path}';
+          where st.file_path = :file_path;
           commit;
       end;
     """
     log.info(f'SET STATUS REPORT. STATUS: {status}, FILE_PATH: {file_path}')
     with get_connection().cursor() as cursor:
-        plsql_execute(cursor, 'SET STATUS REPORT', stmt_upd, [status])
+        plsql_execute(cursor, 'SET STATUS REPORT', stmt_upd,
+                      {'status': status, 'file_path': file_path})

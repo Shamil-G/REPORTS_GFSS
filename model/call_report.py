@@ -6,7 +6,9 @@ from   util.logger import log
 from   app_config import REPORT_PATH
 from   gfss_parameter import platform, BASE
 from   model.list_reports import dict_reports
-from   model.manage_reports import remove_report
+# set_status_report здесь не определяется, а реэкспортируется: часть отчётов
+# (DSR, DMN) импортирует её из model.call_report.
+from   model.manage_reports import remove_report, set_status_report
 from   util.trunc_date import get_year
 from   util.period import split_period, period_bounds, period_name, last_day
 from   datetime import date
@@ -68,21 +70,6 @@ def check_dir(dir_path: str):
     if not path.isdir(dir_path):
         mkdir(dir_path)
         
-        
-
-def set_status_report(file_path: str, status: int):
-    stmt_upd = f"""
-      begin
-          update LOAD_REPORT_STATUS st
-          set st.status = :status,
-              st.date_execute = sysdate
-          where st.file_path = '{file_path}';
-          commit;
-      end;
-    """
-    log.info(f'SET STATUS REPORT. STATUS: {status}, FILE_PATH: {file_path}')
-    with get_connection().cursor() as cursor:
-        plsql_execute(cursor, 'SET STATUS REPORT', stmt_upd, [status])
         
 
 def check_report(file_path: str):
@@ -194,16 +181,20 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
     if suffix:
         target_file += f".{suffix}"
     target_file += ".xlsx"
+    file_name = f"{target_path}/{target_file}"
+    params["file_name"] = file_name
+
     #-------------------------------------------------------
     # Вызываем выполнение отчета, который формируется сразу
     #-------------------------------------------------------
+    # Пользователь ждёт ответа, файл строится в этом же запросе и отдаётся
+    # как готовый (status 2 - view/routes.py сразу шлёт его браузеру).
+    # Прежде было do_report(params) - словарь уходил позиционно, в file_name,
+    # и имя файла было без каталога, файл падал в текущую директорию.
     if report.get("living_time") == "at_once":
-        params["file_name"] = target_file
-        return { 'at_once_report': loaded_module.do_report(params)}
+        loaded_module.do_report(**params)
+        return {"status": 2, "file_path": file_name}
     #----------------------------------------------
-
-    file_name = f"{target_path}/{target_file}"
-    params["file_name"] = file_name
 
     status = int(check_report(file_name))
 
