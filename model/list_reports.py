@@ -53,6 +53,7 @@ DYNAMIC_VALUES = {
                       for y in range(date.today().year, 2004, -1)},
     "current_year": lambda: str(date.today().year),
     "current_month": lambda: f"1.{date.today().month}",
+    "current_quarter": lambda: f"2.{(date.today().month - 1) // 3 + 1}",
 }
 
 REP_YEAR = {
@@ -72,6 +73,38 @@ PERIOD = {
     "required": True,
     "values": period_choices(),
     "dynamic": {"default": "current_month"},
+}
+
+# Расширенный список периодов для отчётов, у которых, помимо стандартных
+# пяти типов, зарегистрирован ещё тип 6 (24 месяца) - например app_47,
+# app_48 (см. migration-plan.md, "period_choices((1, 2, 3, 4, 5, 6))").
+PERIOD_24M = {
+    "display_name": "Период",
+    "type": "list",
+    "required": True,
+    "values": period_choices((1, 2, 3, 4, 5, 6)),
+    "dynamic": {"default": "current_month"},
+}
+
+# То же самое с типом 7 (произвольное число месяцев с начала года) вместо
+# 6 - для app_49_1 (регистрация только месяц/7mn, но период_label
+# поддерживает все стандартные типы + 7).
+PERIOD_7 = {
+    "display_name": "Период",
+    "type": "list",
+    "required": True,
+    "values": period_choices((1, 2, 3, 4, 5, 7)),
+    "dynamic": {"default": "current_month"},
+}
+
+# Только квартал - для app_54, чья структура (квартал / тот же квартал год
+# назад / с начала года) осмысленна лишь для квартального периода.
+PERIOD_QUARTER = {
+    "display_name": "Период",
+    "type": "list",
+    "required": True,
+    "values": period_choices((2,)),
+    "dynamic": {"default": "current_quarter"},
 }
 
 # Параметр отчётов app_38_v2/app_39_v2: учитывать ли при расчёте
@@ -2804,6 +2837,142 @@ dict_reports = {
                     "meta_params": {
                         "rep_year": REP_YEAR,
                         "period": PERIOD,
+                    }
+                },
+                "13": {
+                    "name": "Участники СОСС по уровню дохода, в разрезе "
+                            "пола (47)",
+                    "proc": "app_47",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_24M,
+                    }
+                },
+                "14": {
+                    "name": "Участники СОСС по стажу участия за 24 месяца, "
+                            "в разрезе пола (48)",
+                    "proc": "app_48",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_24M,
+                    }
+                },
+                "15": {
+                    "name": "Получатели и суммы СВур по очерёдности детей "
+                            "(Форма 3)",
+                    "proc": "app_f3",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "16": {
+                    "name": "Назначенные СВ в зависимости от дохода, по "
+                            "виду выплаты (50)",
+                    "proc": "app_50",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "rfpm_id": {**LIST_RFPM, "required": True},
+                    }
+                },
+                "17": {
+                    "name": "СВ по беременности и родам, по стажу и "
+                            "интервалу суммы выплаты (51)",
+                    "proc": "app_51",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "18": {
+                    "name": "Средний размер назначенных СВ по регионам и "
+                            "видам риска (55)",
+                    "proc": "app_55",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "19": {
+                    "name": "Получатели и суммы СВ по возрасту и стажу, "
+                            "по виду выплаты (42-46)",
+                    "proc": "app_42_46",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "rfpm_id": {**LIST_RFPM, "required": True},
+                    }
+                },
+                "20": {
+                    "name": "Обращения и назначения СВ по срокам "
+                            "рассмотрения (49)",
+                    "proc": "app_49",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "21": {
+                    "name": "Обращения и назначения СВ, метрика \"4 "
+                            "рабочих дня\", по региону и виду риска (49.1)",
+                    "proc": "app_49_1",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_7,
+                    }
+                },
+                "22": {
+                    "name": "СВур, доведённые до ГСП, квартал к прошлому "
+                            "году (54)",
+                    "proc": "app_54",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_QUARTER,
+                    }
+                },
+                "23": {
+                    "name": "СВБР: получатели по стажу участия, по виду "
+                            "выплаты (табл. 1)",
+                    "proc": "svbr_tab1",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "rfpm_id": {**LIST_RFPM, "required": True},
+                    }
+                },
+                "24": {
+                    "name": "СВБР: получатели по доле МЗП, по виду "
+                            "выплаты (табл. 2)",
+                    "proc": "svbr_tab2",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "rfpm_id": {**LIST_RFPM, "required": True},
                     }
                 },
             }

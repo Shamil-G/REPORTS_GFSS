@@ -279,6 +279,7 @@ def build_report(*, code, name, columns, stmt,
                  footnote=None,
                  blank_zero=False,
                  period_label=None,   # см. make_period_label() в util/period.py
+                 text_params=None,    # {ключ_параметра: {значение: фраза}}
                  title_height=None,
                  header_heights=None,
                  sheet_name='Отчёт',
@@ -290,6 +291,13 @@ def build_report(*, code, name, columns, stmt,
     title_height - в пунктах, header_heights - список по строкам шапки сверху
     вниз, None в списке оставляет строку на автоподборе. Например, для
     двухуровневой шапки header_heights=[None, 60].
+
+    text_params - подстановка в name текста, зависящего не от периода, а от
+    обычного параметра формы (например, выбранный вид выплаты меняет
+    официальную формулировку названия, как в app_50/51/55). Ключ - имя
+    параметра (как передаётся в do_report/thread_report), значение - словарь
+    "значение параметра -> фраза". В name соответствующее место помечается
+    '{имя_параметра}', как {period} для периода.
     """
     # формулировка подписи периода у каждого отчёта своя, по умолчанию - общая
     label_of = period_label or _default_period_label
@@ -394,6 +402,8 @@ def build_report(*, code, name, columns, stmt,
         candidates = {k: (v if v != '' else None)
                       for k, v in params.items() if k != 'file_name'}
         title, subtitle, word = name, '', ''
+        for key, mapping in (text_params or {}).items():
+            title = title.replace('{' + key + '}', mapping.get(params.get(key), ''))
         if period:
             rep_year = params['rep_year']
             # одно поле формы "период" несёт и тип, и номер: "2.3" = III квартал
@@ -406,7 +416,7 @@ def build_report(*, code, name, columns, stmt,
             # период либо встроен в название (как было в PL/SQL), либо
             # выводится отдельной подписью справа
             if PERIOD_SLOT in name:
-                title = name.replace(PERIOD_SLOT, phrase)
+                title = title.replace(PERIOD_SLOT, phrase)
             else:
                 subtitle = f'За период: {phrase}'
         return _used_binds(stmt, candidates), title, subtitle, word
