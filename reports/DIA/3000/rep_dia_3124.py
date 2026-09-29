@@ -37,7 +37,10 @@ FROM
       AND act_month BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD')
                         AND TO_DATE(:dt_to,'YYYY-MM-DD')
       AND pd.rfpm_id LIKE '07%'
-      AND SUBSTR(ph.rfbn_id,1,2) = :rfbn_id
+      And (
+        :rfbn_id = '00'
+        OR SUBSTR(ph.rfbn_id, 1, 2) = :rfbn_id
+      )
       AND pd.ridt_id IN (6, 7, 8)
       AND pd.status IN (0, 1, 2, 3, 5, 7)
       AND pd.pnsp_id > 0
@@ -60,7 +63,7 @@ def format_worksheet(worksheet, common_format):
     worksheet.set_row(3, 50)
 
     worksheet.set_column(0, 0, 8)
-    worksheet.set_column(1, 1, 30)
+    worksheet.set_column(1, 1, 40)
     worksheet.set_column(1, 14, 15)
 
     worksheet.merge_range(2, 0, 3, 0, 'Код региона', common_format)

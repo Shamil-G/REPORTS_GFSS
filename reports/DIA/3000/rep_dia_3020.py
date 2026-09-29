@@ -209,14 +209,19 @@ def do_report(file_name: str, date_first: str, date_second: str, knp: str):
             # строка итогов
             worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
 
-            col_letter = xl_col_to_name(6)
+            for col in range(1, 12):
+                col_letter = xl_col_to_name(col)
 
-            worksheet[0].write_formula(
-                row_num,
-                6,
-                f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
-                total_money_format
-            )
+                if col != 6:
+                    worksheet[0].write(row_num, col, '', total_money_format)
+                    continue
+
+                worksheet[0].write_formula(
+                    row_num,
+                    col,
+                    f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
+                    total_money_format
+                )
 
             worksheet[0].freeze_panes(3, 0)
 

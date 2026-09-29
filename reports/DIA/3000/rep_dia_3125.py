@@ -78,7 +78,10 @@ From (Select
                                      s.sum_all,
                                      trunc(s.date_approve) date_calc
                                 From SIPR_MAKET_FIRST_APPROVE_2 s
-                                WHERE substr(s.rfbn_id,1,2) = :rfbn_id)
+                                WHERE (
+                                    :rfbn_id = '00'
+                                    OR SUBSTR(s.rfbn_id, 1, 2) = :rfbn_id
+                                ))
                        Where date_calc Between TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')) a,
                      person pr
                Where a.sicp_id = pr.sicid) b
@@ -95,7 +98,7 @@ def format_worksheet(worksheet, common_format):
     worksheet.set_row(3, 40)
 
     worksheet.set_column(0, 0, 8)
-    worksheet.set_column(1, 1, 30)
+    worksheet.set_column(1, 1, 40)
     worksheet.set_column(1, 40, 15)
 
     worksheet.merge_range(2, 0, 3, 0, 'Код региона', common_format)
