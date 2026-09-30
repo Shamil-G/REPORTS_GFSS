@@ -1,6 +1,6 @@
 ﻿:root {
     color: green;
-    --scrollbar-color: green;
+    --scrollbar-color: #07a907;
     text-shadow: 1px 2px 3px grey;
 }
 html, body {

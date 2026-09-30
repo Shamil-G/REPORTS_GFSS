@@ -50,20 +50,19 @@ article {
     overflow-y: auto;
     min-height: 0;
 }
-/* Тонкий зелёный скролл у article/nav - Firefox не умеет задавать ширину
-   в пикселях (только auto/thin/none), поэтому там ближе всего "thin". */
-/* --scrollbar-color - цвет ТЕКСТА темы, задаётся в :root каждой темы
-   (static/color/main.css, static/dark/main.css), не здесь - этот файл
-   общий, а темы разные (зелёный / #ddd). currentColor - запасной вариант,
-   если переменную не подключили: у некоторых браузеров currentColor у
-   ::-webkit-scrollbar-thumb резолвится нестабильно и может "подхватить"
-   цвет наведения - поэтому основной путь через переменную. */
+/* --scrollbar-color задаётся в :root каждой темы (static/color/main.css,
+   static/dark/main.css) - сейчас в обеих один и тот же #07a907, но
+   переменная оставлена, чтобы менять по теме отдельно, если понадобится.
+   currentColor - запасной вариант, если переменную не подключили.
+   Ширина принудительно 4px через ::-webkit-scrollbar (Chrome/Edge/Safari).
+   Firefox стандартного способа задать пиксели не имеет - scrollbar-width
+   принимает только auto/thin/none, поэтому здесь НЕ задаётся вовсе
+   (браузер возьмёт свою ширину по умолчанию, а не approximation "thin"). */
 article, nav {
-    scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-color, currentColor) transparent;
 }
 article::-webkit-scrollbar, nav::-webkit-scrollbar {
-    width: 2px;
+    width: 4px;
 }
 article::-webkit-scrollbar-track, nav::-webkit-scrollbar-track {
     background: transparent;
