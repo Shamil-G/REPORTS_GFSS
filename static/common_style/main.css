@@ -52,9 +52,11 @@ article {
 }
 /* Тонкий зелёный скролл у article/nav - Firefox не умеет задавать ширину
    в пикселях (только auto/thin/none), поэтому там ближе всего "thin". */
+/* currentColor - цвет текста темы (у "color" темы зелёный, у "dark" - #ddd
+   и т.д.). Полоска так не расходится с темой, хотя этот файл общий. */
 article, nav {
     scrollbar-width: thin;
-    scrollbar-color: #00ff00 transparent;
+    scrollbar-color: currentColor transparent;
 }
 article::-webkit-scrollbar, nav::-webkit-scrollbar {
     width: 2px;
@@ -63,7 +65,7 @@ article::-webkit-scrollbar-track, nav::-webkit-scrollbar-track {
     background: transparent;
 }
 article::-webkit-scrollbar-thumb, nav::-webkit-scrollbar-thumb {
-    background-color: #00ff00;
+    background-color: currentColor;
     border-radius: 1px;
 }
 article_title {
