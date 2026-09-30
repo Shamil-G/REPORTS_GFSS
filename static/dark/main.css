@@ -1,5 +1,6 @@
 :root {
     color: #ddd;
+    --scrollbar-color: #ddd;
 }
 
 html, body {
