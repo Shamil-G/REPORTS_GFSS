@@ -10,11 +10,16 @@ report_name = 'СО по категориям МЗП и районам'
 report_code = '3029-районы'
 
 stmt_report = """
-with mzp as (
+with period as(
+   select to_date(:dt_from,'YYYY-MM-DD') dt_from, 
+          to_date(:dt_to,'YYYY-MM-DD') + 1 as dt_to 
+  from dual
+)
+, mzp as (
   Select /*+ PARALLEL(8)*/
       br, SICID, 
-	  --sex, 
-	  LAST_RNN, SUM_PAY, cnt_pay_mnth,
+    --sex, 
+    LAST_RNN, SUM_PAY, cnt_pay_mnth,
       --type_payer,
       case  when cnt_mzp/cnt_pay_mnth   < 1 then 1
             when cnt_mzp/cnt_pay_mnth = 1 then 2
@@ -47,16 +52,16 @@ with mzp as (
                      round(sm.cnt_mzp,3) cnt_mzp,
                      FIRST_VALUE(sm.P_RNN) OVER(PARTITION BY sm.sicid ORDER BY sm.pay_date_gfss DESC) LAST_RNN,
                      FIRST_VALUE(sm.pay_date_gfss) OVER(PARTITION BY sm.sicid ORDER BY sm.pay_date_gfss DESC) LAST_date_gfss
-              FROM SI_MEMBER_2 SM, PERSON P, rfon_organization rf, cato_branch cb
+              FROM SI_MEMBER_2 SM, PERSON P, rfon_organization rf, cato_branch cb, period
               WHERE SM.KNP = '012'
-			  AND	SM.PAY_DATE_GFSS >= to_date(:dt_from,'YYYY-MM-DD')
-			  and	SM.PAY_DATE_GFSS < to_date(:dt_to,'YYYY-MM-DD') + 1
-              AND   SM.PAY_DATE >= add_months(to_date(:dt_from,'YYYY-MM-DD'),-1) 
-			  AND	SM.PAY_DATE < to_date(:dt_to,'YYYY-MM-DD') + 1
-              AND SM.TYPE_PAYER!='E'
-              and sm.SICID = P.SICID
-              AND sm.p_rnn=rf.bin(+)
-              and rf.cato=cb.code(+)
+        AND SM.PAY_DATE_GFSS >= dt_from
+        and SM.PAY_DATE_GFSS < dt_to
+        AND   SM.PAY_DATE >= add_months(dt_from,-1) 
+        AND SM.PAY_DATE < dt_to
+        AND SM.TYPE_PAYER!='E'
+        and sm.SICID = P.SICID
+        AND sm.p_rnn=rf.bin(+)
+        and rf.cato=cb.code(+)
       ) S
       GROUP BY br, s.sicid, s.sex, s.last_rnn
   )
@@ -66,42 +71,54 @@ type_co as
   select /*+ parallel(4)*/
          Unique(s.sicid),
          sum(case when per.iin=s.p_rnn then 1 else 0 end) sam,
-         sum(case when per.iin!=s.p_rnn and substr(s.p_rnn,5,1) not in (0,1,2,3)  then 1 else 0 end) ur,
-         sum(case when per.iin!=s.p_rnn and substr(s.p_rnn,5,1)  in (0,1,2,3)  then 1 else 0 end) fiz
-  from si_member_2 S, person per
+         sum(case when S.p_rnn!='160440007161' and per.iin!=s.p_rnn and substr(s.p_rnn,5,1) not in (0,1,2,3)  then 1 else 0 end) ur,
+         sum(case when per.iin!=s.p_rnn and S.TYPE_PAYER='I' then 1 else 0 end) fiz,
+         sum(case when S.TYPE_PAYER='SZ' then 1 else 0 end) sz,
+         sum(case when S.TYPE_PAYMENT='P' then 1 else 0 end) pz,
+         sum(case when S.TYPE_PAYMENT='O' then 1 else 0 end) o_pl
+
+  from si_member_2 S, person per, period
   where s.sicid=per.sicid 
   AND   S.KNP = '012'
-  AND	S.PAY_DATE_GFSS >= to_date(:dt_from,'YYYY-MM-DD')
-  and	S.PAY_DATE_GFSS < to_date(:dt_to,'YYYY-MM-DD') + 1
-  AND   S.PAY_DATE >= add_months(to_date(:dt_from,'YYYY-MM-DD'),-1) 
-  AND	S.PAY_DATE < to_date(:dt_to,'YYYY-MM-DD') + 1
-  AND	S.TYPE_PAYER!='E'
+  AND S.PAY_DATE_GFSS >= dt_from
+  and S.PAY_DATE_GFSS < dt_to
+  AND   S.PAY_DATE >= add_months(dt_from,-1) 
+  AND S.PAY_DATE < dt_to
+  AND S.TYPE_PAYER!='E'
   GROUP BY s.sicid
 )
 SELECT /*+ parallel(4)*/
-	m.kat_mzp,
-    -- m.sex,
-    m.br rfbn_id,--"Код",
-    nvl(br.NAME, 'Не найден') name, --"Наименование",
-    case when a.sam>0 and a.ur=0 and a.fiz=0  then 'ИП'
-        when a.sam=0 and a.ur=0 and a.fiz>0  then 'Наемный физ'
-        when a.sam=0 and a.ur>0 and a.fiz=0  then 'Наемный юр'
-        else 'Смешанный' 
-    end type, 
-    count(a.sicid),
-    sum(m.sum_pay)
+  m.kat_mzp,
+  -- m.sex,
+  m.br rfbn_id,--"Код",
+  nvl(br.NAME, 'Не найден') name, --"Наименование",
+  case when a.sam>0 and a.fiz=0 and a.ur=0  and a.sz=0 and a.pz=0 and a.o_pl=0 then 'ИП'
+    when a.fiz>0 and a.sam=0 and a.ur=0 and a.sz=0 and a.pz=0 and a.o_pl=0 then 'Наемный физ'
+    when a.ur>0 and a.sam=0 and a.fiz=0 and a.sz=0 and a.pz=0 and a.o_pl=0 then 'Наемный юр'
+    when a.sz>0 and a.sam=0 and a.fiz=0 and a.ur=0 and a.pz=0 and a.o_pl=0 then 'Самозанятые'
+    when a.pz>0 and a.sam=0 and a.fiz=0 and a.ur=0 and a.sz=0 and a.o_pl=0 then 'Платформенная занятость'
+    when a.o_pl>0 and a.sam=0 and a.fiz=0 and a.ur=0 and a.sz=0 and a.pz=0 then 'Объединенный платёж'
+    when a.fiz>0 and a.ur>0 and a.sam=0 and a.sz=0 and a.pz=0 then 'Смешанный физ+юр'
+    else 'Смешанный' 
+  end type, 
+  count(a.sicid),
+  sum(m.sum_pay)
 FROM  type_co a, mzp m, rfbn_branch br 
 WHERE a.sicid = m.sicid
 AND   m.br=br.RFBN_ID(+)
 GROUP BY m.kat_mzp, 
      -- m.sex,
-     m.br, 
-     nvl(br.NAME, 'Не найден'), 
-     case  when a.sam>0 and a.ur=0 and a.fiz=0  then 'ИП'
-           when a.sam=0 and a.ur=0 and a.fiz>0  then 'Наемный физ'
-           when a.sam=0 and a.ur>0 and a.fiz=0  then 'Наемный юр'
-           else 'Смешанный' 
-     end
+    m.br, 
+    nvl(br.NAME, 'Не найден'), 
+  case when a.sam>0 and a.fiz=0 and a.ur=0  and a.sz=0 and a.pz=0 and a.o_pl=0 then 'ИП'
+    when a.fiz>0 and a.sam=0 and a.ur=0 and a.sz=0 and a.pz=0 and a.o_pl=0 then 'Наемный физ'
+    when a.ur>0 and a.sam=0 and a.fiz=0 and a.sz=0 and a.pz=0 and a.o_pl=0 then 'Наемный юр'
+    when a.sz>0 and a.sam=0 and a.fiz=0 and a.ur=0 and a.pz=0 and a.o_pl=0 then 'Самозанятые'
+    when a.pz>0 and a.sam=0 and a.fiz=0 and a.ur=0 and a.sz=0 and a.o_pl=0 then 'Платформенная занятость'
+    when a.o_pl>0 and a.sam=0 and a.fiz=0 and a.ur=0 and a.sz=0 and a.pz=0 then 'Объединенный платёж'
+    when a.fiz>0 and a.ur>0 and a.sam=0 and a.sz=0 and a.pz=0 then 'Смешанный физ+юр'
+    else 'Смешанный' 
+  end
 ORDER BY 1,2,4
 """
 
@@ -116,7 +133,7 @@ def format_worksheet(worksheet, common_format):
 	worksheet.set_column(1, 1, 6)
 	worksheet.set_column(2, 2, 12)
 	worksheet.set_column(3, 3, 40)
-	worksheet.set_column(4, 4, 16)
+	worksheet.set_column(4, 4, 18)
 	worksheet.set_column(5, 5, 18)
 	worksheet.set_column(6, 6, 18)
 

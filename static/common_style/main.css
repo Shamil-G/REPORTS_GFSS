@@ -55,11 +55,16 @@ article {
    переменная оставлена, чтобы менять по теме отдельно, если понадобится.
    currentColor - запасной вариант, если переменную не подключили.
    Ширина принудительно 4px через ::-webkit-scrollbar (Chrome/Edge/Safari).
-   Firefox стандартного способа задать пиксели не имеет - scrollbar-width
-   принимает только auto/thin/none, поэтому здесь НЕ задаётся вовсе
-   (браузер возьмёт свою ширину по умолчанию, а не approximation "thin"). */
-article, nav {
-    scrollbar-color: var(--scrollbar-color, currentColor) transparent;
+   ВАЖНО: в Chrome/Edge 121+ стандартные scrollbar-color/scrollbar-width,
+   если заданы на элементе, отключают ВСЕ ::-webkit-scrollbar* правила -
+   ширина 4px молча пропадает. Поэтому scrollbar-color отдаётся только
+   браузерам без ::-webkit-scrollbar (Firefox). Firefox стандартного способа
+   задать пиксели не имеет - scrollbar-width принимает только auto/thin/none,
+   поэтому там он НЕ задаётся вовсе (ширина браузера по умолчанию). */
+@supports not selector(::-webkit-scrollbar) {
+    article, nav {
+        scrollbar-color: var(--scrollbar-color, currentColor) transparent;
+    }
 }
 article::-webkit-scrollbar, nav::-webkit-scrollbar {
     width: 4px;

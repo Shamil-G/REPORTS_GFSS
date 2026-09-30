@@ -73,7 +73,7 @@ type_co as
   select /*+ parallel(4)*/
          Unique(s.sicid),
          sum(case when per.iin=s.p_rnn then 1 else 0 end) ip_sam,
-         sum(case when per.iin!=s.p_rnn and substr(s.p_rnn,5,1) not in (0,1,2,3)  then 1 else 0 end) ur,
+         sum(case when S.p_rnn!='160440007161' and per.iin!=s.p_rnn and substr(s.p_rnn,5,1) not in (0,1,2,3)  then 1 else 0 end) ur,
          sum(case when per.iin!=s.p_rnn and S.TYPE_PAYER='I' then 1 else 0 end) fiz,
          sum(case when S.TYPE_PAYER='SZ' then 1 else 0 end) sz,
          sum(case when S.TYPE_PAYMENT='P' then 1 else 0 end) pz,
