@@ -88,8 +88,9 @@ type_co as
   AND S.TYPE_PAYER!='E'
   GROUP BY s.sicid
 )
-select kat_mzp, rfbn_id, type, count(sicid) as cnt_sicid, sum(sum_pay) as sum_pay
-from (
+select kat_mzp, rfbn_id, name, type, count(sicid) as cnt_sicid, sum(sum_pay) as sum_pay
+from 
+(
   SELECT /*+ parallel(4)*/
       m.kat_mzp,
       -- m.sex,
@@ -110,8 +111,8 @@ from (
   WHERE a.sicid = m.sicid
   AND   m.br||'00'= br.RFBN_ID(+)
 )
-GROUP BY kat_mzp, rfbn_id, type
-ORDER BY 1,2,4
+GROUP BY kat_mzp, rfbn_id, name, type
+ORDER BY 1,2,3,4
 """
 
 
