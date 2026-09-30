@@ -2977,6 +2977,56 @@ dict_reports = {
                 },
             }
         }
+        ,
+        # ============================================================
+        # Ниже - REP_MINTRUD (Rep_Mintrud.pck), ОТДЕЛЬНЫЙ source-пакет от
+        # REP_STAT_EXTEND (app_NN выше): своя EAV-таблица
+        # (rptb_rep_mintrud_data), свои источники (pnpd_document/
+        # pnpt_payment/payment_history), своя нумерация ("Приложение №" по
+        # Приказу Министра труда). Физически - reports/DAUS/MINTRUD/, а не
+        # reports/DAUS/. См. docs/migration-plan.md, "Пакет 2: REP_MINTRUD".
+        # ============================================================
+        "Приказ Минтруда (REP_MINTRUD)":
+        {
+            "live_time": 24,
+            "module_dir": f"{REPORT_MODULE_PATH}.DAUS.MINTRUD",
+            "reports":
+            {
+                "01": {
+                    "name": "СО, пеня и число участников СОСС по региону "
+                            "(Форма 3)",
+                    "proc": "f3",
+                    "data_approve": "30.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_24M,
+                    }
+                },
+                "02": {
+                    "name": "Получатели и суммы СВ по региону и виду "
+                            "выплаты (Форма 4)",
+                    "proc": "f4",
+                    "data_approve": "30.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "03": {
+                    "name": "Средний размер назначенных СВ по региону и "
+                            "виду выплаты (Форма 5)",
+                    "proc": "f5",
+                    "data_approve": "30.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+            }
+        }
     }
     ,
 }
