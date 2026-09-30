@@ -8,10 +8,10 @@
 }
 common-container {
     margin: 1px;
-    min-height: 100%;
+    height: 100vh;
     display: grid;
     grid-template-columns: 1fr 7fr;
-    grid-template-rows: 44px 44px auto 36px;
+    grid-template-rows: 44px 44px minmax(0, 1fr) 36px;
     grid-gap: 1px;
     grid-template-areas: "header header"
         "nav article_title"
@@ -32,11 +32,18 @@ nav {
     grid-row-gap: 1px;
     grid-area: nav; /* задаем имя элемента */
     align-content: stretch;
+    overflow-y: auto;
 }
 article {
     padding: 6px 0px;
     margin: 0;
     grid-area: article; /* задаем имя элемента */
+    /* Раньше строка грида была auto - article рос под контент, и
+       скроллилась вся страница. Со minmax(0, 1fr) выше article занимает
+       ровно оставшуюся высоту вьюпорта, а overflow-y:auto скроллит только
+       список отчётов внутри неё - шапка/футер остаются на месте. */
+    overflow-y: auto;
+    min-height: 0;
 }
 article_title {
     padding: 2px 24px;
