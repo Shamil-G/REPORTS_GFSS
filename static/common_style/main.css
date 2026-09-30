@@ -5,6 +5,11 @@
     width: 100%;
     text-decoration: none;
     font-family: Calibri;
+    /* Страница целиком не должна скроллиться (скроллятся article/nav
+       внутри) - но margin у common-container + padding здесь в сумме на
+       несколько пикселей больше 100vh, и без overflow:hidden браузер всё
+       равно рисует свой серый скролл по всей странице. */
+    overflow: hidden;
 }
 common-container {
     margin: 1px;
@@ -44,6 +49,22 @@ article {
        список отчётов внутри неё - шапка/футер остаются на месте. */
     overflow-y: auto;
     min-height: 0;
+}
+/* Тонкий зелёный скролл у article/nav - Firefox не умеет задавать ширину
+   в пикселях (только auto/thin/none), поэтому там ближе всего "thin". */
+article, nav {
+    scrollbar-width: thin;
+    scrollbar-color: green transparent;
+}
+article::-webkit-scrollbar, nav::-webkit-scrollbar {
+    width: 4px;
+}
+article::-webkit-scrollbar-track, nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+article::-webkit-scrollbar-thumb, nav::-webkit-scrollbar-thumb {
+    background-color: green;
+    border-radius: 2px;
 }
 article_title {
     padding: 2px 24px;
