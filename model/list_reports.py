@@ -2701,9 +2701,9 @@ dict_reports = {
     # в имя файла дважды. Отчёты добавляются по возрастанию номера приложения.
     "ДАУС":
     {
-        "Приложения Минтруда": {
+        "Отчеты для Минтруда (REP_STAT_EXTEND)": {
             "live_time": 24,
-            "module_dir": f"{REPORT_MODULE_PATH}.DAUS",
+            "module_dir": f"{REPORT_MODULE_PATH}.DAUS.REP_STAT_EXTEND",
             "reports":
             {
                 "01": {
@@ -2983,13 +2983,14 @@ dict_reports = {
         # REP_STAT_EXTEND (app_NN выше): своя EAV-таблица
         # (rptb_rep_mintrud_data), свои источники (pnpd_document/
         # pnpt_payment/payment_history), своя нумерация ("Приложение №" по
-        # Приказу Министра труда). Физически - reports/DAUS/MINTRUD/, а не
-        # reports/DAUS/. См. docs/migration-plan.md, "Пакет 2: REP_MINTRUD".
+        # Приказу Министра труда). Физически - reports/DAUS/REP_MINTRUD/,
+        # а не reports/DAUS/REP_STAT_EXTEND/. См. docs/migration-plan.md,
+        # "Пакет 2: REP_MINTRUD".
         # ============================================================
-        "Приказ Минтруда (REP_MINTRUD)":
+        "Согласно Приказа Минтруда (REP_MINTRUD)":
         {
             "live_time": 24,
-            "module_dir": f"{REPORT_MODULE_PATH}.DAUS.MINTRUD",
+            "module_dir": f"{REPORT_MODULE_PATH}.DAUS.REP_MINTRUD",
             "reports":
             {
                 "01": {
