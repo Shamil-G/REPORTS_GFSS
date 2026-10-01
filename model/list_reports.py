@@ -2756,14 +2756,14 @@ dict_reports = {
                     }
                 },
                 "02": {
-                    "name": "Количество назначенный СВ 0704.070403.0705 в разрезе стажа (52 — СВ по беременности и родам, усыновлению"
-                            "и по уходу за ребёнком, по стажу в СОСС)",
-                    "proc": "app_52",
-                    "data_approve": "28.09.2026",
+                    "name": "Динамика количества получателей социальных выплат "
+                            "из ГФСС по месяцам года (33)",
+                    "proc": "app_33",
+                    "data_approve": "01.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {
                         "rep_year": REP_YEAR,
-                        "period": PERIOD,
+                        "period": PERIOD_YTD,
                     }
                 },
                 "03": {
@@ -2879,73 +2879,6 @@ dict_reports = {
                     }
                 },
                 "13": {
-                    "name": "Участники СОСС по уровню дохода, в разрезе "
-                            "пола (47)",
-                    "proc": "app_47",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_24M,
-                    }
-                },
-                "14": {
-                    "name": "Участники СОСС по стажу участия за 24 месяца, "
-                            "в разрезе пола (48)",
-                    "proc": "app_48",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_24M,
-                    }
-                },
-                "15": {
-                    "name": "Получатели и суммы СВур по очерёдности детей "
-                            "(Форма 3)",
-                    "proc": "app_f3",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "16": {
-                    "name": "Назначенные СВ в зависимости от дохода, по "
-                            "виду выплаты (50)",
-                    "proc": "app_50",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "rfpm_id": {**LIST_RFPM, "required": True},
-                    }
-                },
-                "17": {
-                    "name": "СВ по беременности и родам, по стажу и "
-                            "интервалу суммы выплаты (51)",
-                    "proc": "app_51",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "18": {
-                    "name": "Средний размер назначенных СВ по регионам и "
-                            "видам риска (55)",
-                    "proc": "app_55",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "19": {
                     "name": "Получатели и суммы СВ по возрасту и стажу, "
                             "по виду выплаты (42-46)",
                     "proc": "app_42_46",
@@ -2957,7 +2890,29 @@ dict_reports = {
                         "rfpm_id": {**LIST_RFPM, "required": True},
                     }
                 },
-                "20": {
+                "14": {
+                    "name": "Участники СОСС по уровню дохода, в разрезе "
+                            "пола (47)",
+                    "proc": "app_47",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_24M,
+                    }
+                },
+                "15": {
+                    "name": "Участники СОСС по стажу участия за 24 месяца, "
+                            "в разрезе пола (48)",
+                    "proc": "app_48",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_24M,
+                    }
+                },
+                "16": {
                     "name": "Обращения и назначения СВ по срокам "
                             "рассмотрения (49)",
                     "proc": "app_49",
@@ -2968,7 +2923,7 @@ dict_reports = {
                         "period": PERIOD,
                     }
                 },
-                "21": {
+                "17": {
                     "name": "Обращения и назначения СВ, метрика \"4 "
                             "рабочих дня\", по региону и виду риска (49.1)",
                     "proc": "app_49_1",
@@ -2979,7 +2934,41 @@ dict_reports = {
                         "period": PERIOD_7,
                     }
                 },
-                "22": {
+                "18": {
+                    "name": "Назначенные СВ в зависимости от дохода, по "
+                            "виду выплаты (50)",
+                    "proc": "app_50",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "rfpm_id": {**LIST_RFPM, "required": True},
+                    }
+                },
+                "19": {
+                    "name": "СВ по беременности и родам, по стажу и "
+                            "интервалу суммы выплаты (51)",
+                    "proc": "app_51",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "20": {
+                    "name": "Количество назначенный СВ 0704.070403.0705 в разрезе стажа (52 — СВ по беременности и родам, усыновлению"
+                            "и по уходу за ребёнком, по стажу в СОСС)",
+                    "proc": "app_52",
+                    "data_approve": "28.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "21": {
                     "name": "Количество плательщиков по БИН и ИИН в разрезе "
                             "регионов (53)",
                     "proc": "app_53",
@@ -2990,7 +2979,7 @@ dict_reports = {
                         "period": PERIOD,
                     }
                 },
-                "23": {
+                "22": {
                     "name": "СВур, доведённые до ГСП, квартал к прошлому "
                             "году (54)",
                     "proc": "app_54",
@@ -3001,7 +2990,40 @@ dict_reports = {
                         "period": PERIOD_QUARTER,
                     }
                 },
+                "23": {
+                    "name": "Средний размер назначенных СВ по регионам и "
+                            "видам риска (55)",
+                    "proc": "app_55",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
                 "24": {
+                    "name": "Динамика перехода степеней утраты "
+                            "трудоспособности получателей СВ 0702 (56)",
+                    "proc": "app_56",
+                    "data_approve": "01.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_MONTH,
+                    }
+                },
+                "25": {
+                    "name": "Динамика изменения количества иждивенцев "
+                            "получателей СВ 0701 (57)",
+                    "proc": "app_57",
+                    "data_approve": "01.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_MONTH,
+                    }
+                },
+                "26": {
                     "name": "Информация по оказанию услуг: назначения и "
                             "отказы по каналам обращения (58)",
                     "proc": "app_58",
@@ -3012,7 +3034,18 @@ dict_reports = {
                         "period": PERIOD,
                     }
                 },
-                "25": {
+                "27": {
+                    "name": "Получатели и суммы СВур по очерёдности детей "
+                            "(Форма 3)",
+                    "proc": "app_f3",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "28": {
                     "name": "СВБР: получатели по стажу участия, по виду "
                             "выплаты (табл. 1)",
                     "proc": "svbr_tab1",
@@ -3024,7 +3057,7 @@ dict_reports = {
                         "rfpm_id": {**LIST_RFPM, "required": True},
                     }
                 },
-                "26": {
+                "29": {
                     "name": "СВБР: получатели по доле МЗП, по виду "
                             "выплаты (табл. 2)",
                     "proc": "svbr_tab2",
@@ -3034,39 +3067,6 @@ dict_reports = {
                         "rep_year": REP_YEAR,
                         "period": PERIOD,
                         "rfpm_id": {**LIST_RFPM, "required": True},
-                    }
-                },
-                "27": {
-                    "name": "Динамика количества получателей социальных выплат "
-                            "из ГФСС по месяцам года (33)",
-                    "proc": "app_33",
-                    "data_approve": "01.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_YTD,
-                    }
-                },
-                "28": {
-                    "name": "Динамика перехода степеней утраты "
-                            "трудоспособности получателей СВ 0702 (56)",
-                    "proc": "app_56",
-                    "data_approve": "01.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_MONTH,
-                    }
-                },
-                "29": {
-                    "name": "Динамика изменения количества иждивенцев "
-                            "получателей СВ 0701 (57)",
-                    "proc": "app_57",
-                    "data_approve": "01.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_MONTH,
                     }
                 },
             }
