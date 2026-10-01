@@ -39,7 +39,7 @@ report_name = ('Сведения о числе получателей и сум�
                '{period}')
 
 _period_label = make_period_label({
-    1: '{month}{year} года',
+    1: '{month} {year} года',
     2: '{n} квартал {year} года',
     3: '{n} полугодие {year} года',
     4: '9 месяцев {year} года',
