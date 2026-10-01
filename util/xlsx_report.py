@@ -61,6 +61,10 @@ class Col:
     # С avg_of=(колонка суммы, колонка количества) итог считается верно -
     # sum(числитель)/sum(знаменатель); включать только после согласования с ДАУС.
     avg_of: tuple = None
+    # Вид значения по строкам: имя колонки SQL, где у каждой строки лежит свой
+    # kind ('int' / 'money'). Нужен отчётам-карточкам, где в одной колонке
+    # идут и человеки, и тенге (форма 18 REP_MINTRUD). Пусто в строке - kind.
+    kind_of: str = None
 
 
 @dataclass
@@ -456,7 +460,8 @@ def build_report(*, code, name, columns, stmt,
                         row = data_row0
                     sheet.write_number(row, 0, n + 1, fmt['center'])
                     for i, c in enumerate(leaves, start=1):
-                        _write_cell(sheet, row, i, record.get(c.key), c.kind)
+                        kind = (c.kind_of and record.get(c.kind_of)) or c.kind
+                        _write_cell(sheet, row, i, record.get(c.key), kind)
                     row += 1
 
                 if not sheets:
