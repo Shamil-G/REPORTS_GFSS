@@ -8,14 +8,14 @@
 01.12.2021.
 
 Перестроено так же, как app_56 (подробности и обоснование - в его docstring и
-util/dyn_matrix.py): строка - число иждивенцев на начало месяца, столбцы - в
+dyn_matrix.py): строка - число иждивенцев на начало месяца, столбцы - в
 какое число иждивенцев перешли, прибыло / убыло / на конец периода. Группа
 получателя - последний символ rfpm_id (1, 2, 3, 4 и более). Требуется
 подтверждение определений Шамилем и проверка формата rfpm_id.
 Ветка шапки 'f' ("Форма № 28") не переносится.
 """
 from db.connect import LOADER_PROFILE
-from util.dyn_matrix import matrix_stmt
+from reports.DAUS.REP_STAT_EXTEND.dyn_matrix import matrix_stmt
 from util.period import make_period_label
 from util.xlsx_report import build_report, Col, Group
 
