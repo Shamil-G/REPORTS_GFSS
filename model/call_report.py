@@ -140,9 +140,7 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
         return {"status": 0, "file_path": "Mistake in parameters"}
 
     module_dir = group["module_dir"]
-    # у отдельного отчёта срок хранения готового файла может отличаться от
-    # группы (тяжёлые годовые отчёты хранятся дольше)
-    live_time = report.get("live_time", group["live_time"])
+    live_time = group["live_time"]
     proc = report["proc"]
     module_path = f"{module_dir}.{proc}"
 
