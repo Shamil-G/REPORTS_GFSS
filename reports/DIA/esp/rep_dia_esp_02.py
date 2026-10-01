@@ -27,7 +27,7 @@ from (
     with esp as (
                select sicid, pay_date, si.sum_pay, si.pay_month
                from   si_member_2 si
-               where  si.type_payer='Е'
+               where  si.type_payer='E'
                and    si.knp='012'       
                and    si.pay_date >= to_date(:dt_from, 'YYYY-MM-DD')
 			   and    trunc(si.pay_date,'DD') <= to_date(:dt_to, 'YYYY-MM-DD')
@@ -36,7 +36,7 @@ from (
         non_esp as (
                select unique si.sicid
                from   si_member_2 si
-               where  si.type_payer!='Е'
+               where  si.type_payer!='E'
                and    si.knp='012'       
                and    si.pay_date >= to_date(:dt_from, 'YYYY-MM-DD')
 			   and    trunc(si.pay_date,'DD') <= to_date(:dt_to, 'YYYY-MM-DD')

@@ -16,7 +16,7 @@ stmt_1 = """
 with esp as (
                select si.sicid, sfa.rfbn_id, sfa.iin, sfa.rfpm_id,  sfa.risk_date, sfa.sum_avg, sfa.kzd,mrzp, sfa.count_donation, sfa.sum_all, sfa.date_approve
                from   si_member_2 si, sipr_maket_first_approve_2 sfa
-               where  si.type_payer='Е' 
+               where  si.type_payer='E' 
                and    si.sicid=sfa.sicid
 			   --and	  substr(sfa.rfpm_id,1,4)<>'0703'
                and    trunc(sfa.date_approve) Between to_date(:d1,'yyyy-mm-dd') And to_date(:d2,'yyyy-mm-dd')
@@ -26,7 +26,7 @@ with esp as (
         non_esp as (
                select unique si.sicid
                from   si_member_2 si, sipr_maket_first_approve_2 sfa
-               where  si.type_payer!='Е' --or type_payer is null
+               where  si.type_payer!='E' --or type_payer is null
                and    si.sicid=sfa.sicid
 			   --and	  substr(sfa.rfpm_id,1,4)<>'0703'
                and    trunc(sfa.date_approve) Between to_date(:d1,'yyyy-mm-dd') And to_date(:d2,'yyyy-mm-dd')

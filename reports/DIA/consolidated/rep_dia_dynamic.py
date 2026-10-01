@@ -149,7 +149,7 @@ select ' 9. снятые, человек' line,
        sum( case when rfpm='0703' then cnt else 0 end) sum_0703,
        sum( case when rfpm='0705' then cnt else 0 end) sum_0705
 from r
-where r.riac_id in (151, 52)
+where r.riac_id in (151, 152)
 
 union 
 
