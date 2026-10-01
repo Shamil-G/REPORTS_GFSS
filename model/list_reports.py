@@ -54,6 +54,7 @@ DYNAMIC_VALUES = {
     "current_year": lambda: str(date.today().year),
     "current_month": lambda: f"1.{date.today().month}",
     "current_quarter": lambda: f"2.{(date.today().month - 1) // 3 + 1}",
+    "current_ytd": lambda: f"7.{date.today().month}",
 }
 
 REP_YEAR = {
@@ -95,6 +96,16 @@ PERIOD_7 = {
     "required": True,
     "values": period_choices((1, 2, 3, 4, 5, 7)),
     "dynamic": {"default": "current_month"},
+}
+
+# Только "с начала года по месяц" (тип 7) - для app_33: годовая таблица, которая
+# снимается каждый месяц, каждый срез - отдельный файл.
+PERIOD_YTD = {
+    "display_name": "Период",
+    "type": "list",
+    "required": True,
+    "values": period_choices((7,)),
+    "dynamic": {"default": "current_ytd"},
 }
 
 # Только квартал - для app_54, чья структура (квартал / тот же квартал год
@@ -3027,11 +3038,15 @@ dict_reports = {
                     "name": "Динамика количества получателей социальных выплат "
                             "из ГФСС по месяцам года (33)",
                     "proc": "app_33",
-                    "live_time": 720,
+                    # 0 = готовый файл не удаляется. Отчёт снимается каждый
+                    # месяц, срез хранится на сервере; малое время ставить
+                    # только на тесты.
+                    "live_time": 0,
                     "data_approve": "01.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {
                         "rep_year": REP_YEAR,
+                        "period": PERIOD_YTD,
                     }
                 },
             }

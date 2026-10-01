@@ -41,8 +41,11 @@ payment_history воспроизвести нельзя: она хранится
   запрос пересчитывает все 12 месяцев года по живым данным. Платёжные
   документы могут меняться задним числом, поэтому повторный расчёт
   закрытого месяца способен дать другие цифры, чем раньше (раньше они
-  замораживались при сборе). Готовый файл хранится на сервере 30 суток
-  (live_time отчёта), повторное снятие в этот срок отдаёт тот же файл.
+  замораживались при сборе в БД, которая чистилась).
+- Хранение: отчёт снимается ЕЖЕМЕСЯЧНО (параметры: год и "с начала года по
+  месяц"), каждый срез - отдельный xlsx на сервере со сроком жизни 0 (бесконечно,
+  решение Шамиля 01.10.2026): срез не пересчитывается и не зависит от
+  очистки БД. Малый срок выставляют только для тестов.
 - Вид 0704 не считается, как и в оригинале и в F11.
 - Нулевая и пустая ячейка печатаются пустыми (оригинал: `if x <> 0 and x is
   not null`), blank_zero=True.
@@ -60,28 +63,22 @@ payment_history воспроизвести нельзя: она хранится
 Ветка шапки 'f' ("Форма № 5") не переносится: вызывался только 'm'.
 """
 from db.connect import LOADER_PROFILE
+from util.period import make_period_label
 from util.xlsx_report import build_report, Col
 
 report_code = 'APP.33'
 
 
-class _YearPhrase:
-    """text_params: фраза подставляется для любого года, а не из
-    фиксированного словаря (список годов растёт с календарём)."""
-
-    @staticmethod
-    def get(key, default=''):
-        try:
-            return f'{int(key):04d} год'
-        except (TypeError, ValueError):
-            return default
-
-
 # cSPTitle || p_PH_per (строки 2787, 2793): "<br> за 2025 год" - перенос
 # строки в HTML, здесь пробел.
 report_name = ('Динамика количества* получателей социальных выплат из '
-               'Государственного фонда социального страхования, '
-               'за {rep_year}')
+               'Государственного фонда социального страхования, {period}')
+
+# Годовая таблица с данными с начала года по выбранный месяц: отчёт снимается
+# каждый месяц и хранится готовым (тип периода 7 = "с начала года по месяц").
+_period_label = make_period_label({
+    7: 'за {year} год (с начала года по {month})',
+})
 
 FOOTNOTE = ('* - участники системы обязательного социального страхования - '
             'лица, за которых в отчетном периоде была произведена уплата '
@@ -189,8 +186,10 @@ _SPINE_ROW = '\n    union all\n'.join(
     for vt, n, k in _ROWS
 )
 
-# :rep_year - год из формы. mon13: mn = 0 - декабрь прошлого года (нужен как
-# "предыдущий месяц" для января), 1..12 - месяцы отчётного года.
+# :rep_year - год из формы, :d_from / :d_to - границы "с начала года по месяц",
+# _N ниже - число месяцев в них. mon13: mn = 0 - декабрь прошлого года (нужен
+# как "предыдущий месяц" для января), 1..N - месяцы отчётного года, дальше
+# месяцы не считаются (отчёт - срез на конец выбранного месяца).
 #
 # rec    - получатели месяца, дословно "c" и "p" из Fill_F11 (документы
 #          ridt_id = 6, pncp_date = первое число месяца), но все 13 месяцев
@@ -204,6 +203,8 @@ _SPINE_ROW = '\n    union all\n'.join(
 # dsum   - выплаты месяца по документам (ridt_id 6/7/8) в разрезе
 #          получателя и вида; из них paid (на получателя, для строки 93)
 #          и s8 (на вид, для строки 91).
+_N = "round(months_between(:d_to, :d_from))"
+
 STMT = f"""
 with vid as ({_SPINE_VID}
 ),
@@ -213,7 +214,7 @@ mon13 as (
     select level - 1 mn,
            add_months(to_date(:rep_year || '0101', 'yyyymmdd'), level - 2) m
       from dual
-   connect by level <= 13
+   connect by level <= {_N} + 1
 ),
 rec as (
     select unique mm.mn, d.source_id, d.pncd_id,
@@ -241,7 +242,7 @@ j as (
            null, p.source_id_main,
            p.pncd_id
       from rec p
-     where p.mn <= 11
+     where p.mn <= {_N} - 1
        and not exists (select 1 from rec c
                         where c.source_id = p.source_id
                           and c.mn = p.mn + 1)
@@ -315,7 +316,7 @@ mv0 as (
 ),
 grid as (
     select m.mn, s.rfpm
-      from (select level mn from dual connect by level <= 12) m, vid s
+      from (select level mn from dual connect by level <= {_N}) m, vid s
 ),
 mv as (
     select g.mn, g.rfpm,
@@ -345,7 +346,7 @@ select case when t.vt = 90 then s.vid end vid,
 
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
-    profile=LOADER_PROFILE, period=False, totals=False, blank_zero=True,
-    footnote=FOOTNOTE, text_params={'rep_year': _YearPhrase},
+    profile=LOADER_PROFILE, period=True, totals=False, blank_zero=True,
+    period_label=_period_label, footnote=FOOTNOTE,
     sheet_name='Приложение 33',
 )
