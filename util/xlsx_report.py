@@ -35,6 +35,25 @@ CODE_ROW = 1
 COLNUM_ROW = 2
 HEADER_ROW = 3          # первая строка шапки таблицы
 
+def _parse_date(value):
+    """Дата из поля формы: 2026-01-31 (input type=date) или 31.01.2026."""
+    if isinstance(value, datetime.datetime):
+        return value.date()
+    if isinstance(value, datetime.date):
+        return value
+    text = str(value).strip()[:10]
+    fmt = '%Y-%m-%d' if text[4:5] == '-' else '%d.%m.%Y'
+    return datetime.datetime.strptime(text, fmt).date()
+
+
+def _eom(d):
+    """Последний день месяца (last_day)."""
+    nxt = (d.replace(day=28) + datetime.timedelta(days=4)).replace(day=1)
+    return nxt - datetime.timedelta(days=1)
+
+
+parse_date = _parse_date      # для проверок check_params в модулях отчётов
+
 _BIND_RE = re.compile(r':([A-Za-z_]\w*)')
 
 # Подстановки в текстах отчёта. Нужны там, где формулировка официальной
@@ -65,6 +84,9 @@ class Col:
     # kind ('int' / 'money'). Нужен отчётам-карточкам, где в одной колонке
     # идут и человеки, и тенге (форма 18 REP_MINTRUD). Пусто в строке - kind.
     kind_of: str = None
+    # Печатать ли итог по колонке. В PL/SQL итог включался отдельно для каждой
+    # колонки (`SetColSumTotal(N)`): часть отчётов суммирует не все числа.
+    total: bool = True
 
 
 @dataclass
@@ -279,6 +301,12 @@ def _used_binds(stmt, candidates):
 def build_report(*, code, name, columns, stmt,
                  profile=DEFAULT_PROFILE,
                  period=False,
+                 date_range=False,    # период "с date_first по date_second" вместо года + периода
+                 max_days=None,       # date_range: наибольшая разница дат, иначе отказ
+                 check_params=None,   # функция(params): проверка ввода, при ошибке ValueError
+                 title_params=(),     # параметры формы, значение которых печатается в названии
+                 title_sql=None,      # запрос реквизитов для названия: колонки -> {колонка}
+                 title_not_found='Данные не найдены',   # текст ошибки, если title_sql пуст
                  totals=False,
                  footnote=None,
                  blank_zero=False,
@@ -295,6 +323,33 @@ def build_report(*, code, name, columns, stmt,
     title_height - в пунктах, header_heights - список по строкам шапки сверху
     вниз, None в списке оставляет строку на автоподборе. Например, для
     двухуровневой шапки header_heights=[None, 60].
+
+    date_range - отчёты, у которых в AIS период задавался двумя датами. В запрос
+    уходят :d_from, :d_to (исключительная, на сутки позже date_second) и :y_from
+    (первое января года начала периода), так что
+    условие то же, что у периодических отчётов: `>= :d_from and < :d_to`.
+    В name место для периода - '{period}', выводится "01.01.2026 по 31.01.2026";
+    если формулировка оригинала печатает даты порознь ("Период с: ... по: ..."),
+    в name ставятся '{date_from}' и '{date_to}' ('{date_from_dash}' и
+    '{date_to_dash}' - то же в формате dd-mm-yyyy; '{date_to_eom}' - последний
+    день месяца даты «по», для отчётов с `p_EndDate := last_day(p_EndDate)`).
+    max_days - ограничение оригинала на длину периода (разница дат, как в PL/SQL
+    `(pDateTo - pDateFrom) > 366`): больше - отчёт не строится.
+
+    check_params - проверки введённых значений, которые в PL/SQL делал сам отчёт
+    (`raise_application_error(-20000, 'Введен неправильный БИН!')`). Вызывается
+    до запроса; текст ValueError попадает в журнал.
+
+    stmt - текст запроса либо функция(params) -> текст запроса.
+
+    title_sql - запрос (те же :бинды формы), одна строка которого даёт реквизиты
+    для названия: каждая колонка подставляется в name как '{колонка}' (ФИО и СИК
+    получателя в справке). Нет строки - ValueError с текстом title_not_found.
+
+    В name можно поставить '{today}' - дата формирования отчёта (dd.mm.yyyy).
+
+    title_params - имена параметров формы, чьё введённое значение печатается в
+    названии как есть (БИН, ИИН, код региона): в name место помечено '{имя}'.
 
     text_params - подстановка в name текста, зависящего не от периода, а от
     обычного параметра формы (например, выбранный вид выплаты меняет
@@ -372,7 +427,7 @@ def build_report(*, code, name, columns, stmt,
                 value = num / den if den else 0
                 ws.write_number(row, i, value,
                                 fmt.get(('total', i)) or fmt['total_money'])
-            elif c.kind in ('int', 'money', 'avg'):
+            elif c.kind in ('int', 'money', 'avg') and c.total:
                 # 'avg' без avg_of складывается как есть - так делал
                 # Rep.SetColSumTotal; см. комментарий к Col.avg_of
                 value = sum(float(r.get(c.key) or 0) for r in records)
@@ -395,19 +450,43 @@ def build_report(*, code, name, columns, stmt,
         for ws in sheets:
             ws.write(CODE_ROW, total_cols - 1, stamp, fmt['period'])
 
-    def _write_sql_sheet(workbook):
+    def _write_sql_sheet(workbook, sql):
         sheet = workbook.add_worksheet('SQL')
         sheet.set_column(0, 8, 14)
-        lines = stmt.splitlines()
-        sheet.merge_range(0, 0, max(len(lines) - 1, 1), 8, stmt, fmt['sql'])
+        lines = sql.splitlines()
+        sheet.merge_range(0, 0, max(len(lines) - 1, 1), 8, sql, fmt['sql'])
 
-    def _bind_values(params):
+    def _bind_values(params, sql):
         """Кандидаты в бинды: параметры формы плюс границы периода."""
+        if check_params:
+            check_params(params)
         candidates = {k: (v if v != '' else None)
                       for k, v in params.items() if k != 'file_name'}
         title, subtitle, word = name, '', ''
         for key, mapping in (text_params or {}).items():
             title = title.replace('{' + key + '}', mapping.get(params.get(key), ''))
+        if date_range:
+            first = _parse_date(params['date_first'])
+            second = _parse_date(params['date_second'])
+            if second < first:
+                raise ValueError('Начальная дата больше конечной')
+            if max_days is not None and (second - first).days > max_days:
+                raise ValueError('Выбран слишком большой период!')
+            candidates.update(d_from=first,
+                              d_to=second + datetime.timedelta(days=1),
+                              y_from=datetime.date(first.year, 1, 1))
+            phrase = f'{first:%d.%m.%Y} по {second:%d.%m.%Y}'
+            title = (title.replace('{date_from}', f'{first:%d.%m.%Y}')
+                          .replace('{date_to}', f'{second:%d.%m.%Y}')
+                          .replace('{date_to_eom}', f'{_eom(second):%d.%m.%Y}')
+                          .replace('{date_from_dash}', f'{first:%d-%m-%Y}')
+                          .replace('{date_to_dash}', f'{second:%d-%m-%Y}'))
+            if PERIOD_SLOT in name:
+                title = title.replace(PERIOD_SLOT, phrase)
+            elif '{date_from' in name:
+                pass            # даты уже стоят в названии, отдельная подпись не нужна
+            else:
+                subtitle = f'За период: с {phrase}'
         if period:
             rep_year = params['rep_year']
             # одно поле формы "период" несёт и тип, и номер: "2.3" = III квартал
@@ -423,7 +502,19 @@ def build_report(*, code, name, columns, stmt,
                 title = title.replace(PERIOD_SLOT, phrase)
             else:
                 subtitle = f'За период: {phrase}'
-        return _used_binds(stmt, candidates), title, subtitle, word
+        # "на 02.10.2026 г." - дата формирования, как sysdate в названии оригинала
+        title = title.replace('{today}', f'{datetime.date.today():%d.%m.%Y}')
+        for key in title_params:
+            title = title.replace('{' + key + '}', str(params.get(key) or ''))
+        if title_sql:
+            # реквизиты в названии, которые берутся из БД (ФИО, СИК, наименование)
+            rows = select_2(title_sql, _used_binds(title_sql, candidates),
+                            profile=profile, raise_on_error=True)
+            if not rows:
+                raise ValueError(title_not_found)
+            for key, value in rows[0].items():
+                title = title.replace('{' + key + '}', str(value or ''))
+        return _used_binds(sql, candidates), title, subtitle, word
 
     fmt = None          # заполняется внутри do_report, живёт в замыкании
 
@@ -438,12 +529,15 @@ def build_report(*, code, name, columns, stmt,
         log.info(f'DO REPORT. START {code}. PARAMS: {params}, FILE: {file_name}')
 
         try:
-            binds, title, subtitle, word = _bind_values(params)
+            # stmt - текст запроса или функция(params) -> текст: у отчётов, где
+            # разрез зависит от формы (область / республика), запросы разные
+            sql = stmt(params) if callable(stmt) else stmt
+            binds, title, subtitle, word = _bind_values(params, sql)
             log.info(f'REPORT: {code}. BINDS: {binds}')
 
             # raise_on_error=True: пустой результат не должен маскировать ошибку
             # запроса, иначе отчёт тихо запишется пустым и получит статус "готов"
-            records = select_2(stmt, binds, profile=profile, raise_on_error=True)
+            records = select_2(sql, binds, profile=profile, raise_on_error=True)
 
             with xlsxwriter.Workbook(file_name) as workbook:
                 fmt = _build_formats(workbook, leaves)
@@ -480,7 +574,7 @@ def build_report(*, code, name, columns, stmt,
                                            footnote, fmt['footnote'])
 
                 _write_stamp(sheets, start_time)
-                _write_sql_sheet(workbook)
+                _write_sql_sheet(workbook, sql)
                 sheets[0].activate()
 
             set_status_report(file_name, STATUS_DONE)

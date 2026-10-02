@@ -278,8 +278,8 @@ def select_one(stmt, args):
                 row = cursor.fetchone()
                 if row:
                     result=dict(zip(columns, row))
-                else:
-                    log.info(f'--->\n\tSELECT_ONE. ROW is Empty\n\tparams: {args}\n\tSTMT: {stmt}\n<---')
+                # Пустой результат - штатная ситуация (например, отчёта ещё нет в журнале):
+                # в протокол не пишется, вызывающий сам решает, что с этим делать.
                 return result
             except oracledb.DatabaseError as e:
                 error, = e.args

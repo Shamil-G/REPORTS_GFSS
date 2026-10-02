@@ -170,3 +170,18 @@ def make_period_label(overrides=None):
 
 
 period_label = make_period_label()
+
+
+def dates_label(rep_year, date_type, date_start=None) -> str:
+    """"01.09.2026 по 30.09.2026" - для отчётов, где в оригинале период
+    печатался парой дат (с первого по последний день), а не словами.
+    Последний день - включительно, d_to в SQL при этом исключительная."""
+    d_from, d_to = period_bounds(rep_year, date_type, date_start)
+    return f'{d_from:%d.%m.%Y} по {last_day(d_to):%d.%m.%Y}'
+
+
+def first_date_label(rep_year, date_type, date_start=None) -> str:
+    """"01.09.2026" - первое число периода: так печатался параметр-дата
+    в названиях старых отчётов (`... за ' || pdate || ' г.'`)."""
+    d_from, _ = period_bounds(rep_year, date_type, date_start)
+    return f'{d_from:%d.%m.%Y}'

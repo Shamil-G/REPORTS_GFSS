@@ -130,6 +130,54 @@ def init_report(name_report: str, date_first: str, date_second: str, rfpm_id: st
 #     return module_dir, proc_name
 
 
+_name_limit_bytes = None
+
+
+def _journal_name_limit() -> int:
+    """Сколько байт помещается в LOAD_REPORT_STATUS.NAME.
+
+    Читается из словаря БД один раз: колонка была varchar2(96 byte), то есть
+    около 48 русских букв при AL32UTF8. После `alter table load_report_status
+    modify name varchar2(400 char)` предел вырастет сам, код менять не нужно.
+    """
+    global _name_limit_bytes
+    if _name_limit_bytes is None:
+        try:
+            row = select_one("""select data_length from user_tab_columns
+                                 where table_name = 'LOAD_REPORT_STATUS'
+                                   and column_name = 'NAME'""", {})
+            _name_limit_bytes = int(row.get('data_length') or 96)
+        except Exception:
+            log.exception('Не удалось узнать длину LOAD_REPORT_STATUS.NAME')
+            return 96
+    return _name_limit_bytes
+
+
+def journal_name(dep_name: str, group_name: str, report_name: str, num_rep: str) -> str:
+    """Имя отчёта в журнале запусков (/running-reports).
+
+    Отдел.Группа.Название отчёта (ключ), например:
+    ДИА.1501.Количество иждивенцев и сумма 0701 за период (01).
+    Раньше туда писались только шифры («1501.01.3016»), по ним нельзя было понять,
+    что за отчёт. Если строка не помещается в колонку, сокращается название отчёта
+    (с многоточием), а отдел, группа и ключ остаются.
+    """
+    suffix = f' ({num_rep})'
+    head = f'{dep_name}.{group_name}.'
+    name = ' '.join(str(report_name or '').split())
+    limit = _journal_name_limit()
+    full = f'{head}{name}{suffix}'
+    if len(full.encode('utf-8')) <= limit:
+        return full
+    room = limit - len((head + suffix).encode('utf-8')) - len('…'.encode('utf-8'))
+    if room <= 0:       # группа длиннее колонки: режем целиком, ключ в конце не теряем
+        room_all = limit - len(suffix.encode('utf-8')) - len('…'.encode('utf-8'))
+        cut = f'{head}{name}'.encode('utf-8')[:max(room_all, 0)].decode('utf-8', 'ignore')
+        return f'{cut}…{suffix}'
+    cut = name.encode('utf-8')[:room].decode('utf-8', 'ignore').rstrip()
+    return f'{head}{cut}…{suffix}'
+
+
 def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
     log.info(f'\nCALL REPORT. DEP: {dep_name}, group: {group_name}, code: {num_rep}, input_params: {params}')
 
@@ -212,7 +260,7 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
 
     # Если запись об отчете в БД отсутствует, то ее надо сделать
     if status in (0,10):
-        status = init_report(f'{group_name}.{num_rep}.{rep_code}', date_first, date_second, rfpm_id, rfbn_id, live_time, file_name)
+        status = init_report(journal_name(dep_name, group_name, report.get("name"), num_rep), date_first, date_second, rfpm_id, rfbn_id, live_time, file_name)
         log.debug(f'CALL REPORT. Status: {status}')
         if status == 1:
             log.info(f'CALL REPORT. REPORT PREPARING. Status: {status}, file_name: {file_name}')

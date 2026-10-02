@@ -176,6 +176,191 @@ F11_RFPM = {
 dict_reports = {
     "ДИА": 
     {
+        "100 - Отчеты по выплатам":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.100",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "1 - Анализ назначения социальных выплат с начала года",
+                    "proc": "rep_dia_1",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "02": {
+                    "name": "2 - Социальные выплаты из АО \"ГФСС\" через ГЦВП по РК",
+                    "proc": "rep_dia_2",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "03": {
+                    "name": "4 - Мониторинг движения макетов дел",
+                    "proc": "rep_dia_4",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rfpm_kind": {"display_name": "Вид выплаты", "type": "list", "required": True, "values": {"1": "1 - по потере кормильца", "2": "2 - по утрате трудоспособности", "3": "3 - по потере работы", "4": "4 - по потере дохода в связи с беременностью и родами", "5": "5 - по потере дохода по уходу до 1 года", "6": "6 - по потере дохода в связи с усыновлением (удочерением) новорожденного"}}},
+                },
+                "04": {
+                    "name": "5 - Анализ поступлений социальных отчислений и социальных выплат из Фонда",
+                    "proc": "rep_dia_5",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR},
+                },
+                "05": {
+                    "name": "8 - Сравнительный анализ получателей соц выплат и ГСП",
+                    "proc": "rep_dia_8",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {},
+                },
+                "06": {
+                    "name": "9 - Сведения о назначенных социальных выплатах из АО «ГФСС» по случаю потери работы",
+                    "proc": "rep_dia_9",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "07": {
+                    "name": "10 - «Еженедельные» оперативные сведения о назначенных социальных выплатах",
+                    "proc": "rep_dia_10",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "08": {
+                    "name": "11 - «Еженедельные» оперативные сведения об обратившихся за назначением социальных выплат",
+                    "proc": "rep_dia_11",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "09": {
+                    "name": "12 - Сведения об участниках системы социального страхования, обратившихся за социальной выплатой по случаю потери работы",
+                    "proc": "rep_dia_12",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "10": {
+                    "name": "13 - СВЕДЕНИЯ о назначенных социальных выплатах из АО «ГФСС» по случаю потери работы",
+                    "proc": "rep_dia_13",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "11": {
+                    "name": "17 - 100-9 По регионам",
+                    "proc": "rep_dia_17",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+            }
+        },
+        "300": 
+        { 
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.300",
+            "live_time":  0,
+            "reports": 
+            {
+                "01": {
+                    "name": "Сведения о поступивших возвратах излишне зачисленных (выплаченных) сумм социальных выплат. Отчет 9V для Министерства",
+                    "proc": "rep_dia_300_09",
+                    "data_approve": "13.06.2023",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "02": {
+                    "name": "Список плательщиков, уплативших социальные отчисления за работников с численностью более 50 человек хотя бы 1 раз за предыдущие 6 месяцев",
+                    "proc": "rep_dia_50",
+                    "data_approve": "26.07.2023",
+                    "author": "Алиманов Д.Д.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                }
+                # ДУБЛИРУЕТСЯ по сообщению Заказчика (02.10.2026), форма REP_MINTRUD (Rep_Mintrud.pck, f3): AIS - группа «Отчёты в МинТруд» (300)
+                # "03": {
+                #     "name": "СО, пеня и число участников СОСС по региону "
+                #             "(Форма 3)",
+                #     "proc": "f3",
+                #     "data_approve": "30.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD_24M,
+                #     }
+                # },
+                # ДУБЛИРУЕТСЯ по сообщению Заказчика (02.10.2026), форма REP_MINTRUD (Rep_Mintrud.pck, f4): AIS - группа «Отчёты в МинТруд» (300)
+                # "04": {
+                #     "name": "Получатели и суммы СВ по региону и виду "
+                #             "выплаты (Форма 4)",
+                #     "proc": "f4",
+                #     "data_approve": "30.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #     }
+                # },
+                # ДУБЛИРУЕТСЯ по сообщению Заказчика (02.10.2026), форма REP_MINTRUD (Rep_Mintrud.pck, f5): AIS - группа «Отчёты в МинТруд» (300)
+                # "05": {
+                #     "name": "Средний размер назначенных СВ по региону и "
+                #             "виду выплаты (Форма 5)",
+                #     "proc": "f5",
+                #     "data_approve": "30.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #     }
+                # },
+                # ДУБЛИРУЕТСЯ по сообщению Заказчика (02.10.2026), форма REP_MINTRUD (Rep_Mintrud.pck, f11): AIS - группа «Отчёты в МинТруд» (300)
+                # "06": {
+                #     "name": "Динамика численности получателей СВ за месяц "
+                #             "по виду выплаты (Приложение 18)",
+                #     "proc": "f11",
+                #     "data_approve": "01.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD_MONTH,
+                #         "rfpm_id": F11_RFPM,
+                #     }
+                # },
+            }
+        },
+        "400 - Отчеты для программы по возвратам":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.400",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "408 - Отчёт по возвращённым суммам",
+                    "proc": "rep_dia_408",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "02": {
+                    "name": "409 - Отчет по аннулированным",
+                    "proc": "rep_dia_409",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "03": {
+                    "name": "412 - Отчёт по возвращённым суммам (Для реестра)",
+                    "proc": "rep_dia_412",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+            }
+        },
         "500":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.500",
@@ -203,6 +388,400 @@ dict_reports = {
                             }
                     }
                 }
+        },
+        "600 - Справки":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.600",
+            "live_time": 0,
+            "reports":
+            {
+                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_601.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
+                # "01": {
+                #     "name": "601 - Справка о произведенных выплатах",
+                #     "proc": "rep_dia_601",
+                #     "data_approve": "02.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
+                # },
+                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_602.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
+                # "02": {
+                #     "name": "602 - Справка о доходах за год",
+                #     "proc": "rep_dia_602",
+                #     "data_approve": "02.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                # },
+                "03": {
+                    "name": "605 - Реестр беременных",
+                    "proc": "rep_dia_605",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
+                },
+            }
+        },
+        "700 - Actuar":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.700",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "708 - Средний возраст получателей по утрате трудоспособности",
+                    "proc": "rep_dia_708",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "02": {
+                    "name": "709 - Средний возраст иждивенцев",
+                    "proc": "rep_dia_709",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "03": {
+                    "name": "710 - Средневзвешенные КСУ",
+                    "proc": "rep_dia_710",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "04": {
+                    "name": "711 - Средние размеры по утрате трудоспособности",
+                    "proc": "rep_dia_711",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "05": {
+                    "name": "712 - Средние размеры по потере кормильца",
+                    "proc": "rep_dia_712",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "06": {
+                    "name": "713 - Средние размеры по потере работы",
+                    "proc": "rep_dia_713",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "07": {
+                    "name": "714 - Средняя продолжительность выплат по утрате трудоспособности (факт)",
+                    "proc": "rep_dia_714",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "08": {
+                    "name": "715 - Средняя продолжительность выплат по утрате трудоспособности (прогноз)",
+                    "proc": "rep_dia_715",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "09": {
+                    "name": "716 - Средняя продолжительность выплат по потере кормильца (факт)",
+                    "proc": "rep_dia_716",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+            }
+        },
+        "1000 - Формы статотчётности в Мин. труд. 2014":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.1000",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "Оперативная отчетность по СВ из ГФСС (32 — Получатели и суммы СВ по видам риска)",
+                    "proc": "app_32",
+                    "data_approve": "28.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "02": {
+                    "name": "Сведения о составе участников СОСС и суммах СО "
+                            "(35 — в разрезе возраста и пола)",
+                    "proc": "app_35",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "03": {
+                    "name": "Число страховых случаев и суммы СВ по видам "
+                            "(36 — в разрезе пола)",
+                    "proc": "app_36",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "04": {
+                    "name": "Число страховых случаев и суммы СВ по видам "
+                            "(37 — в разрезе пола и возраста)",
+                    "proc": "app_37",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "05": {
+                    "name": "Коэффициент замещения дохода при утрате "
+                            "трудоспособности (38)",
+                    "proc": "app_38",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "06": {
+                    "name": "Коэффициент замещения дохода при потере "
+                            "кормильца (39)",
+                    "proc": "app_39",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "07": {
+                    "name": "Коэффициент замещения дохода по уходу за "
+                            "ребёнком до года (41)",
+                    "proc": "app_41",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "08": {
+                    "name": "Получатели и суммы СВ по возрасту и стажу, "
+                            "по виду выплаты (42-46)",
+                    "proc": "app_42_46",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "rfpm_id": {**LIST_RFPM, "required": True},
+                    }
+                },
+                "09": {
+                    "name": "Количество назначенный СВ 0704.070403.0705 в разрезе стажа (52 — СВ по беременности и родам, усыновлению"
+                            "и по уходу за ребёнком, по стажу в СОСС)",
+                    "proc": "app_52",
+                    "data_approve": "28.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "10": {
+                    "name": "Количество плательщиков по БИН и ИИН в разрезе "
+                            "регионов (53)",
+                    "proc": "app_53",
+                    "data_approve": "01.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "11": {
+                    "name": "СВур, доведённые до ГСП, квартал к прошлому "
+                            "году (54)",
+                    "proc": "app_54",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD_QUARTER,
+                    }
+                },
+                "12": {
+                    "name": "Средний размер назначенных СВ по регионам и "
+                            "видам риска (55)",
+                    "proc": "app_55",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "13": {
+                    "name": "Сведения по количеству получателей и суммам социальных выплат в разрезе регионов и стажа участия (1426)",
+                    "proc": "rep_dia_1426",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO, "rfpm_id": {**LIST_RFPM, "required": True}},
+                },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №02. REP_STAT_EXTEND.app_33_spool (+ Rep_app_33)
+                # "14": {
+                #     "name": "Динамика количества получателей социальных выплат "
+                #             "из ГФСС по месяцам года (33)",
+                #     "proc": "app_33",
+                #     "data_approve": "01.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD_YTD,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №03. REP_STAT_EXTEND.app_34_35_spool / Rep_app_34_35, ветка iRepNum='sex' (общая процедура с app_35 - он остаётся: ДИА / группа 1000, ключ 02); обёртки app_34_35_1m..7mn
+                # "15": {
+                #     "name": "Сведения о половозрастном составе участников СОСС и суммах СО "
+                #             "(34 — в разрезе пола)",
+                #     "proc": "app_34",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №11. REP_STAT_EXTEND.app_40_41_spool / Rep_app_40_41, iTypePay='0703' (общая процедура с app_41 - он остаётся: ДИА / группа 1000, ключ 07); обёртки app_40_41_1m..5y
+                # "16": {
+                #     "name": "Коэффициент замещения дохода при потере "
+                #             "работы, по стажу в СОСС (40)",
+                #     "proc": "app_40",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №14. REP_STAT_EXTEND.app_47_spool (+ Rep_app_47); обёртки app_47_1m..24m
+                # "17": {
+                #     "name": "Участники СОСС по уровню дохода, в разрезе "
+                #             "пола (47)",
+                #     "proc": "app_47",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD_24M,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №15. REP_STAT_EXTEND.app_48_spool (+ Rep_app_48_24m); обёртка app_48_24m
+                # "18": {
+                #     "name": "Участники СОСС по стажу участия за 24 месяца, "
+                #             "в разрезе пола (48)",
+                #     "proc": "app_48",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD_24M,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №16. REP_STAT_EXTEND.app_49_spool (+ Rep_app_49); обёртки app_49_2k/3hy/4_9m/5y
+                # "19": {
+                #     "name": "Обращения и назначения СВ по срокам "
+                #             "рассмотрения (49)",
+                #     "proc": "app_49",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №17. REP_STAT_EXTEND.app_49_1_spool (+ Rep_app_49_1); обёртки app_49_1_1m..7mn
+                # "20": {
+                #     "name": "Обращения и назначения СВ, метрика \"4 "
+                #             "рабочих дня\", по региону и виду риска (49.1)",
+                #     "proc": "app_49_1",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD_7,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №18. REP_STAT_EXTEND.app_50_spool (+ Rep_app_50; app_50_spool_old - старая версия); обёртки app_50_1m..5y
+                # "21": {
+                #     "name": "Назначенные СВ в зависимости от дохода, по "
+                #             "виду выплаты (50)",
+                #     "proc": "app_50",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #         "rfpm_id": {**LIST_RFPM, "required": True},
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №19. REP_STAT_EXTEND.app_51_spool (+ Rep_app_51); обёртки app_51_1m..5y
+                # "22": {
+                #     "name": "СВ по беременности и родам, по стажу и "
+                #             "интервалу суммы выплаты (51)",
+                #     "proc": "app_51",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №24. REP_STAT_EXTEND.app_56_spool (+ Rep_app_56); обёртка app_56_1m
+                # "23": {
+                #     "name": "Динамика перехода степеней утраты "
+                #             "трудоспособности получателей СВ 0702 (56)",
+                #     "proc": "app_56",
+                #     "data_approve": "01.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD_MONTH,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №25. REP_STAT_EXTEND.app_57_spool (+ Rep_app_57); обёртка app_57_1m
+                # "24": {
+                #     "name": "Динамика изменения количества иждивенцев "
+                #             "получателей СВ 0701 (57)",
+                #     "proc": "app_57",
+                #     "data_approve": "01.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD_MONTH,
+                #     }
+                # },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №26. REP_STAT_EXTEND.app_58_spool (+ Rep_app_58); обёртки app_58_1m..5y
+                # "25": {
+                #     "name": "Информация по оказанию услуг: назначения и "
+                #             "отказы по каналам обращения (58)",
+                #     "proc": "app_58",
+                #     "data_approve": "01.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #     }
+                # },
+            }
         },
         "1501" : 
         {
@@ -364,28 +943,6 @@ dict_reports = {
                     "author": "Гусейнов Ш.",
                     "params": {"date_first": "С", "date_second": "по"},
                 },
-            }
-        },
-        "300": 
-        { 
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.300",
-            "live_time":  0,
-            "reports": 
-            {
-                "01": {
-                    "name": "Сведения о поступивших возвратах излишне зачисленных (выплаченных) сумм социальных выплат. Отчет 9V для Министерства",
-                    "proc": "rep_dia_300_09",
-                    "data_approve": "13.06.2023",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "02": {
-                    "name": "Список плательщиков, уплативших социальные отчисления за работников с численностью более 50 человек хотя бы 1 раз за предыдущие 6 месяцев",
-                    "proc": "rep_dia_50",
-                    "data_approve": "26.07.2023",
-                    "author": "Алиманов Д.Д.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                }
             }
         },
         "3000": 
@@ -990,6 +1547,97 @@ dict_reports = {
                         "date_second": DATE_TO,
                         "rfbn_id": { **LIST_REGION, "required": True }
                     }
+                },
+                "36": {
+                    "name": "3001 - Ведомость возвращенных излишне уплаченных СО",
+                    "proc": "rep_dia_3001",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "37": {
+                    "name": "3005 - Сведения о градации вновь назначенных получателей социальных выплат",
+                    "proc": "rep_dia_3005",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "38": {
+                    "name": "3009 - Сведения о численности получателей, за которых производятся ОПВ",
+                    "proc": "rep_dia_3009",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "39": {
+                    "name": "3011 - Сведения по первому разделу",
+                    "proc": "rep_dia_3011",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "40": {
+                    "name": "3022 - Аналитический отчет стаж участия в СОСС в разрезе возраста",
+                    "proc": "rep_dia_3022",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "41": {
+                    "name": "3105 - Ведомость возвращенных излишне уплаченных СО",
+                    "proc": "rep_dia_3105",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "42": {
+                    "name": "3118 - График выплат",
+                    "proc": "rep_dia_3118",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "43": {
+                    "name": "3119 - Иностранные граждане (Участники СОСС)",
+                    "proc": "rep_dia_3119",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "44": {
+                    "name": "3120 - Иностранные граждане-получатели, в разрезе стран",
+                    "proc": "rep_dia_3120",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "45": {
+                    "name": "3121 - Иностранные граждане-получатели, в разрезе документов",
+                    "proc": "rep_dia_3121",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "46": {
+                    "name": "3007 - Сведения о градации по годам назначения",
+                    "proc": "rep_dia_3007",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH, "rfpm_id": {**LIST_RFPM, "required": True}},
+                },
+                "47": {
+                    "name": "3114 - Потребность",
+                    "proc": "rep_dia_3114",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "48": {
+                    "name": "3115 - График выплаты социальных выплат",
+                    "proc": "rep_dia_3115",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"pay_day": {"display_name": "День выплаты", "type": "date", "required": True}, "pay_type": {"display_name": "Тип графика", "type": "list", "required": True, "default": "1", "values": {"1": "1 - выплаты, удержания и недополученное", "2": "2 - перечисления в НПФ (10%)"}}, "rfbn_id": {**LIST_REGION, "required": False, "default": "00"}},
                 },
             },
         },
@@ -2200,6 +2848,155 @@ dict_reports = {
                 },
             }
         },
+        "3200 - Отчеты ДАСОРП":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.3200",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "3201 - Справка о последней дате уплаты СО",
+                    "proc": "rep_dia_3201",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rnn": {"display_name": "РНН", "type": "string", "length": 12, "required": False}, "bin_iin": {"display_name": "БИН/ИИН", "type": "string", "length": 12, "required": False}},
+                },
+            }
+        },
+        "3300 - Отчеты ДМЭН":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.3300",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "3316 - Назначение СВпр",
+                    "proc": "rep_dia_3316",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "02": {
+                    "name": "3320 - Список безработных",
+                    "proc": "rep_dia_3320",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "03": {
+                    "name": "3324 - Список получателей выплат на период ЧП и на период карантина(по БИН)",
+                    "proc": "rep_dia_3324",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
+                },
+                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3325.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
+                # "04": {
+                #     "name": "3325 - Макет по СВчп (по БИН)",
+                #     "proc": "rep_dia_3325",
+                #     "data_approve": "02.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
+                # },
+                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3326.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
+                # "05": {
+                #     "name": "3326 - Сведения по отказным выплатам 42500 в разрезе причин",
+                #     "proc": "rep_dia_3326",
+                #     "data_approve": "02.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                # },
+                "06": {
+                    "name": "3327 - Количество отказанных дел по причинам, в разрезе областей",
+                    "proc": "rep_dia_3327",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3328.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
+                # "07": {
+                #     "name": "3328 - Сведения по выплатам 42500 в разрезе причин",
+                #     "proc": "rep_dia_3328",
+                #     "data_approve": "02.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                # },
+                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3329.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
+                # "08": {
+                #     "name": "3329 - Получатель выплаты 42500 тенге (по ИИН)",
+                #     "proc": "rep_dia_3329",
+                #     "data_approve": "02.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {"iin": {"display_name": "ИИН", "type": "string", "length": 12, "required": True}},
+                # },
+                "09": {
+                    "name": "3321 - Сведения по безработным",
+                    "proc": "rep_dia_3321",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+            }
+        },
+        "3400 - Отчеты ДСР":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.3400",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "3401 - Сведения о составе участников СОСС в разрезе количества работодателей",
+                    "proc": "rep_dia_3401",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+            }
+        },
+        "3500 - Отчеты ЕСП":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.3500",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "3502 - Отчет о поступивших СО от плательщиков ЕСП",
+                    "proc": "rep_dia_3502",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rfbn_id": {**LIST_REGION, "required": True, "default": "00"}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "02": {
+                    "name": "3503 - Отчет о сторнированных суммах единого совокупного платежа в разрезе видов ошибок",
+                    "proc": "rep_dia_3503",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "03": {
+                    "name": "3504 - Сведения о частоте уплаты ЕСП",
+                    "proc": "rep_dia_3504",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3505.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
+                # "04": {
+                #     "name": "3505 - Участники системы социального страхования и одновременно уплачивающие ЕСП",
+                #     "proc": "rep_dia_3505",
+                #     "data_approve": "02.10.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                # },
+                "05": {
+                    "name": "3506 - Отчет о поступивших СО от плательщиков ЕСП по периоду",
+                    "proc": "rep_dia_3506",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rfbn_id": {**LIST_REGION, "required": True, "default": "00"}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+            }
+        },
         "6020": 
         { 
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6020",
@@ -2299,6 +3096,151 @@ dict_reports = {
                 }
             }
         },
+        "ЕСП": 
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.esp",
+            "live_time":  0,
+            "reports": 
+            {
+                "01": {
+                    "name": "Списочная часть чистых ЕСП-шников",
+                    "proc": "rep_dia_esp_01",
+                    "data_approve": "25.07.2023",
+                    "author": "Алиманов Д.Д.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "02": {
+                    "name": "Списочная часть смешанных ЕСП-шников",
+                    "proc": "rep_dia_esp_02",
+                    "data_approve": "25.07.2023",
+                    "author": "Алиманов Д.Д.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "03": {
+                    "name": "Списочная часть смешанных ЕСП-шников(СВ)",
+                    "proc": "rep_dia_esp_03_sv",
+                    "data_approve": "14.09.2023",
+                    "author": "Алиманов Д.Д.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "04": {
+                    "name": "Списочная часть чистых ЕСП-шников(СВ)",
+                    "proc": "rep_dia_esp_04_sv",
+                    "data_approve": "14.09.2023",
+                    "author": "Алиманов Д.Д.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                }
+            }
+        },
+        "Консолидированные отчеты": 
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.consolidated",
+            "live_time":  0,
+            "reports": 
+            {
+                "01": {
+                    "name": "Количество участников и суммы взносов по частоте участия за период",
+                    "proc": "rep_dia_freq_so_01",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "02": {
+                    "name": "СО по КНП, регионам, количеству участников и сумм (5СО)",
+                    "proc": "rep_dia_5CO",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "03": {
+                    "name": "Выплаты по регионам и коду выплаты (7CP)",
+                    "proc": "rep_dia_7CP",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "04": {
+                    "name": "Выплаты по регионам и коду выплаты (7CP-СВбр)",
+                    "proc": "rep_dia_7CP_0704",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "05": {
+                    "name": "Выплаты по регионам и коду выплаты (7CP-СВбр-301)",
+                    "proc": "rep_dia_7CP_07040301",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "06": {
+                    "name": "Выплаты по коду выплаты и регионам (6CB)",
+                    "proc": "rep_dia_6CB",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "07": {
+                    "name": "Сведения о СВбр, назначенный размер которых составил 3 млн. тенге и более в разрезе регионов",
+                    "proc": "rep_dia_3m",
+                    "data_approve": "24.02.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "Первый год:"},
+                },
+                "08": {
+                    "name": "Сведения о назначенных социальных выплатах, включенных (поставленных) на выплату (статус 20) ",
+                    "proc": "rep_dia_20status",
+                    "data_approve": "14.10.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "09": {
+                    "name": "Динамика числености получателей и сумм СО",
+                    "proc": "rep_dia_dynamic",
+                    "data_approve": "22.10.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "meta_params": {
+                        "date_first": DATE_FROM,
+                    }
+                },
+            }
+        },
+        "минСО": 
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.minCO",
+            "live_time":  0,
+            "reports": 
+            {
+                "01": {
+                    "name": "Списочная часть по социальным отчислениям, меньшим установленного минимального уровня",
+                    "proc": "rep_dia_co_01",
+                    "data_approve": "14.07.2023",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "Период:"}
+                },
+                "02": {
+                    "name": "Мониторинг поступления СО от плательщиков, с которыми проведена информационно-разъяснительная работ",
+                    "proc": "rep_dia_co_02",
+                    "data_approve": "10.04.2024",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "Любая дата:"}
+                },
+                "03": {
+                    "name": "Уплаченные СО в размере менее 1 МЗП за квартал. Для проведения информационно-разъяснительной работы",
+                    "proc": "rep_dia_co_03",
+                    "data_approve": "29.11.2024",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "Любой день квартала:"}
+                },
+                "04": {
+                    "name": "Списочная часть по социальным отчислениям, меньшим установленного минимального уровня (для ДГД)",
+                    "proc": "rep_dia_co_01_dgd",
+                    "data_approve": "20.02.2026",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "Период:"}
+                },
+            }
+        },
         "Пл.Занятость": 
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.pz",
@@ -2393,149 +3335,72 @@ dict_reports = {
                 }
             }
         },        
-        "ЕСП": 
+        "2000 - Отчеты ГФСС 2014":
         {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.esp",
-            "live_time":  0,
-            "reports": 
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.2000",
+            "live_time": 0,
+            "reports":
             {
                 "01": {
-                    "name": "Списочная часть чистых ЕСП-шников",
-                    "proc": "rep_dia_esp_01",
-                    "data_approve": "25.07.2023",
-                    "author": "Алиманов Д.Д.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "02": {
-                    "name": "Списочная часть смешанных ЕСП-шников",
-                    "proc": "rep_dia_esp_02",
-                    "data_approve": "25.07.2023",
-                    "author": "Алиманов Д.Д.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "03": {
-                    "name": "Списочная часть смешанных ЕСП-шников(СВ)",
-                    "proc": "rep_dia_esp_03_sv",
-                    "data_approve": "14.09.2023",
-                    "author": "Алиманов Д.Д.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "04": {
-                    "name": "Списочная часть чистых ЕСП-шников(СВ)",
-                    "proc": "rep_dia_esp_04_sv",
-                    "data_approve": "14.09.2023",
-                    "author": "Алиманов Д.Д.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                }
-            }
-        },
-        "минСО": 
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.minCO",
-            "live_time":  0,
-            "reports": 
-            {
-                "01": {
-                    "name": "Списочная часть по социальным отчислениям, меньшим установленного минимального уровня",
-                    "proc": "rep_dia_co_01",
-                    "data_approve": "14.07.2023",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "Период:"}
-                },
-                "02": {
-                    "name": "Мониторинг поступления СО от плательщиков, с которыми проведена информационно-разъяснительная работ",
-                    "proc": "rep_dia_co_02",
-                    "data_approve": "10.04.2024",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "Любая дата:"}
-                },
-                "03": {
-                    "name": "Уплаченные СО в размере менее 1 МЗП за квартал. Для проведения информационно-разъяснительной работы",
-                    "proc": "rep_dia_co_03",
-                    "data_approve": "29.11.2024",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "Любой день квартала:"}
-                },
-                "04": {
-                    "name": "Списочная часть по социальным отчислениям, меньшим установленного минимального уровня (для ДГД)",
-                    "proc": "rep_dia_co_01_dgd",
-                    "data_approve": "20.02.2026",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "Период:"}
-                },
-            }
-        },
-        "Консолидированные отчеты": 
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.consolidated",
-            "live_time":  0,
-            "reports": 
-            {
-                "01": {
-                    "name": "Количество участников и суммы взносов по частоте участия за период",
-                    "proc": "rep_dia_freq_so_01",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "02": {
-                    "name": "СО по КНП, регионам, количеству участников и сумм (5СО)",
-                    "proc": "rep_dia_5CO",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "03": {
-                    "name": "Выплаты по регионам и коду выплаты (7CP)",
-                    "proc": "rep_dia_7CP",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "04": {
-                    "name": "Выплаты по регионам и коду выплаты (7CP-СВбр)",
-                    "proc": "rep_dia_7CP_0704",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "05": {
-                    "name": "Выплаты по регионам и коду выплаты (7CP-СВбр-301)",
-                    "proc": "rep_dia_7CP_07040301",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "06": {
-                    "name": "Выплаты по коду выплаты и регионам (6CB)",
-                    "proc": "rep_dia_6CB",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "07": {
-                    "name": "Сведения о СВбр, назначенный размер которых составил 3 млн. тенге и более в разрезе регионов",
-                    "proc": "rep_dia_3m",
-                    "data_approve": "24.02.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "Первый год:"},
-                },
-                "08": {
-                    "name": "Сведения о назначенных социальных выплатах, включенных (поставленных) на выплату (статус 20) ",
-                    "proc": "rep_dia_20status",
-                    "data_approve": "14.10.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "09": {
-                    "name": "Динамика числености получателей и сумм СО",
-                    "proc": "rep_dia_dynamic",
-                    "data_approve": "22.10.2025",
-                    "author": "Гусейнов Ш.А.",
+                    "name": "Коэффициент замещения дохода при утрате "
+                            "трудоспособности, с выбором учёта ГСП (38, v2)",
+                    "proc": "app_38_v2",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
                     "meta_params": {
-                        "date_first": DATE_FROM,
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "gsp": GSP,
                     }
                 },
+                "02": {
+                    "name": "Коэффициент замещения дохода при потере "
+                            "кормильца, с выбором учёта ГСП (39, v2)",
+                    "proc": "app_39_v2",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "gsp": GSP,
+                    }
+                },
+                "03": {
+                    "name": "Получатели и суммы СВур по очерёдности детей "
+                            "(Форма 3)",
+                    "proc": "app_f3",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "04": {
+                    "name": "СВБР: получатели по доле МЗП, по виду "
+                            "выплаты (табл. 2)",
+                    "proc": "svbr_tab2",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "rfpm_id": {**LIST_RFPM, "required": True},
+                    }
+                },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №28. REP_STAT_EXTEND.svbr_tab1_2_spool / svbr_tab1_2, таблица 1 (общая процедура с таблицей 2 - он остаётся: ДИА / группа 2000, ключ 04); обёртки svbr_tab1_2_1m..5y
+                # "05": {
+                #     "name": "СВБР: получатели по стажу участия, по виду "
+                #             "выплаты (табл. 1)",
+                #     "proc": "svbr_tab1",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #         "rfpm_id": {**LIST_RFPM, "required": True},
+                #     }
+                # },
             }
         },
         "Списки": 
@@ -2728,412 +3593,6 @@ dict_reports = {
                         "date_second": DATE_TO
                     }
                 }
-            }
-        }
-    }
-    ,
-    # Перенос пакета REP_STAT_EXTEND. Ключ - порядковый номер отчёта внутри
-    # группы (как в остальных разделах), а не номер приложения: номер
-    # приложения живёт в report_code и в названии, иначе он попадал бы
-    # в имя файла дважды. Отчёты добавляются по возрастанию номера приложения.
-    "ДАУС":
-    {
-        "Отчеты для Минтруда (REP_STAT_EXTEND)": {
-            # 0 = готовый файл не удаляется: отчёты снимаются ежемесячно и хранятся
-            # рассчитанными на сервере (малое время - только на тесты)
-            "live_time": 0,
-            "module_dir": f"{REPORT_MODULE_PATH}.DAUS.REP_STAT_EXTEND",
-            "reports":
-            {
-                "01": {
-                    "name": "Оперативная отчетность по СВ из ГФСС (32 — Получатели и суммы СВ по видам риска)",
-                    "proc": "app_32",
-                    "data_approve": "28.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "02": {
-                    "name": "Динамика количества получателей социальных выплат "
-                            "из ГФСС по месяцам года (33)",
-                    "proc": "app_33",
-                    "data_approve": "01.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_YTD,
-                    }
-                },
-                "03": {
-                    "name": "Сведения о половозрастном составе участников СОСС и суммах СО "
-                            "(34 — в разрезе пола)",
-                    "proc": "app_34",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "04": {
-                    "name": "Сведения о составе участников СОСС и суммах СО "
-                            "(35 — в разрезе возраста и пола)",
-                    "proc": "app_35",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "05": {
-                    "name": "Число страховых случаев и суммы СВ по видам "
-                            "(36 — в разрезе пола)",
-                    "proc": "app_36",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "06": {
-                    "name": "Число страховых случаев и суммы СВ по видам "
-                            "(37 — в разрезе пола и возраста)",
-                    "proc": "app_37",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "07": {
-                    "name": "Коэффициент замещения дохода при утрате "
-                            "трудоспособности (38)",
-                    "proc": "app_38",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "08": {
-                    "name": "Коэффициент замещения дохода при утрате "
-                            "трудоспособности, с выбором учёта ГСП (38, v2)",
-                    "proc": "app_38_v2",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "gsp": GSP,
-                    }
-                },
-                "09": {
-                    "name": "Коэффициент замещения дохода при потере "
-                            "кормильца (39)",
-                    "proc": "app_39",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "10": {
-                    "name": "Коэффициент замещения дохода при потере "
-                            "кормильца, с выбором учёта ГСП (39, v2)",
-                    "proc": "app_39_v2",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "gsp": GSP,
-                    }
-                },
-                "11": {
-                    "name": "Коэффициент замещения дохода при потере "
-                            "работы, по стажу в СОСС (40)",
-                    "proc": "app_40",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "12": {
-                    "name": "Коэффициент замещения дохода по уходу за "
-                            "ребёнком до года (41)",
-                    "proc": "app_41",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "13": {
-                    "name": "Получатели и суммы СВ по возрасту и стажу, "
-                            "по виду выплаты (42-46)",
-                    "proc": "app_42_46",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "rfpm_id": {**LIST_RFPM, "required": True},
-                    }
-                },
-                "14": {
-                    "name": "Участники СОСС по уровню дохода, в разрезе "
-                            "пола (47)",
-                    "proc": "app_47",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_24M,
-                    }
-                },
-                "15": {
-                    "name": "Участники СОСС по стажу участия за 24 месяца, "
-                            "в разрезе пола (48)",
-                    "proc": "app_48",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_24M,
-                    }
-                },
-                "16": {
-                    "name": "Обращения и назначения СВ по срокам "
-                            "рассмотрения (49)",
-                    "proc": "app_49",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "17": {
-                    "name": "Обращения и назначения СВ, метрика \"4 "
-                            "рабочих дня\", по региону и виду риска (49.1)",
-                    "proc": "app_49_1",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_7,
-                    }
-                },
-                "18": {
-                    "name": "Назначенные СВ в зависимости от дохода, по "
-                            "виду выплаты (50)",
-                    "proc": "app_50",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "rfpm_id": {**LIST_RFPM, "required": True},
-                    }
-                },
-                "19": {
-                    "name": "СВ по беременности и родам, по стажу и "
-                            "интервалу суммы выплаты (51)",
-                    "proc": "app_51",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "20": {
-                    "name": "Количество назначенный СВ 0704.070403.0705 в разрезе стажа (52 — СВ по беременности и родам, усыновлению"
-                            "и по уходу за ребёнком, по стажу в СОСС)",
-                    "proc": "app_52",
-                    "data_approve": "28.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "21": {
-                    "name": "Количество плательщиков по БИН и ИИН в разрезе "
-                            "регионов (53)",
-                    "proc": "app_53",
-                    "data_approve": "01.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "22": {
-                    "name": "СВур, доведённые до ГСП, квартал к прошлому "
-                            "году (54)",
-                    "proc": "app_54",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_QUARTER,
-                    }
-                },
-                "23": {
-                    "name": "Средний размер назначенных СВ по регионам и "
-                            "видам риска (55)",
-                    "proc": "app_55",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "24": {
-                    "name": "Динамика перехода степеней утраты "
-                            "трудоспособности получателей СВ 0702 (56)",
-                    "proc": "app_56",
-                    "data_approve": "01.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_MONTH,
-                    }
-                },
-                "25": {
-                    "name": "Динамика изменения количества иждивенцев "
-                            "получателей СВ 0701 (57)",
-                    "proc": "app_57",
-                    "data_approve": "01.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_MONTH,
-                    }
-                },
-                "26": {
-                    "name": "Информация по оказанию услуг: назначения и "
-                            "отказы по каналам обращения (58)",
-                    "proc": "app_58",
-                    "data_approve": "01.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "27": {
-                    "name": "Получатели и суммы СВур по очерёдности детей "
-                            "(Форма 3)",
-                    "proc": "app_f3",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "28": {
-                    "name": "СВБР: получатели по стажу участия, по виду "
-                            "выплаты (табл. 1)",
-                    "proc": "svbr_tab1",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "rfpm_id": {**LIST_RFPM, "required": True},
-                    }
-                },
-                "29": {
-                    "name": "СВБР: получатели по доле МЗП, по виду "
-                            "выплаты (табл. 2)",
-                    "proc": "svbr_tab2",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "rfpm_id": {**LIST_RFPM, "required": True},
-                    }
-                },
-            }
-        }
-        ,
-        # ============================================================
-        # Ниже - REP_MINTRUD (Rep_Mintrud.pck), ОТДЕЛЬНЫЙ source-пакет от
-        # REP_STAT_EXTEND (app_NN выше): своя EAV-таблица
-        # (rptb_rep_mintrud_data), свои источники (pnpd_document/
-        # pnpt_payment/payment_history), своя нумерация ("Приложение №" по
-        # Приказу Министра труда). Физически - reports/DAUS/REP_MINTRUD/,
-        # а не reports/DAUS/REP_STAT_EXTEND/. См. docs/migration-plan.md,
-        # "Пакет 2: REP_MINTRUD".
-        # ============================================================
-        "Согласно Приказа Минтруда (REP_MINTRUD)":
-        {
-            # 0 = готовый файл не удаляется: отчёты снимаются ежемесячно и хранятся
-            # рассчитанными на сервере (малое время - только на тесты)
-            "live_time": 0,
-            "module_dir": f"{REPORT_MODULE_PATH}.DAUS.REP_MINTRUD",
-            "reports":
-            {
-                "01": {
-                    "name": "СО, пеня и число участников СОСС по региону "
-                            "(Форма 3)",
-                    "proc": "f3",
-                    "data_approve": "30.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_24M,
-                    }
-                },
-                "02": {
-                    "name": "Получатели и суммы СВ по региону и виду "
-                            "выплаты (Форма 4)",
-                    "proc": "f4",
-                    "data_approve": "30.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "03": {
-                    "name": "Средний размер назначенных СВ по региону и "
-                            "виду выплаты (Форма 5)",
-                    "proc": "f5",
-                    "data_approve": "30.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "04": {
-                    "name": "Динамика численности получателей СВ за месяц "
-                            "по виду выплаты (Приложение 18)",
-                    "proc": "f11",
-                    "data_approve": "01.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD_MONTH,
-                        "rfpm_id": F11_RFPM,
-                    }
-                },
             }
         }
     }
