@@ -945,6 +945,74 @@ dict_reports = {
                 },
             }
         },
+        "2000 - Отчеты ГФСС 2014":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.2000",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "Коэффициент замещения дохода при утрате "
+                            "трудоспособности, с выбором учёта ГСП (38, v2)",
+                    "proc": "app_38_v2",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "gsp": GSP,
+                    }
+                },
+                "02": {
+                    "name": "Коэффициент замещения дохода при потере "
+                            "кормильца, с выбором учёта ГСП (39, v2)",
+                    "proc": "app_39_v2",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "gsp": GSP,
+                    }
+                },
+                "03": {
+                    "name": "Получатели и суммы СВур по очерёдности детей "
+                            "(Форма 3)",
+                    "proc": "app_f3",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                    }
+                },
+                "04": {
+                    "name": "СВБР: получатели по доле МЗП, по виду "
+                            "выплаты (табл. 2)",
+                    "proc": "svbr_tab2",
+                    "data_approve": "29.09.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "rep_year": REP_YEAR,
+                        "period": PERIOD,
+                        "rfpm_id": {**LIST_RFPM, "required": True},
+                    }
+                },
+                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №28. REP_STAT_EXTEND.svbr_tab1_2_spool / svbr_tab1_2, таблица 1 (общая процедура с таблицей 2 - он остаётся: ДИА / группа 2000, ключ 04); обёртки svbr_tab1_2_1m..5y
+                # "05": {
+                #     "name": "СВБР: получатели по стажу участия, по виду "
+                #             "выплаты (табл. 1)",
+                #     "proc": "svbr_tab1",
+                #     "data_approve": "29.09.2026",
+                #     "author": "Гусейнов Ш.",
+                #     "meta_params": {
+                #         "rep_year": REP_YEAR,
+                #         "period": PERIOD,
+                #         "rfpm_id": {**LIST_RFPM, "required": True},
+                #     }
+                # },
+            }
+        },
         "3000": 
         { 
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.3000",
@@ -3335,74 +3403,6 @@ dict_reports = {
                 }
             }
         },        
-        "2000 - Отчеты ГФСС 2014":
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.2000",
-            "live_time": 0,
-            "reports":
-            {
-                "01": {
-                    "name": "Коэффициент замещения дохода при утрате "
-                            "трудоспособности, с выбором учёта ГСП (38, v2)",
-                    "proc": "app_38_v2",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "gsp": GSP,
-                    }
-                },
-                "02": {
-                    "name": "Коэффициент замещения дохода при потере "
-                            "кормильца, с выбором учёта ГСП (39, v2)",
-                    "proc": "app_39_v2",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "gsp": GSP,
-                    }
-                },
-                "03": {
-                    "name": "Получатели и суммы СВур по очерёдности детей "
-                            "(Форма 3)",
-                    "proc": "app_f3",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                    }
-                },
-                "04": {
-                    "name": "СВБР: получатели по доле МЗП, по виду "
-                            "выплаты (табл. 2)",
-                    "proc": "svbr_tab2",
-                    "data_approve": "29.09.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "rep_year": REP_YEAR,
-                        "period": PERIOD,
-                        "rfpm_id": {**LIST_RFPM, "required": True},
-                    }
-                },
-                # УСТАРЕЛ по сообщению Заказчика (02.10.2026), №28. REP_STAT_EXTEND.svbr_tab1_2_spool / svbr_tab1_2, таблица 1 (общая процедура с таблицей 2 - он остаётся: ДИА / группа 2000, ключ 04); обёртки svbr_tab1_2_1m..5y
-                # "05": {
-                #     "name": "СВБР: получатели по стажу участия, по виду "
-                #             "выплаты (табл. 1)",
-                #     "proc": "svbr_tab1",
-                #     "data_approve": "29.09.2026",
-                #     "author": "Гусейнов Ш.",
-                #     "meta_params": {
-                #         "rep_year": REP_YEAR,
-                #         "period": PERIOD,
-                #         "rfpm_id": {**LIST_RFPM, "required": True},
-                #     }
-                # },
-            }
-        },
         "Списки": 
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.lists",
