@@ -108,7 +108,7 @@
                         <select class="input_s" id="{{ key }}" name="{{ key }}"
                                 {% if is_required %} required {% endif %}>
                             {% if default_value is none %}
-                                <option value="">-- Выберите значение --</option>
+                                <option value="">{% if val is mapping and 'empty_label' in val %}{{ val['empty_label'] }}{% else %}-- Выберите значение --{% endif %}</option>
                             {% endif %}
                             {% if enum_values is mapping %}
                                 {% for code, name in enum_values.items() %}

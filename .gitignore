@@ -6,6 +6,7 @@ venv/
 /env
 /spool
 *.txt
+*.~*
 /.idea
 ais_gfss_parameter.py
 1.sql

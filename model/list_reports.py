@@ -12,6 +12,10 @@ import re
 # 1. Сначала собираем чистый плоский словарь регионов
 regions_values = {}
 for code, data in regions.items():
+    # «00 - ГФСС, Центр» в списке не показывается: вся республика - это пустое
+    # значение области, а не код (см. отчёты с параметром rfbn_id).
+    if code[:2] == '00':
+        continue
     name = data.get('legacy_name', '')
     name = re.sub(r'^\s*\d{2}\s*-\s*', '', name).strip()
     regions_values[code[:2]] = f"{code[:2]} - {name}"
@@ -23,6 +27,7 @@ LIST_REGION = {
     "type": "list",
     "length": 2,
     "required": False,          # По умолчанию необязательное
+    "empty_label": "Вся республика",   # подпись пустого пункта: пусто - без фильтра по области
     "values": regions_values     # Наш плоский словарь уходит в ключ 'values'
 }
   
@@ -149,11 +154,11 @@ LIST_RFPM = {
             "type": "list",
             "length": 4,
                 "values": {
-              "0701": "0701 - Социальная выплата на иждивенцев по случаю утраты кормильца",
-              "0702": "0702 - Социальная выплата по потере работоспособности",
+              "0701": "0701 - Социальная выплата по потере кормильца",
+              "0702": "0702 - Социальная выплата по утрате трудоспособности",
               "0703": "0703 - Социальная выплата по потере работы",
-              "0704": "0704 - Социальная выплата на рождение ребенка",
-              "0705": "0705 - Социальная выплата по уходу за ребенком до 3 лет",
+              "0704": "0704 - Социальная выплата по беременности и родам",
+              "0705": "0705 - Социальная выплата по уходу за ребенком до года/до полутора лет",
             }
             }
 
@@ -1471,7 +1476,7 @@ dict_reports = {
                         {
                             "date_first": DATE_FROM,
                             "date_second": DATE_TO,
-                            "rfbn_id": { **LIST_REGION, "required": True }
+                            "rfbn_id": LIST_REGION
                         }
                 },
                 "34": {
@@ -1483,7 +1488,7 @@ dict_reports = {
                     {
                         "date_first": DATE_FROM,
                         "date_second": DATE_TO,
-                        "rfbn_id": { **LIST_REGION, "required": True }
+                        "rfbn_id": LIST_REGION
                     }
                 },
                 "35":
@@ -1496,7 +1501,7 @@ dict_reports = {
                     {
                         "date_first": DATE_FROM,
                         "date_second": DATE_TO,
-                        "rfbn_id": { **LIST_REGION, "required": True }
+                        "rfbn_id": LIST_REGION
                     }
                 },
                 "36": {
@@ -1588,7 +1593,7 @@ dict_reports = {
                     "proc": "rep_dia_3115",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"pay_day": {"display_name": "День выплаты", "type": "date", "required": True}, "pay_type": {"display_name": "Тип графика", "type": "list", "required": True, "default": "1", "values": {"1": "1 - выплаты, удержания и недополученное", "2": "2 - перечисления в НПФ (10%)"}}, "rfbn_id": {**LIST_REGION, "required": False, "default": "00"}},
+                    "meta_params": {"pay_day": {"display_name": "День выплаты", "type": "date", "required": True}, "pay_type": {"display_name": "Тип графика", "type": "list", "required": True, "default": "1", "values": {"1": "1 - выплаты, удержания и недополученное", "2": "2 - перечисления в НПФ (10%)"}}, "rfbn_id": LIST_REGION},
                 },
             },
         },
@@ -2810,7 +2815,7 @@ dict_reports = {
                     "proc": "rep_dia_3502",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"rfbn_id": {**LIST_REGION, "required": True, "default": "00"}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                    "meta_params": {"rfbn_id": LIST_REGION, "date_first": DATE_FROM, "date_second": DATE_TO},
                 },
                 "02": {
                     "name": "3503 - Отчет о сторнированных суммах единого совокупного платежа в разрезе видов ошибок",
@@ -2839,7 +2844,7 @@ dict_reports = {
                     "proc": "rep_dia_3506",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"rfbn_id": {**LIST_REGION, "required": True, "default": "00"}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                    "meta_params": {"rfbn_id": LIST_REGION, "date_first": DATE_FROM, "date_second": DATE_TO},
                 },
             }
         },

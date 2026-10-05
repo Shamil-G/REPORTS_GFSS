@@ -79,7 +79,7 @@ From (Select
                                      trunc(s.date_approve) date_calc
                                 From SIPR_MAKET_FIRST_APPROVE_2 s
                                 WHERE (
-                                    :rfbn_id = '00'
+                                    :rfbn_id is null
                                     OR SUBSTR(s.rfbn_id, 1, 2) = :rfbn_id
                                 ))
                        Where date_calc Between TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')) a,
@@ -222,7 +222,7 @@ def do_report(file_name: str, date_first: str, date_second: str, rfbn_id: str):
             log.info(f'REPORT {report_code}. CREATING REPORT')
 
             try:
-                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second, rfbn_id=rfbn_id)
+                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second, rfbn_id=rfbn_id or None)
             except oracledb.DatabaseError as e:
                 error, = e.args
                 log.error(f"ERROR. REPORT {report_code}. error_code: {error.code}, error: {error.message}")

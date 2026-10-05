@@ -48,7 +48,7 @@ SELECT
        And status In (0, 1, 2, 3, 5, 7)
        And pnsp_id > 0
        And (
-            :rfbn_id = '00'
+            :rfbn_id is null
             OR SUBSTR(rfbn_id, 1, 2) = :rfbn_id
         )
         ) d, pnpt_payment pp
@@ -186,7 +186,7 @@ def do_report(file_name: str, date_first: str, date_second: str, rfbn_id: str):
             log.info(f'REPORT {report_code}. CREATING REPORT')
 
             try:
-                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second, rfbn_id=rfbn_id)
+                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second, rfbn_id=rfbn_id or None)
             except oracledb.DatabaseError as e:
                 error, = e.args
                 log.error(f"ERROR. REPORT {report_code}. error_code: {error.code}, error: {error.message}")
