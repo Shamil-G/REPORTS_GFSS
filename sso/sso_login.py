@@ -28,6 +28,9 @@ class SSO_User:
             if 'dep_name' not in info_user:
                 log.info(f"---> SSO\n\tUSER {self.login_name} not Registred\n\tDEP_NAME is empty\n<---")
                 return None
+            if 'ou_name' not in info_user:
+                log.info(f"---> SSO\n\tUSER {self.login_name} not Registred\n\tOU_NAME is empty\n<---")
+                return None
 
             if 'post' not in info_user:
                 log.info(f"---> SSO\n\tUSER {self.login_name} not Registred\n\tPOST in \n{info_user}\n\tis empty\n<---")
@@ -37,6 +40,8 @@ class SSO_User:
             self.rfbn_id=info_user.get('rfbn_id','')
             # dep_name
             self.dep_name = info_user.get('dep_name','')
+            # ou_name
+            self.ou_name = info_user.get('ou_name','')
 
             # Эту переменную выставлять нельзя, так как она будет перезаписывать 
             # используемую в приложении session['dep_name']
@@ -85,7 +90,7 @@ class SSO_User:
 
             log.info(f"--->\n\tSSO SUCCESS\n\tTOP_CONTROL:\t{self.top_control}\tLOGIN_NAME:\t{self.login_name}\tFIO:\t  {self.fio}\n"
             f"\tROLES:\t\t{self.roles}\tIP_ADDR:\t{self.ip}\tPOST:\t  {self.post}\n"
-            f"\tRFBN:\t\t{self.rfbn_id}\tDEP_NAME:\t{self.dep_name}\n<---")
+            f"\tRFBN:\t\t{self.rfbn_id}\tOU_NAME:\t{self.ou_name}\t\tDEP_NAME: {self.dep_name}\n<---")
 
             return self
         log.info(f"---> SSO FAIL. login_name: {info_user}\n\tip_addr: {self.ip}, password: {session.get('password', '')}\n<---")
