@@ -1,4 +1,4 @@
-from  db.connect import get_connection, plsql_execute, select_one, plsql_proc_s
+from  db.connect import get_connection, plsql_execute, select, select_one, plsql_proc_s
 from util.logger import log
 import os
 
@@ -29,6 +29,23 @@ def remove_report(date_report: str, num_report: int):
     if remove_file(date_report, num_report):
         log.info(f'REMOVE REPORT. NUM_REPORT: {num_report}, DATE_REPORT: {date_report}')
         plsql_proc_s('REMOVE REPORT. FILE NAME', 'reps.remove_report', [date_report, num_report])
+
+
+stmt_running = """
+    select to_char(st.date_execute, 'YYYY-MM-DD') date_report, st.num num_report, st.file_path
+    from LOAD_REPORT_STATUS st
+    where st.status = '1'
+"""
+
+
+def clear_running_reports():
+    # Вызывается один раз при старте сервиса, пока ни один отчёт ещё не запущен:
+    # все записи "готовится" (status 1) остались от расчётов, убитых перезагрузкой,
+    # и без очистки висели бы до конца дня, не давая запустить отчёт заново.
+    # Недописанный файл удаляется вместе с записью (remove_report).
+    for row in select(stmt_running):
+        log.info(f"CLEAR RUNNING REPORT. NUM_REPORT: {row['num_report']}, DATE_REPORT: {row['date_report']}, FILE_PATH: {row['file_path']}")
+        remove_report(row['date_report'], row['num_report'])
 
 
 def set_status_report(file_path: str, status: int):

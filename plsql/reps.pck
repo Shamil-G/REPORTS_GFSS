@@ -30,7 +30,7 @@ create or replace package body reps is
     v_num   pls_integer default 0;
     v_rec   LOAD_REPORT_STATUS%rowtype;
   begin
-      select count(*)+1 into v_num from LOAD_REPORT_STATUS st
+      select coalesce(max(num),0)+1 into v_num from LOAD_REPORT_STATUS st
       where trunc(st.date_execute,'DD') = trunc(sysdate,'DD');
       -- Check exist file
       select count(ifile_path) into v_count from LOAD_REPORT_STATUS st where st.file_path = ifile_path;

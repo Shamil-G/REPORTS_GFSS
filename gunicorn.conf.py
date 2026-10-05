@@ -29,6 +29,26 @@ forwarded_allow_ips = '192.169.1.33,127.0.0.1'
 preload_app = 'True'
 
 
+def on_starting(server):
+    """
+    Вызывается ОДИН раз в master-процессе при старте сервиса (не при рестарте
+    отдельного воркера и не по HUP). При остановке сервиса systemd гасит всю его
+    группу процессов, включая report_runner, поэтому записи "готовится" в журнале
+    к этому моменту заведомо осиротели - убираем их.
+
+    Чистка идёт отдельным процессом Python: master не должен сам открывать
+    соединения с Oracle, иначе их унаследуют форкнутые воркеры (см. post_worker_init).
+    """
+    import subprocess
+    import sys
+    try:
+        subprocess.run([sys.executable, '-c',
+                        'from model.manage_reports import clear_running_reports; clear_running_reports()'],
+                       cwd=BASE, timeout=120)
+    except Exception as e:
+        print(f'GUNICORN. CLEAR RUNNING REPORTS FAILED: {e}')
+
+
 def post_worker_init(worker):
     """
     Вызывается gunicorn'ом в КАЖДОМ воркере сразу после его форка из master-процесса,

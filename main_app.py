@@ -12,4 +12,6 @@ else:
 
 if __name__ == "__main__":
     log.info(f"===> Main REPORTS-GFSS started on {cfg.host}:{cfg.port}, work_dir: {cfg.BASE}")
+    from model.manage_reports import clear_running_reports
+    clear_running_reports()
     app.run(host=cfg.host, port=cfg.port, debug=False)
