@@ -42,7 +42,8 @@ FROM
        SUM(pd.pay_sum+pd.sum_debt) dbt
   FROM PNPD_DOCUMENT PD, pmpd_pay_doc_s pmpd--, SIFL_FILE SF
  WHERE
-   pd.pncp_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+   pd.pncp_date >= TRUNC(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')
+   AND pd.pncp_date < LAST_DAY(TO_DATE(:dt_to,'YYYY-MM-DD')) + 1
    AND pmpd.PAY_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
    AND pd.mhmh_id = pmpd.mhmh_id
    AND PD.PNSP_ID > 0
