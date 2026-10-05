@@ -43,7 +43,8 @@ FROM
        SUM(pd.pay_sum+pd.sum_debt) dbt
   FROM PNPD_DOCUMENT PD, pmpd_pay_doc_s pmpd, pnpt_payment pp
  WHERE PD.SOURCE_ID = pp.pnpt_id(+)
-   AND pd.pncp_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+   AND pd.pncp_date >= TRUNC(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')
+   AND pd.pncp_date < LAST_DAY(TO_DATE(:dt_to,'YYYY-MM-DD')) + 1
    AND pmpd.PAY_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
    AND pd.mhmh_id = pmpd.mhmh_id
    --AND SF.IS_MAIN = 'Y'
