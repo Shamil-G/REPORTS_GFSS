@@ -1,3 +1,4 @@
+import logging
 import multiprocessing
 from gfss_parameter import app_name, BASE
 from app_config import port
@@ -29,6 +30,18 @@ forwarded_allow_ips = '192.169.1.33,127.0.0.1'
 preload_app = 'True'
 
 
+class _SkipAutoRefresh(logging.Filter):
+    """Не пишет в access-лог запросы автообновления /running-reports?auto=1.
+
+    Пока отчёт готовится, страница дёргает сервер раз в несколько секунд (см.
+    util.logger.is_auto_refresh); без фильтра access-лог забивается одинаковыми
+    строками. Остальные запросы к /running-reports пишутся как обычно.
+    """
+
+    def filter(self, record):
+        return '/running-reports?auto=1' not in record.getMessage()
+
+
 def on_starting(server):
     """
     Вызывается ОДИН раз в master-процессе при старте сервиса (не при рестарте
@@ -36,11 +49,15 @@ def on_starting(server):
     группу процессов, включая report_runner, поэтому записи "готовится" в журнале
     к этому моменту заведомо осиротели - убираем их.
 
+    Здесь же ставится фильтр access-лога: логгер gunicorn.access общий, воркеры
+    наследуют его при fork().
+
     Чистка идёт отдельным процессом Python: master не должен сам открывать
     соединения с Oracle, иначе их унаследуют форкнутые воркеры (см. post_worker_init).
     """
     import subprocess
     import sys
+    logging.getLogger('gunicorn.access').addFilter(_SkipAutoRefresh())
     try:
         result = subprocess.run([sys.executable, '-c',
                                  'from model.manage_reports import clear_running_reports; clear_running_reports()'],
