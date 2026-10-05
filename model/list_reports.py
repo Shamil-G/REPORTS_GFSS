@@ -1155,9 +1155,9 @@ dict_reports = {
                                 "required": True
                             },
                             "knp": {
-                                "display_name": "КНП",
+                                "display_name": "КНП (через запятую)",
                                 "type": "string",
-                                "length": 3,
+                                "length": 40,
                                 "required": True
                             }
                         }

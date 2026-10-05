@@ -198,6 +198,12 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
 
     params = params.copy()
 
+    # Отчёт может привести введённые пользователем параметры к единому виду
+    # (например, КНП "97, 92" -> "097,092") до того, как из них собрано имя файла
+    normalize_params = getattr(loaded_module, "normalize_params", None)
+    if normalize_params:
+        params = normalize_params(params)
+
     date_first = params.get("date_first", "")
     date_second = params.get("date_second", "")
     rfpm_id = params.get("rfpm_id", "")

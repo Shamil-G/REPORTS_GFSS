@@ -33,9 +33,37 @@ where pd.pay_date = dl.pay_date
   and trunc(pd.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
   and dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
   and trunc(dl.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
-  and pd.cipher_id_knp = :knp
+  and pd.cipher_id_knp in ({knp_in})
   and pd.r_account = 'KZ70125KZT1001300134'
 """
+
+
+def parse_knp(knp: str):
+    """КНП, введённые через запятую без апострофов ("97, 092,49"), -> список
+    трёхзначных кодов ("097", "092", "049") без повторов, по возрастанию:
+    короткие коды дополняются нулями спереди. Пустой список - если ввод
+    некорректен (пусто, не цифры или больше трёх цифр)."""
+    codes = []
+    for code in (knp or '').split(','):
+        code = code.strip()
+        if not code:
+            continue
+        if not (code.isascii() and code.isdigit()) or len(code) > 3:
+            return []
+        code = code.zfill(3)
+        if code not in codes:
+            codes.append(code)
+    return sorted(codes)
+
+
+def normalize_params(params: dict):
+    """Вызывается из call_report до сборки имени файла: КНП приводятся к виду
+    "097,092,049", чтобы "97, 92" и "097,092" давали один и тот же файл.
+    Некорректный ввод не трогаем - отчёт отклонит его сам."""
+    knp_list = parse_knp(params.get('knp'))
+    if knp_list:
+        params['knp'] = ','.join(knp_list)
+    return params
 
 
 def format_worksheet(worksheet, common_format):
@@ -70,7 +98,17 @@ def do_report(file_name: str, date_first: str, date_second: str, knp: str):
 
     s_date = datetime.datetime.now().strftime("%H:%M:%S")
 
-    log.info(f'DO REPORT. START {report_code}. DATE_FROM: {date_first}, FILE_PATH: {file_name}')
+    log.info(f'DO REPORT. START {report_code}. DATE_FROM: {date_first}, KNP: {knp}, FILE_PATH: {file_name}')
+
+    knp_list = parse_knp(knp)
+    if not knp_list:
+        log.error(f'ERROR. REPORT {report_code}. Некорректный список КНП: {knp!r}')
+        set_status_report(file_name, 3)
+        return None
+
+    # КНП идут биндами, не подстановкой текста: пользовательский ввод в SQL не попадает
+    knp_binds = {f'knp{i}': code for i, code in enumerate(knp_list)}
+    stmt = stmt_report.format(knp_in=', '.join(f':{name}' for name in knp_binds))
 
     config = ConfigParser()
     config.read('db_config.ini')
@@ -152,18 +190,18 @@ def do_report(file_name: str, date_first: str, date_second: str, knp: str):
                 'fg_color': '#FAFAD7',
                 'text_wrap': True
             })
-            sql_sheet.merge_range(f'A1:I{len(stmt_report.splitlines())}', f'{stmt_report}', merge_format)
+            sql_sheet.merge_range(f'A1:I{len(stmt.splitlines())}', f'{stmt}', merge_format)
 
             worksheet[page_num - 1].activate()
             format_worksheet(worksheet=worksheet[page_num - 1], common_format=title_format)
 
             worksheet[page_num - 1].write(0, 0, report_name, title_name_report)
-            worksheet[page_num - 1].write(1, 0, f'За период: {date_first} - {date_second}', title_name_report)
+            worksheet[page_num - 1].write(1, 0, f'За период: {date_first} - {date_second}. КНП: {", ".join(knp_list)}', title_name_report)
 
             log.info(f'REPORT {report_code}. CREATING REPORT')
 
             try:
-                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second, knp=knp)
+                cursor.execute(stmt, dt_from=date_first, dt_to=date_second, **knp_binds)
             except oracledb.DatabaseError as e:
                 error, = e.args
                 log.error(f"ERROR. REPORT {report_code}. error_code: {error.code}, error: {error.message}")
@@ -241,7 +279,7 @@ def do_report(file_name: str, date_first: str, date_second: str, knp: str):
                 f'REPORT: {report_code}. Формирование отчета {file_name} завершено ({s_date} - {stop_time}). Загружено {all_cnt} записей')
 
 
-def thread_report(file_name: str, date_first: str, date_second: str, knp :str):
+def thread_report(file_name: str, date_first: str, date_second: str, knp: str):
     import threading
     log.info(f'THREAD REPORT. {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} -> {file_name}')
     log.info(f'THREAD REPORT. PARAMS: date_from: {date_first}')
