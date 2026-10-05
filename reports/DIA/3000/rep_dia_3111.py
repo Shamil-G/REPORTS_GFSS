@@ -33,8 +33,8 @@ SELECT T.AGE,
         AND P.SEX = 0
         AND SIM.KNP = '012'
         AND TRUNC(MONTHS_BETWEEN(TO_DATE(:dt_to,'YYYY-MM-DD'), P.BIRTHDATE) / 12) >= 50
-        AND SIM.PAY_DATE_GFSS BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
-        AND SIM.PAY_DATE BETWEEN add_months(TO_DATE(:dt_from,'YYYY-MM-DD'),-1) AND TO_DATE(:dt_to,'YYYY-MM-DD')
+        AND SIM.PAY_DATE_GFSS >= TO_DATE(:dt_from,'YYYY-MM-DD') AND SIM.PAY_DATE_GFSS <= TO_DATE(:dt_to,'YYYY-MM-DD')
+        AND SIM.PAY_DATE >= add_months(TO_DATE(:dt_from,'YYYY-MM-DD'),-1) AND SIM.PAY_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
         ) T
  GROUP BY AGE
  ORDER BY AGE

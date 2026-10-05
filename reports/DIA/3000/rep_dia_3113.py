@@ -18,7 +18,7 @@ SELECT
   pd.cipher_id_knp knp,
   sum(pd.pay_sum) sm
 FROM PMPD_PAY_DOC PD
-WHERE PAY_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+WHERE PAY_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND PAY_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
   AND PD.TMST_ID = 103
   --AND PD.Tmst_Id = 103
   AND R_RNN = '040440004549'

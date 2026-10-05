@@ -42,7 +42,7 @@ SELECT
              ORDER BY pncp_date
              ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) rfbn_id
    FROM pnpd_document
-   WHERE pncp_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+   WHERE pncp_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pncp_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
        And rfpm_id Like '07%'
        And ridt_id In (4, 6, 7, 8)
        And status In (0, 1, 2, 3, 5, 7)

@@ -35,7 +35,7 @@ with otkaz as (
                 and m.sid = sst.sid
                 and substr(p_pc, 1, 4) = case when :rfpm_id = '0000' then substr(p_pc, 1, 4) else :rfpm_id end
                 and sst.st2 = 12
-                and trunc(sst.dat, 'DD') Between to_date(:d1, 'YYYY-MM-DD') And to_date(:d2, 'YYYY-MM-DD')
+                and sst.dat >= to_date(:d1, 'YYYY-MM-DD') AND sst.dat < to_date(:d2, 'YYYY-MM-DD') + 1
                 and sst.st2=str.id
                 and sum_calc > 0
                 ),

@@ -19,7 +19,7 @@ with esp as (
                where  si.type_payer='E' 
                and    si.sicid=sfa.sicid
 			   --and	  substr(sfa.rfpm_id,1,4)<>'0703'
-               and    trunc(sfa.date_approve) Between to_date(:d1,'yyyy-mm-dd') And to_date(:d2,'yyyy-mm-dd')
+               and    sfa.date_approve >= to_date(:d1,'yyyy-mm-dd') AND sfa.date_approve < to_date(:d2,'yyyy-mm-dd') + 1
                and    si.pay_month between add_months(sfa.risk_date,-24) and sfa.risk_date   
          )
         ,
@@ -29,7 +29,7 @@ with esp as (
                where  si.type_payer!='E' --or type_payer is null
                and    si.sicid=sfa.sicid
 			   --and	  substr(sfa.rfpm_id,1,4)<>'0703'
-               and    trunc(sfa.date_approve) Between to_date(:d1,'yyyy-mm-dd') And to_date(:d2,'yyyy-mm-dd')
+               and    sfa.date_approve >= to_date(:d1,'yyyy-mm-dd') AND sfa.date_approve < to_date(:d2,'yyyy-mm-dd') + 1
                and    si.pay_month between add_months(sfa.risk_date,-24) and sfa.risk_date    
          )
         select esp.sicid, esp.rfbn_id, esp.iin, esp.rfpm_id, esp.risk_date, esp.sum_avg, esp.kzd,esp.mrzp, esp.count_donation, esp.sum_all, esp.date_approve

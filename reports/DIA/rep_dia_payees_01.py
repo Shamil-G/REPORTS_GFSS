@@ -18,7 +18,7 @@ from si_member_2 si,
      pnpd_document pd
 where si.sicid=pd.pncd_id
 and   substr(pd.rfpm_id,1,4) = :p1
-and   pd.pncp_date between :d1 and :d2
+and   pd.pncp_date >= :d1 AND pd.pncp_date <= :d2
 and   si.pay_date <= :d1
 and   pd.status = 2 
 and   pd.knp=case when :p1 = '0704' then '096'
@@ -53,7 +53,7 @@ from si_member_2 si,
      pnpd_document pd
 where si.sicid=pd.pncd_id
 and   substr(pd.rfpm_id,1,4) = :p1
-and   pd.pncp_date between :d1 and :d2
+and   pd.pncp_date >= :d1 AND pd.pncp_date <= :d2
 and   si.pay_date <= :d1
 and   pd.status = 2 
 and   pd.knp=case when :p1 = '0704' then '096'

@@ -77,7 +77,7 @@ from (
         where a.pncd_id = si.sicid(+) 
         and   a.pncd_id = p.sicid
 		and	  si.knp(+) = '012'
-        and   si.pay_date(+) BETWEEN to_date(:date_first,'YYYY-MM-DD') AND to_date(:date_second,'YYYY-MM-DD')  
+        and   si.pay_date(+) >= to_date(:date_first,'YYYY-MM-DD') AND si.pay_date(+) <= to_date(:date_second,'YYYY-MM-DD')  
     ) b
 )
 group by 

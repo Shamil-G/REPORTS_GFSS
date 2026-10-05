@@ -39,7 +39,7 @@ and pay.soliray_id=pt.pnpt_id
 and dt.sipr_id = pay.sid
 and pd.pncd_id=p2.sicid(+)
 and substr(pt.rfpm_id,1,4) = :p1
-and pd.pncp_date Between :date_from And :date_to
+and pd.pncp_date >= :date_from AND pd.pncp_date <= :date_to
 order by rfbn_id, rfpm_id, pd.pncd_id
 """
 

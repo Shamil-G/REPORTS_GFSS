@@ -27,7 +27,7 @@ SELECT
   FROM pmpd_pay_doc pd,
   RFRR_ID_REGION REG
   WHERE
-  pd.pay_date between TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+  pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pd.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
   and pd.tmst_id=5
   AND pd.cipher_id_knp IN ('020', '028', '047', '049', '092', '097','039','120')
   AND PD.P_RNN = REG.ID(+)

@@ -38,11 +38,11 @@ from (
            first_value(pt.appointdate) over(partition by pt.pncd_id order by pt.appointdate desc) last_appoint_date
     from pnpd_document pd, pnpt_payment pt
     where substr(pd.rfpm_id,1,4)=:p1
-	and  pd.pncp_date between :d1 and :d2
+	and  pd.pncp_date >= :d1 AND pd.pncp_date <= :d2
     and  pt.pncd_id=pd.pncd_id
   ) a
   where a.sicid=si.sicid
-  and   si.pay_date between :d1 and :d2
+  and   si.pay_date >= :d1 AND si.pay_date <= :d2
   and   si.pay_date >= last_appoint_date
   and   si.pay_date <= last_pncp_date
 ) b, person p

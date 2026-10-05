@@ -36,7 +36,7 @@ from (
   and   d.source_id = sipr.pnpt_id(+)
   and   d.pncd_id = p.sicid
   AND   coalesce(D.KNP,'000')!='010'
-  AND   D.PNCP_DATE BETWEEN to_date(:date_first,'YYYY-MM-DD') AND to_date(:date_second,'YYYY-MM-DD')
+  AND   D.PNCP_DATE >= to_date(:date_first,'YYYY-MM-DD') AND D.PNCP_DATE <= to_date(:date_second,'YYYY-MM-DD')
   AND   substr(D.RFPM_ID,1,4) = '0704'
   AND   D.RIDT_ID IN (4, 6, 7, 8)
   AND   D.STATUS IN (0, 1, 2, 3, 5, 7)

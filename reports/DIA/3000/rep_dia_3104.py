@@ -34,7 +34,7 @@ s.* from (
       AND p.branchid = br.RFBN_ID
       AND pd.cipher_id_knp = :knp
       AND pd.tmst_id = 5
-      AND pd.pay_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+      AND pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pd.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
     ORDER BY 1, 6, 7
 ) s
 """

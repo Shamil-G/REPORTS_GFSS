@@ -25,7 +25,7 @@ SELECT T.RFEM_ID, T.NAME, COUNT(DISTINCT T.MHMH_ID) pc, SUM(PSUM) psm, SUM(CNT) 
         WHERE PD.TMST_ID in (3,6)   
         AND pd.r_account = 'KZ67009SS00368609110'
         AND PD.RFEM_ID = ERR.ID
-        AND PD.PAY_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+        AND PD.PAY_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND PD.PAY_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
         UNION
         SELECT ERR.ID RFEM_ID,
               ERR.NAME,
@@ -38,7 +38,7 @@ SELECT T.RFEM_ID, T.NAME, COUNT(DISTINCT T.MHMH_ID) pc, SUM(PSUM) psm, SUM(CNT) 
         AND pd.r_account = 'KZ67009SS00368609110'
         AND dl.rfem_id IS NOT NULL
         AND dl.RFEM_ID = ERR.ID
-        AND PD.PAY_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+        AND PD.PAY_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND PD.PAY_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
         AND pd.cipher_id_knp NOT IN ('020', '021', '028', '032', '047', '049', '092', '097')
         GROUP BY ERR.ID, ERR.NAME, PD.MHMH_ID
        ) T

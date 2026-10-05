@@ -82,7 +82,7 @@ From (Select
                                     :rfbn_id is null
                                     OR SUBSTR(s.rfbn_id, 1, 2) = :rfbn_id
                                 ))
-                       Where date_calc Between TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')) a,
+                       Where date_calc >= TO_DATE(:dt_from,'YYYY-MM-DD') AND date_calc <= TO_DATE(:dt_to,'YYYY-MM-DD')) a,
                      person pr
                Where a.sicp_id = pr.sicid) b
                Group By reg_id, rfpm, sex ) t, rfbn_branch rfbn

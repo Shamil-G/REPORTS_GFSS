@@ -27,7 +27,7 @@ SELECT
   COUNT(DISTINCT pay_month) mc
 FROM SIPR_MAKET_FIRST_APPROVE_2 sfa, em5_sird_reckon_donation sird
  WHERE RFPM_ID LIKE '0705%'
-   AND TRUNC(DATE_APPROVE) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+   AND DATE_APPROVE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND DATE_APPROVE < TO_DATE(:dt_to,'YYYY-MM-DD') + 1
    AND sfa.sipr_id = sird.sipr_id
 GROUP BY sfa.sipr_id, sfa.rfpm_id)
 GROUP BY mc

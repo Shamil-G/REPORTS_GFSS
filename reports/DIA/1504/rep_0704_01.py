@@ -32,7 +32,7 @@ stmt_1 = """
 					   ksu as ksu_0704
 				from sipr_maket_first_approve_2 sfa
 				where substr(sfa.rfpm_id,1,4) = '0704'
-				and   trunc(sfa.risk_date) between trunc(to_date(:date_first,'YYYY-MM-DD'), 'MM') and trunc(to_date(:date_second,'YYYY-MM-DD'), 'MM')
+				and   sfa.risk_date >= trunc(to_date(:date_first,'YYYY-MM-DD'), 'MM') AND sfa.risk_date < trunc(to_date(:date_second,'YYYY-MM-DD'), 'MM') + 1
 				--and   trunc(sfa.risk_date) = trunc(to_date('2021-03-01','YYYY-MM-DD'), 'MM')
 				) t04
 				where sfa.iin=t04.iin

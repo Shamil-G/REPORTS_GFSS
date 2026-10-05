@@ -39,7 +39,7 @@ stmt_report = """
             (pd.tmst_id IN (3, 6) AND pd.r_account = 'KZ67009SS00368609110')
             OR (pd.tmst_id = 103 AND pd.p_account = 'KZ67009SS00368609110')
            )
-    AND pd.pay_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+    AND pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pd.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
     UNION
 
     SELECT
@@ -53,7 +53,7 @@ stmt_report = """
     FROM pmpd_pay_doc pd
     WHERE pd.tmst_id = 5
     AND pd.cipher_id_knp NOT IN ('012', '017', '160', '026', '183') --Добавили 05.02.2018 начали вылазить в отчет
-    AND pd.pay_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+    AND pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pd.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
     UNION
 
     SELECT
@@ -74,7 +74,7 @@ stmt_report = """
     AND pd.cipher_id_knp IN ('012', '017', '026', '094')
     AND EXISTS (SELECT 1 FROM pmdl_doc_list dl WHERE dl.mhmh_id = pd.mhmh_id AND dl.rfem_id IS NOT NULL)
     AND dl.rfem_id IS NOT NULL
-    AND pd.pay_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+    AND pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pd.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
     GROUP BY pd.tmst_id, pd.mhmh_id, pd.cipher_id_knp
     UNION
 
@@ -96,7 +96,7 @@ stmt_report = """
     AND pd.cipher_id_knp IN ('012', '017', '026', '094')
     AND EXISTS (SELECT 1 FROM pmdl_doc_list dl WHERE dl.mhmh_id = pd.mhmh_id AND dl.rfem_id IS NOT NULL)
     AND dl.rfem_id IS NULL
-    AND pd.pay_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+    AND pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pd.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
     GROUP BY pd.tmst_id, pd.mhmh_id, pd.cipher_id_knp
     UNION
 
@@ -115,7 +115,7 @@ stmt_report = """
     WHERE pd.mhmh_id = dl.mhmh_id
     AND pd.tmst_id = 5
     AND pd.cipher_id_knp IN ('012', '017', '026', '094')
-    AND pd.pay_date BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+    AND pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pd.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
     AND NOT EXISTS (SELECT 1 FROM pmdl_doc_list dl WHERE dl.mhmh_id = pd.mhmh_id AND dl.rfem_id IS NOT NULL)
     GROUP BY pd.tmst_id, pd.mhmh_id, pd.cipher_id_knp
     ) t

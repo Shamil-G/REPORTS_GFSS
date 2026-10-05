@@ -25,7 +25,7 @@ SELECT
     Trunc(Months_between(TO_DATE(:dt_to,'YYYY-MM-DD'), p.birthdate) / 12) let
     FROM PNPD_DOCUMENT D, person p
    WHERE D.pncd_ID = P.SICID
-     AND D.PNCP_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+     AND D.PNCP_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND D.PNCP_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
      AND D.RFPM_ID LIKE '0705%'
      AND D.RIDT_ID IN (4, 6, 7, 8)
      AND D.STATUS IN (0, 1, 2, 3, 5, 7)

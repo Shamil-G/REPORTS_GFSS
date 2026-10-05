@@ -66,7 +66,7 @@ From (Select s.sipr_id,
             s.sum_all,
             s.sex
       From SIPR_MAKET_FIRST_APPROVE_2 s
-      where trunc(s.date_approve) Between TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+      where s.date_approve >= TO_DATE(:dt_from,'YYYY-MM-DD') AND s.date_approve < TO_DATE(:dt_to,'YYYY-MM-DD') + 1
      ) a, rfbn_branch rb
      where a.reg_id = rb.RFBN_ID
      group by reg_id,rb.name

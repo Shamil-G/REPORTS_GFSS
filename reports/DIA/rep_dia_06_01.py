@@ -33,7 +33,7 @@ from (
       FROM sipr_maket_first_approve_2 sfa, person p
       WHERE sfa.sicid = p.sicid
       AND substr(sfa.rfpm_id,1,4) = :p1
-      AND sfa.date_approve BETWEEN :d1 AND :d2
+      AND sfa.date_approve >= :d1 AND sfa.date_approve <= :d2
 ) a, si_member_2 si 
 where a.sicid = si.sicid(+)
 and   si.pay_month <= a.DATE_ADDRESS    

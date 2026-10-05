@@ -17,12 +17,12 @@ stmt_1 = """
 		  select sicid 
 		  from sipr_maket_first_approve_2 sfa
 		  where substr(sfa.rfpm_id,1,4)='0701'
-		  and sfa.date_approve between :d1 and :d2
+		  and sfa.date_approve >= :d1 AND sfa.date_approve <= :d2
 		  intersect
 		  select sicid 
 		  from sipr_maket_first_approve_2 sfa2
 		  where substr(sfa2.rfpm_id,1,4)='0705'
-		  and sfa2.date_approve between :d1 and :d2
+		  and sfa2.date_approve >= :d1 AND sfa2.date_approve <= :d2
 	  ) sub_1, 
 		sipr_maket_first_approve_2 sfa2,
 		 pnpd_payment_dependant dep,
@@ -31,7 +31,7 @@ stmt_1 = """
 	  and   sfa2.pnpt_id=dep.pnpt_id
 	  and   dep.sicid=ch.sicid
 	  and substr(sfa2.rfpm_id,1,4)='0701'
-	  and sfa2.date_approve between :d1 and :d2
+	  and sfa2.date_approve >= :d1 AND sfa2.date_approve <= :d2
 	  and months_between(to_date(:d2,'dd.mm.yyyy'),ch.birthdate) < 36
 	)
 	select * from
@@ -54,7 +54,7 @@ stmt_1 = """
     and   sfa.pnpt_id=dep.pnpt_id
     and   dep.sicid=ch.sicid
     and substr(sfa.rfpm_id,1,4) = '0701'
-    and sfa.date_approve between :d1 and :d2
+    and sfa.date_approve >= :d1 AND sfa.date_approve <= :d2
     and months_between(:d2,ch.birthdate) < 36
 	union
     select sfa.rfbn_id, 
@@ -75,7 +75,7 @@ stmt_1 = """
     and   sfa.sipr_id=mch.id_obj
     and   ch.sicid=mch.id_per
     and substr(sfa.rfpm_id,1,4) = '0705'
-    and sfa.date_approve between :d1 and :d2
+    and sfa.date_approve >= :d1 AND sfa.date_approve <= :d2
 ) order by R_IIN, rfpm_id
 """
 

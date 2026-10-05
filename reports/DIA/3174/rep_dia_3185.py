@@ -42,7 +42,7 @@ FROM (
      sfa.sex
   FROM SIPR_MAKET_FIRST_APPROVE_2 sfa
   WHERE RFPM_ID LIKE '0705%'
-  AND trunc(DATE_APPROVE,'DD') BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+  AND DATE_APPROVE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND DATE_APPROVE < TO_DATE(:dt_to,'YYYY-MM-DD') + 1
  ) t, rfpm_payments rfpm
  WHERE t.rfpm_id = rfpm.rfpm_id
  GROUP BY t.rfpm_id, rfpm.shortname

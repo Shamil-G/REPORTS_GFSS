@@ -34,8 +34,7 @@ FROM
     FROM payment_history ph,
          pnpd_document pd
     WHERE pd.pnpd_id = ph.pnpd_id
-      AND act_month BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD')
-                        AND TO_DATE(:dt_to,'YYYY-MM-DD')
+      AND act_month >= TO_DATE(:dt_from,'YYYY-MM-DD') AND act_month <= TO_DATE(:dt_to,'YYYY-MM-DD')
       AND pd.rfpm_id LIKE '07%'
       And (
         :rfbn_id is null

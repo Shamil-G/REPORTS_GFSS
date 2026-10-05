@@ -32,7 +32,7 @@ stmt_1 = """
     and pt.pnpt_id=pd.pnpt_id(+)
     and pd.sicid=p2.sicid(+)
     and substr(pt.rfpm_id,1,4) = :p1
-    and doc.pncp_date Between :d1 And :d2
+    and doc.pncp_date >= :d1 AND doc.pncp_date <= :d2
     order by rfbn_id, rfpm_id, doc.pncd_id
 """
 
@@ -59,7 +59,7 @@ stmt_2 = """
     and pt.pnpt_id=pd.pnpt_id(+)
     and pd.sicid=p2.sicid(+)
     and substr(sfa.rfpm_id,1,4) = :p1
-    and doc.pncp_date Between :d1 And :d2
+    and doc.pncp_date >= :d1 AND doc.pncp_date <= :d2
     order by rfbn_id, rfpm_id, doc.pncd_id
 """
 
@@ -84,7 +84,7 @@ stmt_3 = """
     and sfa.sicid=p1.sicid
     and pd.sicid=p2.sicid(+)
     and substr(sfa.rfpm_id,1,4) = :p1
-    and doc.pncp_date Between :d1 And :d2
+    and doc.pncp_date >= :d1 AND doc.pncp_date <= :d2
     order by rfbn_id, rfpm_id, sfa.sicid
 """
 

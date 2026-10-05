@@ -30,7 +30,7 @@ SELECT unique
   FROM PNPD_DOCUMENT D, pnpt_payment PH
  WHERE D.Source_Id = PH.pnpt_id(+)
    AND d.knp <> '010'
-   AND D.PNCP_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+   AND D.PNCP_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND D.PNCP_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
    AND D.RFPM_ID LIKE '0702%'
    AND D.RIDT_ID IN (4, 6, 7, 8)
    AND D.STATUS IN (0, 1, 2, 3, 5, 7)

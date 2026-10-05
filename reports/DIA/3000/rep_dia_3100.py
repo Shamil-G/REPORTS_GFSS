@@ -24,7 +24,7 @@ stmt_report = """
         ELSE substr(r.rfpm_group, 4, 1)-- извращение для сортировки
           END, 'Z') ord
     From ss_decoding r, rfrc_recipient_last rc, rfbl_bank_list bt, rfpm_payments rfpm
-   Where r.PAY_DATE Between TO_DATE(:dt_from,'YYYY-MM-DD') And TO_DATE(:dt_to,'YYYY-MM-DD')
+   Where r.PAY_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND r.PAY_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
      And r.TMST_ID = 103
      And r.rfrc_id = rc.RFRC_ID
      And rc.BANK_TYPE = bt.rfbl_Id

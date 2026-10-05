@@ -22,7 +22,7 @@ with st7with_dat as (
                         dat
                 from ss_m_sol_st st
                 where st2 in (7, 12)
-                and trunc(st.dat, 'DD') Between to_date(:d1, 'YYYY-MM-DD') And to_date(:d2, 'YYYY-MM-DD')
+                and st.dat >= to_date(:d1, 'YYYY-MM-DD') AND st.dat < to_date(:d2, 'YYYY-MM-DD') + 1
 				and substr(p_pc, 1, 4) = case when substr(:rfpm_id,1,2) = '00' then substr(p_pc, 1, 4) else :rfpm_id end		
 )
 ,
@@ -39,7 +39,7 @@ seven_date as (
               where st.sid = st7.sid
               and st.st2 in (7, 12)
               ) where row_num = 1
-                and trunc(sdat, 'DD') Between to_date(:d1, 'YYYY-MM-DD') And to_date(:d2, 'YYYY-MM-DD')
+                and sdat >= to_date(:d1, 'YYYY-MM-DD') AND sdat < to_date(:d2, 'YYYY-MM-DD') + 1
     )
 ,
 

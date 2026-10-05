@@ -52,7 +52,7 @@ FROM (
      )
     AND dl.rfem_id IS NULL
     AND PD.CIPHER_ID_KNP IN ('012', '017')
-    AND PD.PAY_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+    AND PD.PAY_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND PD.PAY_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
   ) z
 GROUP BY z.rg, z.cipher_id_knp
 ) t, (SELECT SUBSTR(rfbn_id, 1, 2) rfrg_id, NAME FROM rfbn_branch WHERE rfbn_id LIKE '%00') r

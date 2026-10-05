@@ -39,10 +39,10 @@ from(
               virtual_doc_list vd,
               pmdl_doc_list dl,
               pmpd_pay_doc pdi
-          Where pdo.pay_date Between TO_DATE(:dt_from,'YYYY-MM-DD') And TO_DATE(:dt_to,'YYYY-MM-DD')
+          Where pdo.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pdo.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
             -- Added Gusseinov 7 october 2019
-          and dl.pay_date Between add_months(TO_DATE(:dt_from,'YYYY-MM-DD'),-1) And TO_DATE(:dt_to,'YYYY-MM-DD')
-          and pdi.pay_date Between add_months(TO_DATE(:dt_from,'YYYY-MM-DD'),-1) And TO_DATE(:dt_to,'YYYY-MM-DD')
+          and dl.pay_date >= add_months(TO_DATE(:dt_from,'YYYY-MM-DD'),-1) AND dl.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
+          and pdi.pay_date >= add_months(TO_DATE(:dt_from,'YYYY-MM-DD'),-1) AND pdi.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
           -- End Added
           And pdo.cipher_id_knp In ('012', '017')
 --                And pdo.mhmh_id = mh.mhmh_id

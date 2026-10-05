@@ -32,7 +32,7 @@ stmt1 = """
 	and pt.pnpt_id=pd.pnpt_id(+)
 	and pd.sicid=p2.sicid(+)
 	and substr(sfa.rfpm_id,1,4) = :p1
-	and doc.pncp_date Between :d1 And :d2
+	and doc.pncp_date >= :d1 AND doc.pncp_date <= :d2
 	order by rfbn_id, rfpm_id, doc.pncd_id
 """
 
@@ -57,7 +57,7 @@ select sfa.rfbn_id,
   and sfa.sicid=p1.sicid(+)
   and pd.sicid=p2.sicid(+)
   and substr(sfa.rfpm_id,1,4) = :p1
-  and sfa.date_approve Between :d1 And :d2
+  and sfa.date_approve >= :d1 AND sfa.date_approve <= :d2
   and sfa.date_stop > :d1  
   and MONTHS_BETWEEN(:d1, coalesce(p2.birthdate,sysdate))/12 >= 18
   and MONTHS_BETWEEN(:d2, coalesce(p2.birthdate,sysdate))/12 < 23

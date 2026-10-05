@@ -32,7 +32,7 @@ SELECT
     sfa.sipr_id = m.id
     AND m.mpay = y.id
     AND sfa.rfpm_id like '0702%'
-    AND trunc(sfa.date_approve) BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')) t
+    AND sfa.date_approve >= TO_DATE(:dt_from,'YYYY-MM-DD') AND sfa.date_approve < TO_DATE(:dt_to,'YYYY-MM-DD') + 1) t
   GROUP BY t.y_from, y_to
   ORDER BY t.y_from, y_to
 """

@@ -42,7 +42,7 @@ SELECT
   D.RFPM_ID,
   d.pay_sum + d.sum_debt sm
   FROM PNPD_DOCUMENT D
- WHERE D.PNCP_DATE BETWEEN TO_DATE(:dt_from,'YYYY-MM-DD') AND TO_DATE(:dt_to,'YYYY-MM-DD')
+ WHERE D.PNCP_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND D.PNCP_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
    AND D.RFPM_ID LIKE '0704%'
    AND D.RIDT_ID IN (4, 6, 7, 8)
    AND D.STATUS IN (0, 1, 2, 3, 5, 7)
