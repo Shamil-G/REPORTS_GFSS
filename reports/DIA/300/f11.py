@@ -42,6 +42,8 @@ REP_STAT_EXTEND.
 CASE_NOT_FOUND), Fill_F11 её не считает. Список видов - свой, не LIST_RFPM.
 
 ОТЛИЧИЯ ОТ ОРИГИНАЛА:
+- Форма Rep_11 печатала один вид выплаты за запуск (форма 8-N). Здесь все
+  четыре вида - колонками одного листа, параметр формы - только год и месяц.
 - Только месяц. Планировщик запускал Fill_F11 и за квартал (2026,2,2) и за 9
   месяцев (2025,4,4), но Rep_11 читает только date_type = 1, а Fill_F11 при
   любом типе считает первый месяц периода (pncp_date = d_from). Эти запуски
@@ -62,11 +64,11 @@ from util.xlsx_report import build_report, Col
 report_code = 'MINTRUD.F11'
 # p_PageHead Rep_11 (строки 1297-1323): <br> перед "за" схлопнут в пробел.
 # "Приложение №18", cOrderName и "Форма №8-N" не переносятся - как в f3.py.
-report_name = ('Динамика численности получателей социальных выплат по '
-               'случаю {rfpm_id} за {period}')
+report_name = 'Динамика численности получателей социальных выплат за {period}'
 
-# Case по rep_rfpm_ (строки 1313-1322) дословно, "ребёнком" - через ё,
-# как в исходнике.
+# Case по rep_rfpm_ (строки 1313-1322) дословно, "ребёнком" - через ё, как в
+# исходнике. Порядок - как в Case оригинала (формы 8-1..8-4). Каждый вид - своя
+# колонка листа.
 RFPM_TEXT = {
     '0702': 'утраты трудоспособности',
     '0701': 'потери кормильца',
@@ -92,16 +94,21 @@ ROWS = [
     (16, 'численность получателей на конец месяца, человек', 'int'),
 ]
 
-COLUMNS = [
-    Col('Наименование', 'name', 'text', 60),
-    Col('Показатели', 'val', 'money', 20, kind_of='kind'),
+COLUMNS = [Col('Наименование', 'name', 'text', 60)] + [
+    Col(f'{code} - по случаю {text}', f'val_{code}', 'money', 22, kind_of='kind')
+    for code, text in RFPM_TEXT.items()
 ]
 
 _SPINE = '\n    union all\n'.join(
     f"    select {vt} vt, '{name}' name, '{kind}' kind from dual"
     for vt, name, kind in ROWS
 )
-_VALUE = ', '.join(f'{vt}, t.v{vt:02d}' for vt, _, _ in ROWS if vt != 8)
+_RFPM_LIST = '\n    union all\n'.join(
+    f"    select '{code}' rfpm from dual" for code in RFPM_TEXT)
+_VALUE = ', '.join(f'{vt}, tt.v{vt:02d}' for vt, _, _ in ROWS)
+_PIVOT = ',\n       '.join(
+    f"max(decode(tt.rfpm, '{code}', decode(n.vt, {_VALUE}))) val_{code}"
+    for code in RFPM_TEXT)
 
 # Документы получателя за месяц: ridt_id = 6 (выплаты из ГФСС), статусы и
 # pnsp_id > 0 - дословно из Fill_F11.
@@ -117,24 +124,25 @@ _RECIPIENTS = """
        and d.source_id = f.pnpt_id(+)"""
 
 # :d_from - первое число месяца, :d_to - первое число следующего.
-# :rfpm_id - выбранный вид выплаты.
+# Все четыре вида выплат считаются одним запросом: rfpm - ключ группировки
+# вместо фильтра :rfpm_id. Вид - по c.rfpm (у выбывших, которых в c нет, - по
+# p.rfpm), как фильтровал оригинал.
 STMT = f"""
 with c as ({_RECIPIENTS.format(month=':d_from')}
 ),
 p as ({_RECIPIENTS.format(month='add_months(:d_from, -1)')}
 ),
 j as (
-    select c.source_id in_c, p.source_id in_p,
+    select c.rfpm rfpm,
+           c.source_id in_c, p.source_id in_p,
            c.source_id_main in_c_main, p.source_id_main in_p_main,
            nvl(c.pncd_id, p.pncd_id) pncd_id
       from c, p
      where c.source_id = p.source_id(+)
-       and c.rfpm = :rfpm_id
     union all
-    select null, p.source_id, null, p.source_id_main, p.pncd_id
+    select p.rfpm, null, p.source_id, null, p.source_id_main, p.pncd_id
       from p
-     where p.rfpm = :rfpm_id
-       and not exists (select 1 from c where c.source_id = p.source_id)
+     where not exists (select 1 from c where c.source_id = p.source_id)
 ),
 arr as (
     -- 100 новое назначение, 120/121 прибытие по запросу, 110 из-за рубежа
@@ -168,7 +176,7 @@ paid as (
 ),
 ev as (
     -- 0 - акта нет: прибывший восстановлен, выбывший снят
-    select j.in_c_main, j.in_p_main, s.sm,
+    select j.rfpm, j.in_c_main, j.in_p_main, s.sm,
            case when j.in_p is null then nvl(a.oper, 0) end arr_oper,
            case when j.in_p is not null and j.in_c is null
                 then nvl(d.oper, 0) end dep_oper
@@ -177,40 +185,51 @@ ev as (
        and d.pncd_id(+) = j.pncd_id
        and s.source_id(+) = j.in_c
 ),
-t as (
-    select count(in_p_main)                               v07,
-           count(case when arr_oper = 1 then 1 end)       v09,
-           nvl(sum(case when arr_oper = 1 then sm end), 0) v10,
-           count(case when dep_oper = 1 then 1 end)       v11,
-           count(case when arr_oper = 3 then 1 end)       v12,
-           count(case when dep_oper = 3 then 1 end)       v13,
-           count(case when arr_oper in (0, 2) then 1 end) v14,
-           count(case when dep_oper in (0, 2) then 1 end) v15,
-           count(in_c_main)                               v16
-      from ev
+rf as ({_RFPM_LIST}
 ),
-s8 as (
+t as (
+    -- вид без данных даёт строку нулей, как раньше аггрегат без group by
+    select rf.rfpm,
+           count(ev.in_p_main)                                   v07,
+           count(case when ev.arr_oper = 1 then 1 end)           v09,
+           nvl(sum(case when ev.arr_oper = 1 then ev.sm end), 0) v10,
+           count(case when ev.dep_oper = 1 then 1 end)           v11,
+           count(case when ev.arr_oper = 3 then 1 end)           v12,
+           count(case when ev.dep_oper = 3 then 1 end)           v13,
+           count(case when ev.arr_oper in (0, 2) then 1 end)     v14,
+           count(case when ev.dep_oper in (0, 2) then 1 end)     v15,
+           count(ev.in_c_main)                                   v16
+      from rf, ev
+     where ev.rfpm(+) = rf.rfpm
+     group by rf.rfpm
+),
+s8x as (
     -- строка 8: все выплаты месяца по виду, ridt_id 6/7/8
-    select nvl(sum(d.pay_sum + d.sum_debt), 0) v08
+    select substr(d.rfpm_id, 1, 4) rfpm, sum(d.pay_sum + d.sum_debt) v08
       from pnpd_document d
      where d.pncp_date = :d_from
-       and substr(d.rfpm_id, 1, 4) = :rfpm_id
        and d.ridt_id in (6, 7, 8)
        and d.status in (0, 1, 2, 3, 5, 7)
        and d.pnsp_id > 0
+     group by substr(d.rfpm_id, 1, 4)
+),
+tt as (
+    select t.*, nvl(s8x.v08, 0) v08
+      from t, s8x
+     where s8x.rfpm(+) = t.rfpm
 ),
 spine as (
 {_SPINE}
 )
-select n.name,
-       case when n.vt = 8 then s8.v08 else decode(n.vt, {_VALUE}) end val,
-       n.kind
-  from spine n, t, s8
+select n.name, n.kind,
+       {_PIVOT}
+  from spine n, tt
+ group by n.vt, n.name, n.kind
  order by n.vt
 """
 
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
     profile=LOADER_PROFILE, period=True, totals=False, blank_zero=False,
-    period_label=_period_label, text_params={'rfpm_id': RFPM_TEXT},
+    period_label=_period_label,
 )
