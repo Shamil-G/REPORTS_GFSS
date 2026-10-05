@@ -13,28 +13,30 @@ report_name = '3020 - Список возвратов СВ перечислен�
 report_code = '3020'
 
 stmt_report = """
-select ROWNUM rn,
-       '    ' rfbn_id,  
-       pd.doc_date, 
-       pd.doc_nmb, 
-       pd.cipher_id_knp,
-       pd.refer, 
-       dl.pay_sum,
-       nvl(dl.period, pd.period) as period, 
-       dl.fm || ' ' || dl.nm || ' ' || dl.ft as fio, 
-       pd.doc_assign, 
-       pd.rfbk_mfo_pbank,
-       dl.rnn
-from pmpd_pay_doc pd,  
-     pmdl_doc_list dl   
-where pd.pay_date = dl.pay_date 
-  and pd.mhmh_id = dl.mhmh_id
-  and pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
-  and trunc(pd.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
-  and dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
-  and trunc(dl.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
-  and pd.cipher_id_knp in ({knp_in})
-  and pd.r_account = 'KZ70125KZT1001300134'
+select ROWNUM rn, s.* from (
+    select '    ' rfbn_id,
+           pd.doc_date,
+           pd.doc_nmb,
+           pd.cipher_id_knp,
+           pd.refer,
+           dl.pay_sum,
+           nvl(dl.period, pd.period) as period,
+           dl.fm || ' ' || dl.nm || ' ' || dl.ft as fio,
+           pd.doc_assign,
+           pd.rfbk_mfo_pbank,
+           dl.rnn
+    from pmpd_pay_doc pd,
+         pmdl_doc_list dl
+    where pd.pay_date = dl.pay_date
+      and pd.mhmh_id = dl.mhmh_id
+      and pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
+      and trunc(pd.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
+      and dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
+      and trunc(dl.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
+      and pd.cipher_id_knp in ({knp_in})
+      and pd.r_account = 'KZ70125KZT1001300134'
+    order by pd.cipher_id_knp, pd.doc_date, pd.doc_nmb, pd.refer
+) s
 """
 
 
@@ -72,7 +74,11 @@ def format_worksheet(worksheet, common_format):
     worksheet.set_row(3, 30)
 
     worksheet.set_column(0, 1, 8)
-    worksheet.set_column(2, 7, 15)
+    worksheet.set_column(2, 3, 15)
+    worksheet.set_column(4, 4, 7.5)
+    worksheet.set_column(5, 5, 17)
+    worksheet.set_column(6, 6, 15)
+    worksheet.set_column(7, 7, 11.25)
     worksheet.set_column(10, 11, 15)
     worksheet.set_column(8, 8, 40)
     worksheet.set_column(9, 9, 60)
@@ -268,8 +274,8 @@ def do_report(file_name: str, date_first: str, date_second: str, knp: str):
 
             for i in range(page_num):
                 # Шифр отчета
-                worksheet[i].write(0, 5, report_code, title_report_code)
-                worksheet[i].write(1, 5, f'Дата формирования: {now.strftime("%d.%m.%Y ")}({s_date} - {stop_time})',
+                worksheet[i].write(0, 11, report_code, title_report_code)
+                worksheet[i].write(1, 11, f'Дата формирования: {now.strftime("%d.%m.%Y ")}({s_date} - {stop_time})',
                                    title_format_it)
 
             workbook.close()

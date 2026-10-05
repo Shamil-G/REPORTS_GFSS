@@ -55,6 +55,10 @@
                 {% else %}
                     {% set width = 20 %}
                 {% endif %}
+                {# 'width' - явная ширина поля (size/ch), если не годится вычисленная из length #}
+                {% if val is mapping and 'width' in val %}
+                    {% set width = val.width %}
+                {% endif %}
                 
                 {% if val is mapping and 'values' in val %}
                     {% set enum_values = val['values'] %}
