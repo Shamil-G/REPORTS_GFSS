@@ -5,14 +5,32 @@
 {% endblock %}
 
 {# Пока хоть один отчёт готовится (статус не 2 и не 3) - страница сама обновляется
-   раз в 4 секунды. Обновление - GET той же страницы, дата берётся из сессии; ?auto=1 - метка
-   автообновления, такие запросы не пишутся в журнал (util.logger.is_auto_refresh). #}
+   раз в 4 секунды. Обновление - GET той же страницы, дата и фильтр берутся из сессии; ?auto=1 - метка
+   автообновления, такие запросы не пишутся в журнал (util.logger.is_auto_refresh).
+   Обновляем скриптом, а не meta refresh: пока пользователь вводит текст в фильтр (поле в фокусе
+   или текст изменён и ещё не отправлен), обновление пропускается, иначе оно стирало бы ввод. #}
 {% block head_extra %}
     {% set ns = namespace(running=false) %}
     {% for el in list or [] %}
         {% if el['status'] not in (2, 3, '2', '3') %}{% set ns.running = true %}{% endif %}
     {% endfor %}
-    {% if ns.running %}<meta http-equiv="refresh" content="4;url={{ url_for('view_running_reports', auto=1) }}">{% endif %}
+    {% if ns.running %}
+    <script>
+        (function () {
+            var url = "{{ url_for('view_running_reports', auto=1) }}";
+            function tick() {
+                var f = document.getElementById('name_filter');
+                var typing = f && (document.activeElement === f || f.value !== f.defaultValue);
+                if (typing) {
+                    setTimeout(tick, 4000);
+                } else {
+                    window.location.href = url;
+                }
+            }
+            setTimeout(tick, 4000);
+        })();
+    </script>
+    {% endif %}
 {% endblock %}
 
 {% block main_title %}
@@ -29,7 +47,7 @@
 
 {% block body %}
     <form style="margin:0; border: none;">
-        {% if list %}
+        {% if list or name_filter %}
         <table>
             <thead>
                 <tr>
@@ -45,6 +63,29 @@
                 </tr>
             </thead>
             <tbody>
+                {# Первая строка - фильтр по названию отчёта (LIKE '%текст%', Enter или кнопка);
+                   отобранные отчёты идут со второй строки. Пустое поле снимает фильтр. #}
+                <tr class="cancel_background_hover">
+                    <td></td>
+                    <td></td>
+                    <td style="text-align: left">
+                        <div style="display: flex; align-items: center; gap: 8px">
+                            <input class="input_s" style="flex: 1; min-width: 0; font-size: 14px; padding: 5px 8px" type="text" id="name_filter" name="name_filter" value="{{ name_filter }}" maxlength="100">
+                            <button type="submit" class="bt" style="padding: 6px 12px; border-radius: 5px" title="{{ res_value('SELECT_BY_DATE') }}" aria-label="{{ res_value('SELECT_BY_DATE') }}">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                                    <circle cx="10" cy="10" r="6.5"></circle>
+                                    <line x1="15" y1="15" x2="21" y2="21"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
                 {% for el in list %}
                 <tr>
                     <td>

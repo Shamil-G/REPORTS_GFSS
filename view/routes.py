@@ -189,10 +189,16 @@ def view_running_reports():
         session['request_date'] = date.today().strftime('%Y-%m-%d')
     if request.method == "POST":
         session['request_date'] = request.form['request_date']
-    log.debug(f"RUNNING REPORTS. REQUEST DATE: {session['request_date']}")
-    list_reports = list_reports_by_day(session['request_date'])
+    # Фильтр по названию отчёта держим в сессии, как и дату: иначе автообновление
+    # страницы и выбор даты его сбрасывали бы. Отправка фильтра с пустым полем снимает его.
+    if 'name_filter' in request.args:
+        session['name_filter'] = request.args['name_filter'].strip()[:100]
+    name_filter = session.get('name_filter', '')
+    log.debug(f"RUNNING REPORTS. REQUEST DATE: {session['request_date']}, NAME FILTER: {name_filter!r}")
+    list_reports = list_reports_by_day(session['request_date'], name_filter)
     log.debug(f'RUNNING REPORTS. LIST REPORTS: {list_reports}')
-    return render_template("running_reports.html", list = list_reports, request_date=session['request_date'])
+    return render_template("running_reports.html", list = list_reports, request_date=session['request_date'],
+                           name_filter=name_filter)
 
 
 @app.route('/uploads/<path:full_path>')

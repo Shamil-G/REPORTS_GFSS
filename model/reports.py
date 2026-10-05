@@ -41,7 +41,24 @@ stmt_list_reports = """
     order by st.num
 """
 
-def list_reports_by_day(request_day):
+# Фильтр по названию отчёта: подстрока без учёта регистра (LIKE '%текст%').
+# Добавляется перед order by только если фильтр задан.
+LIKE_ESCAPE = chr(92)  # обратная косая: символ экранирования в LIKE
+
+stmt_name_filter = f"""    and upper(st.name) like upper(:i_name) escape '{LIKE_ESCAPE}'
+"""
+
+
+def like_pattern(text):
+    """'%текст%' для LIKE: подстановочные символы из ввода пользователя
+    (процент, подчёркивание и сам символ экранирования) экранируются,
+    чтобы они искались как обычные символы."""
+    for ch in (LIKE_ESCAPE, '%', '_'):
+        text = text.replace(ch, LIKE_ESCAPE + ch)
+    return f'%{text}%'
+
+
+def list_reports_by_day(request_day, name_filter=''):
     current_day = datetime.today().strftime('%Y-%m-%d')
     results = []
     stmt = ''
@@ -54,7 +71,11 @@ def list_reports_by_day(request_day):
                 stmt = stmt_list_reports_month
             else:
                 stmt = stmt_list_reports
-            cursor.execute(stmt, i_date=request_day)
+            params = {'i_date': request_day}
+            if name_filter:
+                stmt = stmt.replace('    order by st.num', stmt_name_filter + '    order by st.num')
+                params['i_name'] = like_pattern(name_filter)
+            cursor.execute(stmt, params)
             log.debug(f'LIST REPORTS BY DAY. request_day: {request_day}\n--------\n{stmt}\n--------')
             rows = cursor.fetchall() 
             if rows:
