@@ -4,7 +4,7 @@ from gfss_parameter import app_name, BASE
 from app_config import port
 
 bind = f"localhost:{port}"
-workers = int(multiprocessing.cpu_count()*2) + 1
+workers = int(multiprocessing.cpu_count()) + 1
 worker_class = "gevent"
 print(f'GUNICORN. change DIRECTORY: {BASE}')
 
