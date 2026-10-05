@@ -1,6 +1,6 @@
 from flask import session
 from util.ip_addr import ip_addr
-from util.logger import log
+from util.logger import log, is_auto_refresh
 from app_config import admin_post, work_post, view_post
 
      
@@ -88,9 +88,10 @@ class SSO_User:
             self.full_name = self.fio
             session['full_name'] = self.fio
 
-            log.info(f"--->\n\tSSO SUCCESS\n\tTOP_CONTROL:\t{self.top_control}\tLOGIN_NAME:\t{self.login_name}\tFIO:\t  {self.fio}\n"
-            f"\tROLES:\t\t{self.roles}\tIP_ADDR:\t{self.ip}\tPOST:\t  {self.post}\n"
-            f"\tRFBN:\t\t{self.rfbn_id}\tOU_NAME:\t{self.ou_name}\t\tDEP_NAME: {self.dep_name}\n<---")
+            if not is_auto_refresh():
+                log.info(f"--->\n\tSSO SUCCESS\n\tTOP_CONTROL:\t{self.top_control}\tLOGIN_NAME:\t{self.login_name}\tFIO:\t  {self.fio}\n"
+                f"\tROLES:\t\t{self.roles}\tIP_ADDR:\t{self.ip}\tPOST:\t  {self.post}\n"
+                f"\tRFBN:\t\t{self.rfbn_id}\tOU_NAME:\t{self.ou_name}\t\tDEP_NAME: {self.dep_name}\n<---")
 
             return self
         log.info(f"---> SSO FAIL. login_name: {info_user}\n\tip_addr: {self.ip}, password: {session.get('password', '')}\n<---")

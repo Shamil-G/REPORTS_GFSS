@@ -1,4 +1,4 @@
-from util.logger import log
+from util.logger import log, is_auto_refresh
 from db.connect import get_connection
 from datetime import datetime
 from model.manage_reports import set_status_report, remove_report
@@ -45,7 +45,8 @@ def list_reports_by_day(request_day):
     current_day = datetime.today().strftime('%Y-%m-%d')
     results = []
     stmt = ''
-    log.info(f'LIST REPORTS BY DAY. request_day: {request_day}, current_day: {current_day}')
+    if not is_auto_refresh():
+        log.info(f'LIST REPORTS BY DAY. request_day: {request_day}, current_day: {current_day}')
     with get_connection() as connection:
         with connection.cursor() as cursor:
             log.debug(f'LIST REPORTS BY DAY. CURSOR CREATED')

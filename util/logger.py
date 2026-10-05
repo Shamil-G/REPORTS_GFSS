@@ -25,3 +25,13 @@ def init_logger():
     return logger
 
 log = init_logger()
+
+
+def is_auto_refresh() -> bool:
+    """Запрос от автообновления страницы /running-reports (?auto=1).
+
+    Пока отчёт готовится, страница дёргает сервер раз в несколько секунд; такие
+    запросы не должны писать в журнал, иначе он забивается одинаковыми строками.
+    """
+    from flask import request, has_request_context
+    return has_request_context() and request.args.get('auto') == '1'

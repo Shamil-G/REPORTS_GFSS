@@ -4,6 +4,17 @@
     {{ res_value('RUNNING_REPORT') }}
 {% endblock %}
 
+{# Пока хоть один отчёт готовится (статус не 2 и не 3) - страница сама обновляется
+   раз в 4 секунды. Обновление - GET той же страницы, дата берётся из сессии; ?auto=1 - метка
+   автообновления, такие запросы не пишутся в журнал (util.logger.is_auto_refresh). #}
+{% block head_extra %}
+    {% set ns = namespace(running=false) %}
+    {% for el in list or [] %}
+        {% if el['status'] not in (2, 3, '2', '3') %}{% set ns.running = true %}{% endif %}
+    {% endfor %}
+    {% if ns.running %}<meta http-equiv="refresh" content="4;url={{ url_for('view_running_reports', auto=1) }}">{% endif %}
+{% endblock %}
+
 {% block main_title %}
 <form method="POST" style="display:flex; border: none">
     <input class="input_s" style="margin: 2px 24px 2px 0px; padding: 0px 4px 0px 6px" type="date" id="request_date" name="request_date" value="{{ request_date }}">

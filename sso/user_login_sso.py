@@ -4,6 +4,7 @@ from sso.sso_login import SSO_User
 from main_app import app, log, login_manager
 from app_config import sso_server
 from util.ip_addr import ip_addr
+from util.logger import is_auto_refresh
 from os import environ
 import requests 
 # import json
@@ -12,7 +13,8 @@ log.info("user_login_sso стартовал...")
 
 @login_manager.user_loader
 def loader_user(id_user):
-    log.info(f"LM. Loader ID User: {id_user}")
+    if not is_auto_refresh():
+        log.info(f"LM. Loader ID User: {id_user}")
     return fetch_user_from_sso("check", {"ip_addr": ip_addr(), "login_name": id_user})
 
 
