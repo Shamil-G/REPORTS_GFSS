@@ -39,9 +39,9 @@ and pd.doc_assign like '%Возврат сумм%'
 )
 )
 and pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
-and trunc(pd.pay_date) < TO_DATE(:dt_to,'YYYY-MM-DD') 
+and trunc(pd.pay_date) < TO_DATE(:dt_to,'YYYY-MM-DD') + 1
 and dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
-and trunc(dl.pay_date) < TO_DATE(:dt_to,'YYYY-MM-DD') 
+and trunc(dl.pay_date) < TO_DATE(:dt_to,'YYYY-MM-DD') + 1
 and pd.r_account= 'KZ70125KZT1001300134'
 )
 select rownum num, coalesce(reg_name,'Итого:') reg_name, cnt_all, sum_all, cnt_028, sum_028,
