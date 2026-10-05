@@ -43,9 +43,11 @@ def clear_running_reports():
     # все записи "готовится" (status 1) остались от расчётов, убитых перезагрузкой,
     # и без очистки висели бы до конца дня, не давая запустить отчёт заново.
     # Недописанный файл удаляется вместе с записью (remove_report).
-    for row in select(stmt_running):
+    rows = select(stmt_running)
+    for row in rows:
         log.info(f"CLEAR RUNNING REPORT. NUM_REPORT: {row['num_report']}, DATE_REPORT: {row['date_report']}, FILE_PATH: {row['file_path']}")
         remove_report(row['date_report'], row['num_report'])
+    log.info(f"CLEAR RUNNING REPORTS. Удалено незавершённых отчётов: {len(rows)}")
 
 
 def set_status_report(file_path: str, status: int):

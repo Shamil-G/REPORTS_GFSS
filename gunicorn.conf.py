@@ -42,9 +42,11 @@ def on_starting(server):
     import subprocess
     import sys
     try:
-        subprocess.run([sys.executable, '-c',
-                        'from model.manage_reports import clear_running_reports; clear_running_reports()'],
-                       cwd=BASE, timeout=120)
+        result = subprocess.run([sys.executable, '-c',
+                                 'from model.manage_reports import clear_running_reports; clear_running_reports()'],
+                                cwd=BASE, timeout=120)
+        if result.returncode != 0:
+            print(f'GUNICORN. CLEAR RUNNING REPORTS FAILED: код возврата {result.returncode}')
     except Exception as e:
         print(f'GUNICORN. CLEAR RUNNING REPORTS FAILED: {e}')
 
