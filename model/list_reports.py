@@ -908,27 +908,152 @@ dict_reports = {
             "reports": 
             {
                 "01": {
-                    "name": "СО по категориям МЗП и регионам (3029)",
-                    "proc": "rep_dia_3029",
-                    "data_approve": "14.03.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
+                    "name": "3001 - Ведомость возвращенных излишне уплаченных СО",
+                    "proc": "rep_dia_3001",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
                 "02": {
+                    "name": "3005 - Сведения о градации вновь назначенных получателей социальных выплат",
+                    "proc": "rep_dia_3005",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "03": {
+                    "name": "3007 - Сведения о градации по годам назначения",
+                    "proc": "rep_dia_3007",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH, "rfpm_id": {**LIST_RFPM, "required": True}},
+                },
+                "04": {
+                    "name": "3009 - Сведения о численности получателей, за которых производятся ОПВ",
+                    "proc": "rep_dia_3009",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "05": {
+                    "name": "3011 - Сведения по первому разделу",
+                    "proc": "rep_dia_3011",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "06": {
+                    "name": "3016 - Реестр сумм возвратов социальных выплат(3107)",
+                    "proc": "rep_dia_3016",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "07": {
+                    "name": "3019 - статус 103 (3103)",
+                    "proc": "rep_dia_3019",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "08": {
+                    "name": "3020 - Список возвратов СВ перечисленных в ГФСС",
+                    "proc": "rep_dia_3020",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            },
+                            "knp": {
+                                "display_name": "КНП (через запятую)",
+                                "type": "string",
+                                "length": 40,
+                                "width": 17,
+                                "required": True
+                            }
+                        }
+                },
+                "09": {
+                    "name": "3022 - Аналитический отчет стаж участия в СОСС в разрезе возраста",
+                    "proc": "rep_dia_3022",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "10": {
                     "name": "Стаж участия в СОСС (3023)",
                     "proc": "rep_dia_3023",
                     "data_approve": "12.03.2025",
                     "author": "Гусейнов Ш.А.",
                     "params": {"date_first": "С", "date_second": "по"},
                 },
-                "03": {
+                "11": {
+                    "name": "3027 - Список лиц, являющихся плательщиками ЕСП, которым назначена социальная выплата",
+                    "proc": "rep_dia_3027",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "12": {
+                    "name": "СО по категориям МЗП и регионам (3029)",
+                    "proc": "rep_dia_3029",
+                    "data_approve": "14.03.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "13": {
                     "name": "СО по категориям МЗП и районам (3029-районы)",
                     "proc": "rep_dia_3029_1",
                     "data_approve": "14.03.2025",
                     "author": "Гусейнов Ш.А.",
                     "params": {"date_first": "С", "date_second": "по"},
                 },
-                "04": {
+                "14": {
                     "name": "3030 - Отчет 9V (для Министерства)",
                     "proc": "rep_dia_3030",
                     "data_approve": "15.04.2025",
@@ -947,6 +1072,380 @@ dict_reports = {
                             }
                         }
                 },
+                "15": {
+                    "name": "3100 - Ведомость перечисленных социальных выплат в разрезе БВУ",
+                    "proc": "rep_dia_3100",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "16": {
+                    "name": "3101 - Ведомость перечисленных ОПВ",
+                    "proc": "rep_dia_3101",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "17": {
+                    "name": "3102 - Ведомость перечисленных социальных выплат в разрезе областей",
+                    "proc": "rep_dia_3102",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "18": {
+                    "name": "3103 - Отчет о поступивших социальных отчислениях",
+                    "proc": "rep_dia_3103",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "19": {
+                    "name": "3104 - Список, возвратов ОПВ",
+                    "proc": "rep_dia_3104",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            },
+                            "knp": {
+                                "display_name": "КНП",
+                                "type": "string",
+                                "length": 3,
+                                "required": True
+                            }
+                        }
+                },
+                "20": {
+                    "name": "3105 - Ведомость возвращенных излишне уплаченных СО",
+                    "proc": "rep_dia_3105",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "21": {
+                    "name": "3106 - Отчет о возвратах СО в разрезе видов ошибок",
+                    "proc": "rep_dia_3106",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "22": {
+                    "name": "3107 - Реестр сумм возвратов социальных выплат",
+                    "proc": "rep_dia_3107",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "23": {
+                    "name": "3108 - Отчет по платежам в разрезе КНП",
+                    "proc": "rep_dia_3108",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "24": {
+                    "name": "3109 - Количество взносов участников СОСС",
+                    "proc": "rep_dia_3109",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "25": {
+                    "name": "3110 - Численность участников СОСС, в разрезе пола и возраста",
+                    "proc": "rep_dia_3110",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "26": {
+                    "name": "3111 - Женщины-участники СОСС 50+, СО по БИН и ИИН",
+                    "proc": "rep_dia_3111",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "27": {
+                    "name": "3112 - Женщины-участники СОСС 50+, СО от нескольких работодателей",
+                    "proc": "rep_dia_3112",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "28": {
+                    "name": "3113 - Перевод денежных средств в АО 'ГФСС'",
+                    "proc": "rep_dia_3113",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "29": {
+                    "name": "3114 - Потребность",
+                    "proc": "rep_dia_3114",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "30": {
+                    "name": "3115 - График выплаты социальных выплат",
+                    "proc": "rep_dia_3115",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"pay_day": {"display_name": "День выплаты", "type": "date", "required": True}, "pay_type": {"display_name": "Тип графика", "type": "list", "required": True, "default": "1", "values": {"1": "1 - выплаты, удержания и недополученное", "2": "2 - перечисления в НПФ (10%)"}}, "rfbn_id": LIST_REGION},
+                },
+                "31": {
+                    "name": "3118 - График выплат",
+                    "proc": "rep_dia_3118",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "32": {
+                    "name": "3119 - Иностранные граждане (Участники СОСС)",
+                    "proc": "rep_dia_3119",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "33": {
+                    "name": "3120 - Иностранные граждане-получатели, в разрезе стран",
+                    "proc": "rep_dia_3120",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "34": {
+                    "name": "3121 - Иностранные граждане-получатели, в разрезе документов",
+                    "proc": "rep_dia_3121",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "35": {
+                    "name": "3122 - Сведения о числе получателей, количестве и суммах выплат",
+                    "proc": "rep_dia_3122",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": {
+                                "display_name": "C",
+                                "type": "date",
+                                "required": True
+                            },
+                            "date_second": {
+                                "display_name": "по",
+                                "type": "date",
+                                "required": True
+                            }
+                        }
+                },
+                "36": {
+                    "name": "3123 - Сведения о числе получателей по области",
+                    "proc": "rep_dia_3123",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                        {
+                            "date_first": DATE_FROM,
+                            "date_second": DATE_TO,
+                            "rfbn_id": LIST_REGION
+                        }
+                },
+                "37": {
+                    "name": "3124 - Сведения о размерах выплат по районам",
+                    "proc": "rep_dia_3124",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                    {
+                        "date_first": DATE_FROM,
+                        "date_second": DATE_TO,
+                        "rfbn_id": LIST_REGION
+                    }
+                },
+                "38":
+                {
+                    "name": "3125 - Сведения о числе получателей по полу по районам",
+                    "proc": "rep_dia_3125",
+                    "data_approve": "14.03.2025",
+                    "author": "Туржанова Ж.Е.",
+                    "meta_params":
+                    {
+                        "date_first": DATE_FROM,
+                        "date_second": DATE_TO,
+                        "rfbn_id": LIST_REGION
+                    }
+                },
+                # Дубль 3030 (та же процедура и те же параметры, что выше) - закомментирован 06.10.2026
+                # "17": {
+                #     "name": "3030 - Отчет 9V (для Министерства)",
+                #     "proc": "rep_dia_3030",
+                #     "data_approve": "14.03.2025",
+                #     "author": "Туржанова Ж.Е.",
+                #     "meta_params":
+                #         {
+                #             "date_first": {
+                #                 "display_name": "C",
+                #                 "type": "date",
+                #                 "required": True
+                #             },
+                #             "date_second": {
+                #                 "display_name": "по",
+                #                 "type": "date",
+                #                 "required": True
+                #             }
+                #         }
+                # },
+                # --- закомментированные отчёты (прежние ключи 05-12) ---
                 # "05": {
                 #     "name": "3003 - Оперативные сведения по социальным выплатам",
                 #     "proc": "rep_dia_3003",
@@ -1099,503 +1598,6 @@ dict_reports = {
                 #             }
                 #         }
                 # },
-                "13": {
-                    "name": "3016 - Реестр сумм возвратов социальных выплат(3107)",
-                    "proc": "rep_dia_3016",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "14": {
-                    "name": "3019 - статус 103 (3103)",
-                    "proc": "rep_dia_3019",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "15": {
-                    "name": "3020 - Список возвратов СВ перечисленных в ГФСС",
-                    "proc": "rep_dia_3020",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            },
-                            "knp": {
-                                "display_name": "КНП (через запятую)",
-                                "type": "string",
-                                "length": 40,
-                                "width": 17,
-                                "required": True
-                            }
-                        }
-                },
-                "16": {
-                    "name": "3027 - Список лиц, являющихся плательщиками ЕСП, которым назначена социальная выплата",
-                    "proc": "rep_dia_3027",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "17": {
-                    "name": "3030 - Отчет 9V (для Министерства)",
-                    "proc": "rep_dia_3030",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "18": {
-                    "name": "3100 - Ведомость перечисленных социальных выплат в разрезе БВУ",
-                    "proc": "rep_dia_3100",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "19": {
-                    "name": "3101 - Ведомость перечисленных ОПВ",
-                    "proc": "rep_dia_3101",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "20": {
-                    "name": "3102 - Ведомость перечисленных социальных выплат в разрезе областей",
-                    "proc": "rep_dia_3102",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "21": {
-                    "name": "3103 - Отчет о поступивших социальных отчислениях",
-                    "proc": "rep_dia_3103",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "22": {
-                    "name": "3104 - Список, возвратов ОПВ",
-                    "proc": "rep_dia_3104",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            },
-                            "knp": {
-                                "display_name": "КНП",
-                                "type": "string",
-                                "length": 3,
-                                "required": True
-                            }
-                        }
-                },
-                "24": {
-                    "name": "3106 - Отчет о возвратах СО в разрезе видов ошибок",
-                    "proc": "rep_dia_3106",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "25": {
-                    "name": "3107 - Реестр сумм возвратов социальных выплат",
-                    "proc": "rep_dia_3107",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "26": {
-                    "name": "3108 - Отчет по платежам в разрезе КНП",
-                    "proc": "rep_dia_3108",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "27": {
-                    "name": "3109 - Количество взносов участников СОСС",
-                    "proc": "rep_dia_3109",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "28": {
-                    "name": "3110 - Численность участников СОСС, в разрезе пола и возраста",
-                    "proc": "rep_dia_3110",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "29": {
-                    "name": "3111 - Женщины-участники СОСС 50+, СО по БИН и ИИН",
-                    "proc": "rep_dia_3111",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "30": {
-                    "name": "3112 - Женщины-участники СОСС 50+, СО от нескольких работодателей",
-                    "proc": "rep_dia_3112",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "31": {
-                    "name": "3113 - Перевод денежных средств в АО 'ГФСС'",
-                    "proc": "rep_dia_3113",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "32": {
-                    "name": "3122 - Сведения о числе получателей, количестве и суммах выплат",
-                    "proc": "rep_dia_3122",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "33": {
-                    "name": "3123 - Сведения о числе получателей по области",
-                    "proc": "rep_dia_3123",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": DATE_FROM,
-                            "date_second": DATE_TO,
-                            "rfbn_id": LIST_REGION
-                        }
-                },
-                "34": {
-                    "name": "3124 - Сведения о размерах выплат по районам",
-                    "proc": "rep_dia_3124",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                    {
-                        "date_first": DATE_FROM,
-                        "date_second": DATE_TO,
-                        "rfbn_id": LIST_REGION
-                    }
-                },
-                "35":
-                {
-                    "name": "3125 - Сведения о числе получателей по полу по районам",
-                    "proc": "rep_dia_3125",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                    {
-                        "date_first": DATE_FROM,
-                        "date_second": DATE_TO,
-                        "rfbn_id": LIST_REGION
-                    }
-                },
-                "36": {
-                    "name": "3001 - Ведомость возвращенных излишне уплаченных СО",
-                    "proc": "rep_dia_3001",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "37": {
-                    "name": "3005 - Сведения о градации вновь назначенных получателей социальных выплат",
-                    "proc": "rep_dia_3005",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "38": {
-                    "name": "3009 - Сведения о численности получателей, за которых производятся ОПВ",
-                    "proc": "rep_dia_3009",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
-                },
-                "39": {
-                    "name": "3011 - Сведения по первому разделу",
-                    "proc": "rep_dia_3011",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
-                },
-                "40": {
-                    "name": "3022 - Аналитический отчет стаж участия в СОСС в разрезе возраста",
-                    "proc": "rep_dia_3022",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "41": {
-                    "name": "3105 - Ведомость возвращенных излишне уплаченных СО",
-                    "proc": "rep_dia_3105",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "42": {
-                    "name": "3118 - График выплат",
-                    "proc": "rep_dia_3118",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
-                },
-                "43": {
-                    "name": "3119 - Иностранные граждане (Участники СОСС)",
-                    "proc": "rep_dia_3119",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "44": {
-                    "name": "3120 - Иностранные граждане-получатели, в разрезе стран",
-                    "proc": "rep_dia_3120",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
-                },
-                "45": {
-                    "name": "3121 - Иностранные граждане-получатели, в разрезе документов",
-                    "proc": "rep_dia_3121",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
-                },
-                "46": {
-                    "name": "3007 - Сведения о градации по годам назначения",
-                    "proc": "rep_dia_3007",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH, "rfpm_id": {**LIST_RFPM, "required": True}},
-                },
-                "47": {
-                    "name": "3114 - Потребность",
-                    "proc": "rep_dia_3114",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
-                },
-                "48": {
-                    "name": "3115 - График выплаты социальных выплат",
-                    "proc": "rep_dia_3115",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"pay_day": {"display_name": "День выплаты", "type": "date", "required": True}, "pay_type": {"display_name": "Тип графика", "type": "list", "required": True, "default": "1", "values": {"1": "1 - выплаты, удержания и недополученное", "2": "2 - перечисления в НПФ (10%)"}}, "rfbn_id": LIST_REGION},
-                },
             },
         },
         "3127 - Утрата трудоспособности": 
@@ -3486,6 +3488,13 @@ dict_reports = {
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
                 "03": {
+                    "name": "3321 - Сведения по безработным",
+                    "proc": "rep_dia_3321",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "04": {
                     "name": "3324 - Список получателей выплат на период ЧП и на период карантина(по БИН)",
                     "proc": "rep_dia_3324",
                     "data_approve": "02.10.2026",
@@ -3493,7 +3502,7 @@ dict_reports = {
                     "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
                 },
                 # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3325.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "04": {
+                # "05": {
                 #     "name": "3325 - Макет по СВчп (по БИН)",
                 #     "proc": "rep_dia_3325",
                 #     "data_approve": "02.10.2026",
@@ -3501,14 +3510,14 @@ dict_reports = {
                 #     "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
                 # },
                 # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3326.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "05": {
+                # "06": {
                 #     "name": "3326 - Сведения по отказным выплатам 42500 в разрезе причин",
                 #     "proc": "rep_dia_3326",
                 #     "data_approve": "02.10.2026",
                 #     "author": "Гусейнов Ш.",
                 #     "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
                 # },
-                "06": {
+                "07": {
                     "name": "3327 - Количество отказанных дел по причинам, в разрезе областей",
                     "proc": "rep_dia_3327",
                     "data_approve": "02.10.2026",
@@ -3516,7 +3525,7 @@ dict_reports = {
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
                 # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3328.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "07": {
+                # "08": {
                 #     "name": "3328 - Сведения по выплатам 42500 в разрезе причин",
                 #     "proc": "rep_dia_3328",
                 #     "data_approve": "02.10.2026",
@@ -3524,20 +3533,13 @@ dict_reports = {
                 #     "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
                 # },
                 # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3329.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "08": {
+                # "09": {
                 #     "name": "3329 - Получатель выплаты 42500 тенге (по ИИН)",
                 #     "proc": "rep_dia_3329",
                 #     "data_approve": "02.10.2026",
                 #     "author": "Гусейнов Ш.",
                 #     "meta_params": {"iin": {"display_name": "ИИН", "type": "string", "length": 12, "required": True}},
                 # },
-                "09": {
-                    "name": "3321 - Сведения по безработным",
-                    "proc": "rep_dia_3321",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
             }
         },
     }
