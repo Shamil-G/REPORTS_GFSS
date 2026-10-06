@@ -58,6 +58,60 @@ def like_pattern(text):
     return f'%{text}%'
 
 
+# Глобальный поиск по названию: отчёты за последние GLOBAL_YEARS лет, не больше GLOBAL_LIMIT самых свежих;
+# выдаются по возрастанию (дата, номер), как и обычный список.
+GLOBAL_YEARS = 2
+GLOBAL_LIMIT = 500
+
+stmt_list_reports_global = f"""
+    select * from (
+        select  to_char(st.date_execute,'YYYY-MM-DD') date_event, st.num, st.date_first, st.date_second, st.rfpm_id,
+                st.rfbn_id, st.name, st.live_time, st.status, st.file_path,
+                case
+                    when live_time = 0 then 72
+                    when st.status = 2 then
+                        date_execute +
+                        (case when live_time>0 then live_time/24 else 1 end) -
+                        (case when live_time>0 then sysdate else date_execute end)
+                    when trunc(st.date_execute) != trunc(sysdate) and st.status = 1 then
+                         0
+                    else live_time
+                end remain_time
+        from load_report_status st
+        where st.date_execute >= add_months(trunc(sysdate), -12 * {GLOBAL_YEARS})
+          and upper(st.name) like upper(:i_name) escape '{LIKE_ESCAPE}'
+        order by st.date_execute desc, st.num desc
+    ) where rownum <= {GLOBAL_LIMIT + 1}
+    order by date_event, num
+"""
+
+
+def list_reports_global(name_filter):
+    """Глобальный поиск по названию за последние GLOBAL_YEARS лет.
+    Ничего не удаляет и статусы не меняет: просроченные и потерявшие файл отчёты просто не показываются
+    (чистка идёт при обычном просмотре по дате). Возвращает (список, усечён ли он лимитом)."""
+    current_day = datetime.today().strftime('%Y-%m-%d')
+    results = []
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(stmt_list_reports_global, {'i_name': like_pattern(name_filter)})
+            rows = cursor.fetchall()
+    truncated = len(rows) > GLOBAL_LIMIT
+    if truncated:
+        rows = rows[1:]  # лишняя (самая старая) строка нужна только чтобы заметить усечение
+    for row in rows:
+        file_exist = os.path.exists(row[9])
+        status = int(row[8])
+        if status != 2 and file_exist:
+            status = 2
+        if row[10] <= 0 or (status == 2 and not file_exist) or (status == 1 and row[0] != current_day):
+            continue
+        results.append({"date_event": row[0], "num": row[1], "date_first": row[2], "date_second": row[3],
+                        "rfpm_id": row[4], "rfbn_id": row[5], "name": row[6], "live_time": row[7],
+                        "status": status, "path": row[9]})
+    return results, truncated
+
+
 def list_reports_by_day(request_day, name_filter=''):
     current_day = datetime.today().strftime('%Y-%m-%d')
     results = []

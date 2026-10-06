@@ -20,7 +20,9 @@
             var url = "{{ url_for('view_running_reports', auto=1) }}";
             function tick() {
                 var f = document.getElementById('name_filter');
-                var typing = f && (document.activeElement === f || f.value !== f.defaultValue);
+                var g = document.getElementById('global_search');
+                var typing = f && (document.activeElement === f || f.value !== f.defaultValue ||
+                                   (g && g.value !== g.defaultValue));
                 if (typing) {
                     setTimeout(tick, 4000);
                 } else {
@@ -71,6 +73,29 @@
                     <td style="text-align: left">
                         <div style="display: flex; align-items: center; gap: 8px">
                             <input class="input_s" style="flex: 1; min-width: 0; font-size: 14px; padding: 5px 8px" type="text" id="name_filter" name="name_filter" value="{{ name_filter }}" maxlength="100">
+                            {# Глобус-переключатель: серый - поиск в списке за выбранную дату, голубой - по всем отчётам
+                               за последние годы. Клик только переключает значение; применяется оно вместе с фильтром (Enter или лупа). #}
+                            <input type="hidden" id="global_search" name="global" value="{{ 1 if global_search else 0 }}">
+                            <button type="button" id="global_toggle" class="bt" style="padding: 4px 6px; border-radius: 5px; background: transparent; border: none; cursor: pointer; color: {{ '#1e88e5' if global_search else '#9aa0a6' }}"
+                                    title="{{ 'Поиск по всем отчётам за ' ~ global_years ~ ' года' if global_search else 'Поиск в списке за выбранную дату' }}" data-on="Поиск по всем отчётам за {{ global_years }} года" data-off="Поиск в списке за выбранную дату" aria-pressed="{{ 'true' if global_search else 'false' }}">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="9.5"></circle>
+                                    <ellipse cx="12" cy="12" rx="4" ry="9.5"></ellipse>
+                                    <line x1="2.5" y1="12" x2="21.5" y2="12"></line>
+                                </svg>
+                            </button>
+                            <script>
+                                (function () {
+                                    var b = document.getElementById('global_toggle'), h = document.getElementById('global_search');
+                                    b.addEventListener('click', function () {
+                                        var on = h.value !== '1';
+                                        h.value = on ? '1' : '0';
+                                        b.style.color = on ? '#1e88e5' : '#9aa0a6';
+                                        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                                        b.title = on ? b.dataset.on : b.dataset.off;
+                                    });
+                                })();
+                            </script>
                             <button type="submit" class="bt" style="padding: 6px 12px; border-radius: 5px" title="{{ res_value('SELECT_BY_DATE') }}" aria-label="{{ res_value('SELECT_BY_DATE') }}">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
                                     <circle cx="10" cy="10" r="6.5"></circle>
@@ -86,6 +111,11 @@
                     <td></td>
                     <td></td>
                 </tr>
+                {% if truncated %}
+                <tr class="cancel_background_hover">
+                    <td colspan="9" style="text-align: left"><a class="a_s">Показаны {{ global_limit }} самых свежих отчётов из найденных, уточните запрос</a></td>
+                </tr>
+                {% endif %}
                 {% for el in list %}
                 <tr>
                     <td>

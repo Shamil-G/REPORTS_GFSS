@@ -9,7 +9,7 @@ from main_app import app, log
 from model.reports_info import get_owner_reports, get_list_groups, get_list_reports
 from model.auxiliary_task import load_minso_dia
 from model.call_report import call_report, check_report
-from model.reports import list_reports_by_day
+from model.reports import list_reports_by_day, list_reports_global, GLOBAL_YEARS, GLOBAL_LIMIT
 from model.manage_reports import remove_report
 from datetime import date
 from util.get_i18n import get_i18n_value
@@ -193,9 +193,17 @@ def view_running_reports():
     # страницы и выбор даты его сбрасывали бы. Отправка фильтра с пустым полем снимает его.
     if 'name_filter' in request.args:
         session['name_filter'] = request.args['name_filter'].strip()[:100]
+        # Режим «глобус» приходит вместе с фильтром (Enter или лупа) и так же держится в сессии.
+        session['global_search'] = request.args.get('global') == '1'
     name_filter = session.get('name_filter', '')
+    # Глобальный поиск работает только при непустом фильтре: иначе показалась бы вся история.
+    global_search = bool(session.get('global_search')) and bool(name_filter)
     log.debug(f"RUNNING REPORTS. REQUEST DATE: {session['request_date']}, NAME FILTER: {name_filter!r}")
-    list_reports = list_reports_by_day(session['request_date'], name_filter)
+    truncated = False
+    if global_search:
+        list_reports, truncated = list_reports_global(name_filter)
+    else:
+        list_reports = list_reports_by_day(session['request_date'], name_filter)
     # Порядок по колонке «Номер отчета» переключается ссылкой в заголовке и держится в сессии.
     # Выполняющиеся отчёты (статус не 2 и не 3) всегда сверху, пока не завершатся.
     if request.args.get('sort') in ('asc', 'desc'):
@@ -207,7 +215,8 @@ def view_running_reports():
                     [el for el in list_reports if el['status'] in (2, 3)])
     log.debug(f'RUNNING REPORTS. LIST REPORTS: {list_reports}')
     return render_template("running_reports.html", list = list_reports, request_date=session['request_date'],
-                           name_filter=name_filter, num_sort=num_sort)
+                           name_filter=name_filter, num_sort=num_sort, global_search=global_search,
+                           truncated=truncated, global_years=GLOBAL_YEARS, global_limit=GLOBAL_LIMIT)
 
 
 @app.route('/uploads/<path:full_path>')
