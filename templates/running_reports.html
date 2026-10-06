@@ -51,15 +51,15 @@
         <table>
             <thead>
                 <tr>
-                    <th><a>{{ res_value('REPORT_DATE') }}</a></th>
-                    <th><a>{{ res_value('REPORT_ID') }}</a></th>
+                    <th style="width: 100px;"><a>{{ res_value('REPORT_DATE') }}</a></th>
+                    <th style="width: 72px;"><a>{{ res_value('REPORT_ID') }}</a><a href="{{ url_for('view_running_reports', sort='asc' if num_sort == 'desc' else 'desc') }}" style="margin-left: 4px; color: inherit; text-decoration: none; cursor: pointer">{{ '↓' if num_sort == 'desc' else '↑' }}</a></th>
                     <th><a>{{ res_value('REPORT_NAME') }}</a></th>
-                    <th><a>{{ res_value('REPORT_STATUS') }}</a></th>
-                    <th><a>{{ res_value('RFPM_ID') }}</a></th>
-                    <th><a>{{ res_value('DATE_FIRST') }}</a></th>
-                    <th><a>{{ res_value('DATE_SECOND') }}</a></th>
-                    <th><a>{{ res_value('RFBN_ID') }}</a></th>
-                    <th></th>
+                    <th style="width: 130px;"><a>{{ res_value('REPORT_STATUS') }}</a></th>
+                    <th style="width: 72px;"><a>{{ res_value('RFPM_ID') }}</a></th>
+                    <th style="width: 100px;"><a>{{ res_value('DATE_FIRST') }}</a></th>
+                    <th style="width: 100px;"><a>{{ res_value('DATE_SECOND') }}</a></th>
+                    <th style="width: 72px;"><a>{{ res_value('RFBN_ID') }}</a></th>
+                    <th style="width: 120px;"></th>
                 </tr>
             </thead>
             <tbody>

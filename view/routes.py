@@ -196,9 +196,18 @@ def view_running_reports():
     name_filter = session.get('name_filter', '')
     log.debug(f"RUNNING REPORTS. REQUEST DATE: {session['request_date']}, NAME FILTER: {name_filter!r}")
     list_reports = list_reports_by_day(session['request_date'], name_filter)
+    # Порядок по колонке «Номер отчета» переключается ссылкой в заголовке и держится в сессии.
+    # Выполняющиеся отчёты (статус не 2 и не 3) всегда сверху, пока не завершатся.
+    if request.args.get('sort') in ('asc', 'desc'):
+        session['num_sort'] = request.args['sort']
+    num_sort = session.get('num_sort', 'asc')
+    if num_sort == 'desc':
+        list_reports = list_reports[::-1]
+    list_reports = ([el for el in list_reports if el['status'] not in (2, 3)] +
+                    [el for el in list_reports if el['status'] in (2, 3)])
     log.debug(f'RUNNING REPORTS. LIST REPORTS: {list_reports}')
     return render_template("running_reports.html", list = list_reports, request_date=session['request_date'],
-                           name_filter=name_filter)
+                           name_filter=name_filter, num_sort=num_sort)
 
 
 @app.route('/uploads/<path:full_path>')
