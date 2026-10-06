@@ -13,8 +13,8 @@ report_name = '3020 - Список возвратов СВ перечислен�
 report_code = '3020'
 
 stmt_report = """
-select ROWNUM rn, s.* from (
-    select '    ' rfbn_id,
+select /*+parallel(2)*/ ROWNUM rn, s.* from (
+    select /*+parallel(2)*/ substr(pd.doc_assign,2,2) rfbn_id,
            pd.doc_date,
            pd.doc_nmb,
            pd.cipher_id_knp,
@@ -35,8 +35,8 @@ select ROWNUM rn, s.* from (
       and trunc(dl.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
       and pd.cipher_id_knp in ({knp_in})
       and pd.r_account = 'KZ70125KZT1001300134'
-    order by pd.cipher_id_knp, pd.doc_date, pd.doc_nmb, pd.refer
 ) s
+order by s.cipher_id_knp, s.rfbn_id, s.doc_date
 """
 
 
