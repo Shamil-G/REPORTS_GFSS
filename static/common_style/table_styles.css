@@ -11,7 +11,7 @@ thead th {
     border: 1px solid rgba(180, 180, 180, 0.3);
 }
 tr > th {
-    padding: 10px;
+    /* padding: 10px; */
     text-align: center;
     font-weight: bold;
     text-decoration: none;
