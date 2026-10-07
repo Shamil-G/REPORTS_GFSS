@@ -18,11 +18,14 @@ AIS_GFSS, группа «ДИА - квартальные отчеты», отч�
   - emp - число работодателей получателя (в оригинале `aq_employer_bir_all` ->
     `aq_employer_bir_count`): плательщики `pmpd_pay_doc.p_rnn` взносов КНП 012,
     учтённых в расчёте выплаты (`v_reckon_donation`, `nvl(is_calc,'x') != 'N'`),
-    по макетам с `sum_all > 0`. Считаются только БИН/ИИН, найденные в
-    `nk_minfin_iin` (в оригинале `update ... set iin` по совпадению
-    `nk_minfin_iin.iin = p_rnn`, затем `count(unique iin)`; в боевом коде про
-    этот справочник: «не все организации»). Разбивка по году платежа (`god`) на
-    счёт не влияет и не переносится;
+    по макетам с `sum_all > 0`. Считаются только плательщики, найденные в
+    справочнике организаций: `rfon_organization.bin = p_rnn` и её КАТО в
+    `cato_branch` (`rfon_organization.cato = cato_branch.code`) - та же связка,
+    что в остальных отчётах. В оригинале здесь был `nk_minfin_iin` (`update ...
+    set iin` по совпадению `iin = p_rnn`, затем `count(unique iin)`), справочник
+    мёртвый (Шамиль, 07.10.2026). Плательщиков КНП 012 за 06.2026 связка
+    находит 98,8 %. Разбивка по году платежа (`god`) на счёт не влияет и не
+    переносится;
   - target (в оригинале `aq_employer_bir_target`) - группа размера
     `width_bucket(sum_all, 0, 2500000, 25)` (шаг 100 000 тенге: 1 - меньше
     100 000, ..., 25 - от 2 400 000), всё от 2 500 000 - группа 26; число
@@ -42,8 +45,8 @@ AIS_GFSS, группа «ДИА - квартальные отчеты», отч�
   - подписи «Руководитель / Исполнитель / дата и время создания» под таблицей
     не переносятся: дата формирования стоит в шапке листа.
 
-`v_reckon_donation` и `nk_minfin_iin` в тестовой reports_test недоступны:
-на данных отчёт не сверен.
+`v_reckon_donation` в тестовой reports_test недоступна: на данных отчёт не
+сверен.
 """
 from db.connect import LOADER_PROFILE
 from util.period import period_bounds, year_start, last_day
@@ -103,7 +106,10 @@ emp as (
        and nvl(d.is_calc, 'x') != 'N'
        and d.mhmh_id = pd.mhmh_id
        and pd.cipher_id_knp = '012'
-       and exists (select 1 from nk_minfin_iin a where a.iin = pd.p_rnn)
+       and exists (select 1
+                     from rfon_organization o, cato_branch cb
+                    where o.bin = pd.p_rnn
+                      and o.cato = cb.code)
      group by d.sipr_id
 ),
 target as (
