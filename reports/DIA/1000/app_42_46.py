@@ -13,7 +13,11 @@
 
 Стаж участия (`staj`) - decode(ksu, 0.1,1, 0.7,2, 0.75,3, 0.85,4, 0.9,5,
 0.95,6, 7) - 7 групп, 7-я - "свыше 60 месяцев" (catch-all, а не отдельное
-значение ksu). ksu берётся с фолбэком на справочник sipr_ksu, если в самой
+значение ksu). По замечанию Заказчика (07.10.2026) "свыше 60 месяцев"
+разбита по годам стажа: коэффициенты 1,0 ... 1,28 с шагом 0,02 - группы
+"от 60 до 72" ... "от 228 до 240 месяцев", последняя "более 240 месяцев"
+(1,3) осталась catch-all, как 7-я в оригинале: в неё же идут значения ksu,
+не являющиеся коэффициентом стажа (у 0704 там число дней, у 0705 пусто). ksu берётся с фолбэком на справочник sipr_ksu, если в самой
 строке назначения он пуст (nvl(s.ksu, t.ksu), строка 6398). Возраст - те
 же 11 корзин width_bucket(...,20,65,9), что и в app_34/36/42, считается от
 risk_date (не от даты последней выплаты).
@@ -58,15 +62,20 @@ _period_label = make_period_label({
     5: '{year} год ',
 })
 
+# (ksu, заголовок группы стажа); у последней ksu нет - она catch-all
 _STAJ = [
-    (1, 'менее 6 месяцев'),
-    (2, 'от 6 до 12 месяцев'),
-    (3, 'от 12 до 24 месяцев'),
-    (4, 'от 24 до 36 месяцев'),
-    (5, 'от 36 до 48 месяцев'),
-    (6, 'от 48 до 60 месяцев'),
-    (7, 'свыше 60 месяцев'),
+    ('0.1', 'менее 6 месяцев'),
+    ('0.7', 'от 6 до 12 месяцев'),
+    ('0.75', 'от 12 до 24 месяцев'),
+    ('0.85', 'от 24 до 36 месяцев'),
+    ('0.9', 'от 36 до 48 месяцев'),
+    ('0.95', 'от 48 до 60 месяцев'),
+    *[(f'{1 + 0.02 * i:.2f}', f'от {60 + 12 * i} до {72 + 12 * i} месяцев')
+      for i in range(15)],
+    (None, 'более 240 месяцев'),
 ]
+_N = len(_STAJ)
+_TOTAL = _N + 1             # номер пары колонок "Итого"
 
 COLUMNS = [
     Col('Наименование', 'reg', 'text', 30),
@@ -74,20 +83,27 @@ COLUMNS = [
     *[Group(title, [
         Col('Количество(человек)', f'cnt{n}', 'int'),
         Col('Сумма(тенге)', f'summ{n}', 'money', 16),
-    ]) for n, title in _STAJ],
+    ]) for n, (_, title) in enumerate(_STAJ, start=1)],
     Group('Итого', [
-        Col('Количество(человек)', 'cnt8', 'int'),
-        Col('Сумма(тенге)', 'summ8', 'money', 16),
+        Col('Количество(человек)', f'cnt{_TOTAL}', 'int'),
+        Col('Сумма(тенге)', f'summ{_TOTAL}', 'money', 16),
     ]),
 ]
 
+_DECODE = ', '.join(f'{k}, {n}' for n, (k, _) in enumerate(_STAJ, start=1) if k)
+_PIVOT = ',\n'.join(f'           sum(case when staj = {n} then cnt  end) cnt{n},\n'
+                     f'           sum(case when staj = {n} then summ end) summ{n}'
+                     for n in range(1, _N + 1))
+_COLS = ', '.join(f'v.cnt{n}, v.summ{n}' for n in range(1, _N + 1))
+_CNT_ALL = ' + '.join(f'nvl(v.cnt{n}, 0)' for n in range(1, _N + 1))
+_SUMM_ALL = ' + '.join(f'nvl(v.summ{n}, 0)' for n in range(1, _N + 1))
+
 # :d_from / :d_to - границы отчётного периода, :d_to исключительная.
 # :rfpm_id - выбранный вид выплаты (LIST_RFPM).
-STMT = """
+STMT = f"""
 with base as (
     select substr(s.rfbn_id, 1, 2) reg_id,
-           decode(nvl(s.ksu, t.ksu), 0.1, 1, 0.7, 2, 0.75, 3, 0.85, 4,
-                  0.9, 5, 0.95, 6, 7)                            staj,
+           decode(nvl(s.ksu, t.ksu), {_DECODE}, {_N})             staj,
            to_char(width_bucket(
                trunc(months_between(s.risk_date, pr.birthdate) / 12),
                20, 65, 9) + 1, 'fm00')                            age,
@@ -110,20 +126,7 @@ agg as (
 ),
 pivot as (
     select reg_id, age,
-           sum(case when staj = 1 then cnt  end) cnt1,
-           sum(case when staj = 1 then summ end) summ1,
-           sum(case when staj = 2 then cnt  end) cnt2,
-           sum(case when staj = 2 then summ end) summ2,
-           sum(case when staj = 3 then cnt  end) cnt3,
-           sum(case when staj = 3 then summ end) summ3,
-           sum(case when staj = 4 then cnt  end) cnt4,
-           sum(case when staj = 4 then summ end) summ4,
-           sum(case when staj = 5 then cnt  end) cnt5,
-           sum(case when staj = 5 then summ end) summ5,
-           sum(case when staj = 6 then cnt  end) cnt6,
-           sum(case when staj = 6 then summ end) summ6,
-           sum(case when staj = 7 then cnt  end) cnt7,
-           sum(case when staj = 7 then summ end) summ7
+{_PIVOT}
       from agg
      group by reg_id, age
 ),
@@ -132,12 +135,9 @@ ages as (
 )
 select rr.name  reg,
        ga.age   age,
-       v.cnt1, v.summ1, v.cnt2, v.summ2, v.cnt3, v.summ3, v.cnt4, v.summ4,
-       v.cnt5, v.summ5, v.cnt6, v.summ6, v.cnt7, v.summ7,
-       nvl(v.cnt1, 0) + nvl(v.cnt2, 0) + nvl(v.cnt3, 0) + nvl(v.cnt4, 0)
-         + nvl(v.cnt5, 0) + nvl(v.cnt6, 0) + nvl(v.cnt7, 0)          cnt8,
-       nvl(v.summ1, 0) + nvl(v.summ2, 0) + nvl(v.summ3, 0) + nvl(v.summ4, 0)
-         + nvl(v.summ5, 0) + nvl(v.summ6, 0) + nvl(v.summ7, 0)       summ8
+       {_COLS},
+       {_CNT_ALL} cnt{_TOTAL},
+       {_SUMM_ALL} summ{_TOTAL}
   from RFRG_REGION rr, ages a, group_age2 ga, pivot v
  where ga.id_age(+) = a.age
    and v.reg_id(+)  = rr.rfrg_id
