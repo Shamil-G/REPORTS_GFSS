@@ -91,7 +91,8 @@ def _cell(n):
 # :y_from - 1 января года, :d_to - начало следующего квартала (исключительная).
 STMT = f"""
 with mk as (
-    select p.sipr_id, p.sum_all
+    select /*+ parallel(4) */
+           p.sipr_id, p.sum_all
       from sipr_maket_first_approve_2 p
      where p.rfpm_id like '0704%'
        and p.date_approve >= :y_from
@@ -113,7 +114,8 @@ emp as (
      group by d.sipr_id
 ),
 target as (
-    select case when m.sum_all > 2500000 then 26
+    select /*+ parallel(4) */
+           case when m.sum_all > 2500000 then 26
                 else width_bucket(m.sum_all, 0, 2500000, 25) end sum_group,
            greatest(1, least(6, nvl(e.cnt_iin, 0))) coun,
            m.sum_all
@@ -121,7 +123,8 @@ target as (
      where m.sipr_id = e.sipr_id(+)
        and m.sum_all is not null
 )
-select sum_group,
+select /*+ parallel(4) */
+       sum_group,
        {_cell(1)},
        {_cell(2)},
        {_cell(3)},
