@@ -2858,6 +2858,13 @@ dict_reports = {
             "reports":
             {
                 "01": {
+                    "name": "6001 - Кол-во работодателей для лиц с СВбр",
+                    "proc": "rep_dia_6001",
+                    "data_approve": "07.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_QUARTER},
+                },
+                "02": {
                     "name": "6002 - 1 МЗП квартальный",
                     "proc": "rep_dia_6002",
                     "data_approve": "07.10.2026",
