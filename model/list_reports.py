@@ -3553,7 +3553,7 @@ dict_reports = {
                     "proc": "rep_dia_7001",
                     "data_approve": "07.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"rfbn_id": LIST_REGION, "date_first": {**DATE_FROM, "display_name": "Дата"}},
+                    "meta_params": {"rfbn_id": LIST_REGION, "date_first": DATE_FROM, "date_second": DATE_TO},
                 },
             }
         },

@@ -3,26 +3,24 @@
 ДМЭН, группа 7000, отчёт 7001. Новый отчёт (07.10.2026), не перенос из AIS.
 ============================================================
 
-Оказание услуг по отделениям за день: число завершённых услуг, из них
+Оказание услуг по отделениям за период: число завершённых услуг, из них
 длительностью 15 минут и более, и число отказов.
 
 Источник - журнал услуг `services_journ` схемы dasorp: услуга относится к
 отделению сотрудника (`web_gs_emp.branch_id`), берутся услуги, начатые в
-выбранный день (`start_date`). Строки - все отделения справочника
+периоде (`start_date`, обе даты включительно). Строки - все отделения справочника
 `con_codes` (внешнее соединение), у отделения без услуг нули.
 
 Схема dasorp основной учётке приложения не видна, поэтому отчёт работает под
 профилем DASORP_PROFILE (секция [dasorp_db_60] в db_config.ini).
 
 Фильтр по области - первые две цифры `branch_id`; пусто - вся республика.
-
-Дата приходит из формы строкой 'YYYY-MM-DD' (input type=date).
 """
 from db.connect import DASORP_PROFILE
 from util.xlsx_report import build_report, Col
 
 report_code = '7001'
-report_name = 'Сведения об оказанных услугах по отделениям за {day_text}'
+report_name = 'Сведения об оказанных услугах по отделениям с {period}'
 
 COLUMNS = [
     Col('Код отделения', 'branch_id', 'center', 12),
@@ -46,8 +44,8 @@ select c.branch_id,
           from con_codes c, web_gs_emp w, services_journ s
          where c.branch_id = w.branch_id
            and s.user_id = w.emp_id
-           and s.start_date >= to_date(:date_first, 'YYYY-MM-DD')
-           and s.start_date <  to_date(:date_first, 'YYYY-MM-DD') + 1
+           and s.start_date >= :d_from
+           and s.start_date <  :d_to
          group by c.branch_id) a,
        con_codes c
  where c.branch_id = a.branch_id(+)
@@ -55,10 +53,7 @@ select c.branch_id,
  order by c.branch_id
 """
 
-# дата для названия в виде dd.mm.yyyy
-TITLE_SQL = "select to_char(to_date(:date_first, 'YYYY-MM-DD'), 'dd.mm.yyyy') day_text from dual"
-
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
-    profile=DASORP_PROFILE, title_sql=TITLE_SQL,
+    profile=DASORP_PROFILE, date_range=True,
 )

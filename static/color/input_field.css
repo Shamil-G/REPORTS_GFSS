@@ -58,3 +58,8 @@ input.input_login:-webkit-autofill {
     transition: .3s linear;
     box-shadow: 4px 4px 16px grey;
 }
+/* Окно списка областей (см. common_style/forms.css): цвет .input_s, но
+   непрозрачный - иначе сквозь открытый список видны поля под ним. */
+select[name="rfbn_id"]::picker(select) {
+    background-color: #efefd3;
+}

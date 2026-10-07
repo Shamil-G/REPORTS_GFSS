@@ -4,3 +4,31 @@ form {
     padding: 12px 10px 12px 10px;
     border: 1px solid rgba(180, 180, 180, 0.3);
 }
+/* Выпадающий список областей (параметр rfbn_id): скролл зелёный и узкий, как
+   у списка отчётов на основной странице (common_style/main.css). Окно
+   обычного <select> браузер рисует сам и ::-webkit-scrollbar к нему не
+   применяет, поэтому список переведён в appearance: base-select - тогда
+   окно (::picker(select)) рисуется страницей и стилизуется. Браузеры без
+   base-select (Chrome/Edge до 135, Firefox) показывают обычный список. */
+@supports (appearance: base-select) {
+    select[name="rfbn_id"], select[name="rfbn_id"]::picker(select) {
+        appearance: base-select;
+    }
+    select[name="rfbn_id"]::picker(select) {
+        background-color: inherit;
+        border: 1px solid rgba(180, 180, 180, 0.3);
+        border-radius: 5px;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    select[name="rfbn_id"]::picker(select)::-webkit-scrollbar {
+        width: 4px;
+    }
+    select[name="rfbn_id"]::picker(select)::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    select[name="rfbn_id"]::picker(select)::-webkit-scrollbar-thumb {
+        background-color: var(--scrollbar-color, currentColor);
+        border-radius: 1px;
+    }
+}
