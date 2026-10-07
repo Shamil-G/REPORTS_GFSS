@@ -126,23 +126,23 @@ ytd_now as (
        and trunc(s.date_approve) <  :d_to
     having count(1) > 0
 )
-select 1 ord,
+select 1 as ord,
        to_char(:d_from, 'Q') || ' квартал ' || to_char(add_months(:d_from, -12), 'YYYY') || ' года' period,
        cnt_svur, cnt_uptogsp, sm_uptogsp, sm_sumcalc, sm_sumdop
   from q_prev
 union all
-select 2,
+select 2 as ord,
        'с начала ' || to_char(add_months(:d_from, -12), 'YYYY') || ' года',
        cnt_svur, cnt_uptogsp, sm_uptogsp, sm_sumcalc, sm_sumdop
   from ytd_prev
  where :d_from != :y_from
 union all
-select 3,
+select 3 as ord,
        to_char(:d_from, 'Q') || ' квартал ' || to_char(:d_from, 'YYYY') || ' года',
        cnt_svur, cnt_uptogsp, sm_uptogsp, sm_sumcalc, sm_sumdop
   from q_now
 union all
-select 4,
+select 4 as ord,
        'с начала ' || to_char(:d_from, 'YYYY') || ' года',
        cnt_svur, cnt_uptogsp, sm_uptogsp, sm_sumcalc, sm_sumdop
   from ytd_now
