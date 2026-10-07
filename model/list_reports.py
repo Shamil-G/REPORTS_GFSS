@@ -3079,6 +3079,13 @@ dict_reports = {
                         "date_first": DATE_FROM,
                     }
                 },
+                "10": {
+                    "name": "Средние с начала года и за месяц",
+                    "proc": "rep_dia_avg_so",
+                    "data_approve": "07.10.2026",
+                    "author": "Гусейнов Ш.А.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
             }
         },
         "минСО": 
