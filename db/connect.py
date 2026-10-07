@@ -40,10 +40,12 @@ def init_session(connection, requestedTag_ignored):
 # Пул на профиль создаётся лениво, при первом обращении, и тоже уже после форка.
 DEFAULT_PROFILE = 'default'
 LOADER_PROFILE = 'loader'
+DASORP_PROFILE = 'dasorp'         # схема dasorp (журнал госуслуг services_journ)
 
 # профиль -> секция в db_config.ini
 PROFILE_SECTIONS = {
     LOADER_PROFILE: 'rep_db_loader',
+    DASORP_PROFILE: 'dasorp_db_60',
 }
 
 # ini лежит рядом с db_config.py

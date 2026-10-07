@@ -3542,6 +3542,21 @@ dict_reports = {
                 # },
             }
         },
+        "7000":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DMN.7000",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "7001 - Сведения об оказанных услугах по отделениям",
+                    "proc": "rep_dia_7001",
+                    "data_approve": "07.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rfbn_id": LIST_REGION, "date_first": {**DATE_FROM, "display_name": "Дата"}},
+                },
+            }
+        },
     }
     ,
     "ВОЗВРАТЫ":
