@@ -2851,6 +2851,21 @@ dict_reports = {
                 },
             }
         },
+        "6000 - Квартальные отчеты":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.6000",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "6002 - 1 МЗП квартальный",
+                    "proc": "rep_dia_6002",
+                    "data_approve": "07.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_QUARTER},
+                },
+            }
+        },
         "6020": 
         { 
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6020",
