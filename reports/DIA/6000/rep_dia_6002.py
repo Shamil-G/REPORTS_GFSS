@@ -73,6 +73,7 @@ with aq_src as (
        and pay_month >= date '2013-02-01'
        and knp in ('012')
        and p_rnn != '160440007161'
+       and type_payer not in ('SZ', 'P', 'O')
      group by trunc(pay_date, 'MM'), sicid, p_rnn, pay_month
     having sum(cnt_mzp) < 1
 ),
@@ -84,6 +85,7 @@ aq as (
        and s.sicid = m.sicid
        and s.pay_month = m.pay_month
        and s.knp in ('012')
+       and s.type_payer not in ('SZ', 'P', 'O')
      group by m.pd, m.sicid, m.p_rnn, m.pay_month
     having floor(sum(s.cnt_mzp)) < 1
 )
