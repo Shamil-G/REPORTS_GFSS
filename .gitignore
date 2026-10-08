@@ -14,3 +14,4 @@ ais_gfss_parameter.py
 .vscode
 /reports.env
 /docs/
+/plsql/pkg_load.pck
