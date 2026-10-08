@@ -17,7 +17,10 @@ AIS_GFSS, группа «ДИА - квартальные отчеты», отч�
     '0704%'`, по дате утверждения `date_approve`;
   - emp - число работодателей получателя (в оригинале `aq_employer_bir_all` ->
     `aq_employer_bir_count`): плательщики `pmpd_pay_doc.p_rnn` взносов КНП 012,
-    учтённых в расчёте выплаты (`v_reckon_donation`, `nvl(is_calc,'x') != 'N'`),
+    учтённых в расчёте выплаты (`em5_sird_reckon_donation`, `nvl(is_calc,'x') !=
+    'N'`; в оригинале через вьюшку `v_reckon_donation` - это выборка колонок из
+    этой таблицы без условий с подсказкой `index(s XN1_SIRD_SIPR_ID)`, вьюшка
+    убрана, подсказка перенесена),
     по макетам с `sum_all > 0`. Считаются только плательщики, найденные в
     справочнике организаций: `rfon_organization.bin = p_rnn` и её КАТО в
     `cato_branch` (`rfon_organization.cato = cato_branch.code`) - та же связка,
@@ -45,8 +48,8 @@ AIS_GFSS, группа «ДИА - квартальные отчеты», отч�
   - подписи «Руководитель / Исполнитель / дата и время создания» под таблицей
     не переносятся: дата формирования стоит в шапке листа.
 
-`v_reckon_donation` в тестовой reports_test недоступна: на данных отчёт не
-сверен.
+`em5_sird_reckon_donation` (схема SSWH) в тестовой reports_test недоступна: на
+данных отчёт не сверен.
 """
 from db.connect import LOADER_PROFILE
 from util.period import period_bounds, year_start, last_day
@@ -99,9 +102,9 @@ with mk as (
        and p.date_approve <  :d_to
 ),
 emp as (
-    select /*+ parallel(8) */
+    select /*+ parallel(8) index(d XN1_SIRD_SIPR_ID) */
            d.sipr_id, count(unique pd.p_rnn) cnt_iin
-      from mk p, v_reckon_donation d, pmpd_pay_doc pd
+      from mk p, em5_sird_reckon_donation d, pmpd_pay_doc pd
      where p.sum_all > 0
        and p.sipr_id = d.sipr_id
        and nvl(d.is_calc, 'x') != 'N'
