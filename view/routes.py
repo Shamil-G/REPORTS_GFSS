@@ -273,3 +273,9 @@ def view_load_minso_dia():
                 return send_from_directory(LOG_PATH, f'load_{table_name}.log')                
     log.info(f"VIEW_LOAD_MINSO\n\tUSER: {g.user.full_name}\n\tROLE: {g.user.roles}")
     return redirect(url_for('view_auxiliary_task_dia'))
+
+
+@app.route('/payment-search', methods=['GET'])
+@login_required
+def view_payment_search():
+    return render_template("payment_search.html")
