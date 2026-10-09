@@ -16,6 +16,8 @@ CREATE OR REPLACE Package batch_upload_table Is
   --       без уникального ключа - сверка по всем колонкам: лишние строки удаляются, новые добавляются
   -- Run (для джоба) грузит приёмник, если источник загружен в LOADER успешно и позже нашей последней
   -- загрузки, а наша последняя загрузка не упала; после ошибки приёмник ждёт разбора (state != 2).
+  -- Перед загрузкой каждого источника состояние приёмников перечитывается: пока шли предыдущие
+  -- источники, приёмник мог взять в работу или уже загрузить джоб LOAD_<таблица> (см. Skip_Reason).
   -- Группы: load_tables_status.group_num объединяет таблицы, которые грузятся вместе, внутри группы -
   -- по id. Их грузит Make (Run по потоку их пропускает), см. описание Make.
 
@@ -91,6 +93,8 @@ CREATE OR REPLACE Package batch_upload_table Is
   -- таблицы группы прошлая загрузка не завершилась успешно (state не 2 и не пусто). На первой ошибке
   -- группа останавливается. Таблица группы без источника в LOADER (строится из таблиц SSWH)
   -- грузится своей LOAD_<таблица>.MAKE; у первой таблицы группы источник в LOADER должен быть.
+  -- Таблица группы, которую перед стартом пропустил Skip_Reason (её грузит другой процесс, или P/M
+  -- уже загружена после LOADER): первая - пропускается вся группа, остальные - группа идёт дальше.
   -- Нечего грузить - выход без записей в протокол.
   Procedure Make;
 
@@ -118,6 +122,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
   p_LOk  Boolean; -- своя процедура (L) по текущему источнику отработала без ошибок
   p_Rows Pls_Integer; -- число строк, обработанных последней командой Exec
   p_Err  Varchar2(2000); -- первая ошибка по текущему источнику - для load_tables_status
+  p_Skip Boolean; -- Load_Source не грузил: все приёмники пропущены по Skip_Reason
 
   -- таблицы групп для Make: по порядку групп, внутри группы - по id
   Cursor cGrp Is
@@ -235,6 +240,36 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       Commit;
       Log(cObject, 'Новые таблицы (X)', iStream || ': ' || substr(p_Names, 3));
     End If;
+  End;
+
+  -- Почему приёмник сейчас грузить не надо (Null - надо). Строка load_tables_status перечитывается:
+  -- приёмник загружается (state = 1) - пропуск всегда. iReady = 1 (Run, Make), приёмник P/M:
+  -- пропуск и при упавшей прошлой загрузке, и если он уже загружен после LOADER. Приёмник L
+  -- проверяет сама LOAD_<таблица>.MAKE (load_procedurs.init), к тому же она читает и таблицы SSWH.
+  Function Skip_Reason
+  (
+    d      cDst%Rowtype,
+    iReady Number
+  ) Return Varchar2 Is
+    p_State load_tables_status.state%Type;
+    p_End   load_tables_status.end_time%Type;
+  Begin
+    Select s.state, s.end_time
+      Into p_State, p_End
+      From load_tables_status s
+     Where s.table_name = upper(d.dst_name);
+    If p_State = 1 Then
+      Return 'Загружается другим процессом';
+    End If;
+    If iReady = 1 And d.load_type != 'L' Then
+      If Nvl(p_State, 2) != 2 Then
+        Return 'Прошлая загрузка завершилась с ошибкой, state = ' || p_State;
+      End If;
+      If p_End >= d.ldr_end Then
+        Return 'Уже загружена после LOADER: ' || to_char(p_End, 'dd.mm.yyyy hh24:mi:ss');
+      End If;
+    End If;
+    Return Null;
   End;
 
   -- table_name = имя приёмника без владельца; строка с load_type заведена вручную
@@ -597,21 +632,38 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     Return p_Sql;
   End;
 
+  -- iReady = 1 - загрузка по готовности (Run, Make), см. Skip_Reason
   Procedure Load_Source
   (
-    iSrc Varchar2,
-    iDst TDstList
+    iSrc   Varchar2,
+    iDst   TDstList,
+    iReady Number
   ) Is
-    p_Dst   TDstList := iDst;
+    p_Dst   TDstList := TDstList(); -- приёмники, которые надо грузить
     p_PDst  TDstList := TDstList(); -- приёмники P - для Insert All
     p_Names Varchar2(4000);
+    p_Why   Varchar2(200);
     p_Ins   Number; -- вставлено строк во все приёмники P
     -- объект в протоколе: приёмник, а если их у источника несколько - источник
     p_Obj Varchar2(261) := Case When iDst.Count = 1 Then iDst(1).dst_full_name Else iSrc End;
   Begin
     p_Ok  := True;
     p_LOk := True;
-    p_Err := Null;
+    p_Err  := Null;
+    p_Skip := False;
+    For i In 1 .. iDst.Count Loop
+      p_Why := Skip_Reason(iDst(i), iReady);
+      If p_Why Is Null Then
+        p_Dst.Extend;
+        p_Dst(p_Dst.Count) := iDst(i);
+      Else
+        Log(iDst(i).dst_full_name, 'Пропущена', p_Why);
+      End If;
+    End Loop;
+    If p_Dst.Count = 0 Then
+      p_Skip := True;
+      Return;
+    End If;
     Log(p_Obj, 'Начало загрузки', 'Из ' || iSrc);
     -- 0. P: источник подозрительно мал по сравнению с прошлой загрузкой - приёмники не трогаем
     For i In 1 .. p_Dst.Count Loop
@@ -714,7 +766,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       -- последний приёмник источника - загружаем источник
       If i = p_All.Count Or p_All(i + 1).src_full_name != p_All(i).src_full_name Then
         dbms_application_info.set_client_info('Loading ' || p_All(i).src_full_name);
-        Load_Source(p_All(i).src_full_name, p_Dst);
+        Load_Source(p_All(i).src_full_name, p_Dst, iReady);
         p_Dst := TDstList();
         p_Cnt := p_Cnt + 1;
         If Not p_Ok Or Not p_LOk Then
@@ -779,13 +831,15 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       Into p_Dst;
     Close cDst;
     If p_Dst.Count > 0 Then
-      -- одна строка: у источника может быть по строке на каждый поток LOADER
-      Load_Source(p_Dst(1).src_full_name, TDstList(p_Dst(1)));
+      -- одна строка: у источника может быть по строке на каждый поток LOADER.
+      -- По готовности: таблица, уже загруженная после LOADER (например, своим джобом), пропускается
+      Load_Source(p_Dst(1).src_full_name, TDstList(p_Dst(1)), 1);
       Return;
     End If;
-    p_Ok  := True;
-    p_LOk := True;
-    p_Err := Null;
+    p_Ok   := True;
+    p_LOk  := True;
+    p_Err  := Null;
+    p_Skip := False;
     Select Count(*)
       Into p_Src
       From load_tables_status ls, loader.load_table lt
@@ -838,6 +892,12 @@ CREATE OR REPLACE Package Body batch_upload_table Is
         For i In p_Beg .. p_End Loop
           dbms_application_info.set_client_info('Group ' || p_All(i).group_num || ': ' || p_All(i).table_name);
           Load_Member(p_All(i).table_name);
+          -- первая таблица пропущена (её грузит другой процесс или уже загрузил) - не грузим всю группу
+          If i = p_Beg And p_Skip Then
+            Log(cObject, 'Группа ' || p_All(p_Beg).group_num || ' пропущена',
+                'Пропущена первая таблица ' || p_All(i).table_name);
+            Exit;
+          End If;
           If Not p_Ok Or Not p_LOk Then
             p_Bad := p_Bad + 1;
             Log(cObject, 'Группа ' || p_All(p_Beg).group_num || ' остановлена', 'На ' || p_All(i).table_name);
