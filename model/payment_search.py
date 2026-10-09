@@ -73,9 +73,12 @@ def build_query(filters):
             where.append('p.p_rnn LIKE :bin')
             params['bin'] = '%' + bin_value + '%'
     # Направление пока не участвует в поиске. Лишняя строка определяет усечение.
-    where.append(f'ROWNUM <= {LIMIT + 1}')
+    # Сортировка - во внутреннем запросе, до ROWNUM: при усечении остаются
+    # самые свежие платежи, а не произвольные LIMIT + 1 строк.
     sql = 'SELECT ' + ', '.join('p.' + column for column in COLUMNS)
     sql += '\nFROM PMPD_PAY_DOC p\nWHERE ' + '\n  AND '.join(where)
+    sql += '\nORDER BY p.pay_date DESC'
+    sql = f'SELECT * FROM (\n{sql}\n)\nWHERE ROWNUM <= {LIMIT + 1}'
     return sql, params
 
 
