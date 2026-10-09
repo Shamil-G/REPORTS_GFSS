@@ -47,11 +47,8 @@ select t.table_name,
    and st.table_name(+) = t.table_name
  order by ls.last_success_date nulls first, t.table_name;
 
--- 2. Обратная задача: что есть в load_tables_status, но отчётам REPORTS_GFSS не нужно.
---    other_* - кто ещё в базе ссылается на таблицу (кроме загрузчиков): число объектов,
---    первый и последний по имени. Не пусто - таблицу могут читать старые отчёты
---    (JOB_RPTB_REPORTS), GFSS_CLIENT и т. п.; пусто - кандидат на отключение загрузки
---    (динамический SQL all_dependencies не видит - перед отключением проверить поиском по коду).
+-- 2. Обратная задача: строки load_tables_status, которые не нужны ни одному отчёту
+--    REPORTS_GFSS - кандидаты на отключение загрузки.
 with t as
  (select column_value table_name
     from table(sys.odcivarchar2list(
@@ -74,17 +71,7 @@ with t as
     'S_STATE', 'TEST_GFSS_ORDER_RET_LIST', 'TEST_GFSS_PAY_DOC', 'TEST_MHMH_GFSS_GCVP',
     'TEST_SIOR_ORDER_RET', 'UNEMPLOYED_CALC', 'VIRTUAL_DOC_LIST', 'V_LM_UNEMPLOY_SS_INFO',
     'WEB_GS_EMP')))
-select ls.table_name, ls.load_type, ls.group_num, ls.state, ls.last_success_date,
-       d.other_cnt, d.other_first, d.other_last
-  from load_tables_status ls,
-       (select d.referenced_name, count(*) other_cnt,
-               min(d.owner || '.' || d.name) other_first, max(d.owner || '.' || d.name) other_last
-          from all_dependencies d
-         where d.referenced_owner = 'SSWH'
-           and d.type != 'PACKAGE'
-           and d.name not like 'LOAD!_%' escape '!'
-           and d.name not in ('BATCH_UPLOAD_TABLE', 'LOAD_PROCEDURS', 'MOVE_OBJ')
-         group by d.referenced_name) d
+select ls.table_name, ls.load_type, ls.group_num, ls.state, ls.last_success_date
+  from load_tables_status ls
  where ls.table_name not in (select table_name from t)
-   and d.referenced_name(+) = ls.table_name
- order by d.other_cnt nulls first, ls.table_name;
+ order by ls.table_name;
