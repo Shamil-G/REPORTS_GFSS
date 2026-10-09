@@ -17,11 +17,11 @@ CREATE OR REPLACE Package batch_upload_table Is
   -- Run (для джоба) грузит приёмник, если источник загружен в LOADER успешно и позже нашей последней
   -- загрузки, а наша последняя загрузка не упала; после ошибки приёмник ждёт разбора (state != 2).
   -- Группы: load_tables_status.group_num объединяет таблицы, которые грузятся вместе, внутри группы -
-  -- по id. Их грузит Run_Groups (Run по потоку их пропускает), см. описание Run_Groups.
+  -- по id. Их грузит Make (Run по потоку их пропускает), см. описание Make.
 
   -- приёмники к загрузке: строки load_tables_status, источник которых - локальная таблица потока LOADER
   -- iStream = Null - все потоки; iReady = 1 - только готовые к загрузке по правилу Run;
-  -- iTable - один приёмник по точному имени (для Run_Groups)
+  -- iTable - один приёмник по точному имени (для Make)
   Cursor cDst
   (
     iStream   Varchar2,
@@ -86,13 +86,13 @@ CREATE OR REPLACE Package batch_upload_table Is
   -- нечего грузить - выход без записей в протокол. Новые таблицы не регистрирует.
   Procedure Run(iStream Varchar2);
 
-  -- для джоба групп: группы по порядку group_num, внутри группы таблицы по id.
+  -- для джоба групп (точка входа, как MAKE у LOAD_*): группы по порядку group_num, внутри группы таблицы по id.
   -- Группа пропускается, если её первая таблица не готова к загрузке по правилу Run или у какой-либо
   -- таблицы группы прошлая загрузка не завершилась успешно (state не 2 и не пусто). На первой ошибке
   -- группа останавливается. Таблица группы без источника в LOADER (строится из таблиц SSWH)
   -- грузится своей LOAD_<таблица>.MAKE; у первой таблицы группы источник в LOADER должен быть.
   -- Нечего грузить - выход без записей в протокол.
-  Procedure Run_Groups;
+  Procedure Make;
 
   -- завести в load_tables_status новые таблицы потока LOADER с load_type = 'X' (не грузятся до P/M);
   -- вызывается и из Load(iStream). Без имени потока не делает ничего.
@@ -119,7 +119,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
   p_Rows Pls_Integer; -- число строк, обработанных последней командой Exec
   p_Err  Varchar2(2000); -- первая ошибка по текущему источнику - для load_tables_status
 
-  -- таблицы групп для Run_Groups: по порядку групп, внутри группы - по id
+  -- таблицы групп для Make: по порядку групп, внутри группы - по id
   Cursor cGrp Is
     Select ls.group_num, ls.id, ls.table_name, ls.load_type, ls.state
       From load_tables_status ls
@@ -813,7 +813,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     End If;
   End;
 
-  Procedure Run_Groups Is
+  Procedure Make Is
     p_All TGrpList;
     p_Beg Pls_Integer := 1; -- первая таблица текущей группы
     p_End Pls_Integer; -- последняя таблица текущей группы
@@ -831,7 +831,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       End Loop;
       If Group_Ready(p_All, p_Beg, p_End) Then
         If p_Cnt = 0 Then
-          Log(cObject, 'Начало загрузки', 'Run_Groups');
+          Log(cObject, 'Начало загрузки', 'Make');
         End If;
         p_Cnt := p_Cnt + 1;
         Log(cObject, 'Группа ' || p_All(p_Beg).group_num, 'Таблиц: ' || (p_End - p_Beg + 1));
