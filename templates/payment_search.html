@@ -8,12 +8,13 @@
 {% block set_style %}
 <link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='3') }}">
 <script src="{{ url_for('static', filename='js/payment_search.js', v='4') }}" defer></script>
+<script src="{{ url_for('static', filename='js/payment_search_excel.js', v='1') }}" defer></script>
 {% endblock %}
 
 {% block body %}
 <section class="payment-search" data-theme="{{ session.get('style', 'color') }}" aria-label="Поиск платежей">
     <div class="ps-intro">
-        <p>Укажите параметры для поиска платёжных документов.</p>
+        <p>Укажите параметры для поиска платежей.</p>
     </div>
     <form id="payment-filters" class="ps-filters" data-url="{{ url_for('view_payment_search_data') }}">
         <fieldset>
@@ -103,6 +104,13 @@
     <div class="ps-results-heading">
         <h2>Результаты поиска</h2>
         <p id="ps-summary" role="status" aria-live="polite">Введите референс или задайте период и нажмите «Найти».</p>
+        <button type="button"
+                id="ps-export"
+                class="ps-reset"
+                data-url="{{ url_for('view_payment_search_excel') }}"
+                disabled>
+            Выгрузить в Excel
+        </button>
     </div>
     <div class="ps-table-wrap" tabindex="0" role="region" aria-label="Результаты поиска. Таблица прокручивается по горизонтали.">
         <table class="ps-table">

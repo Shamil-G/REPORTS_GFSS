@@ -45,6 +45,10 @@
         summary.textContent = data.truncated
             ? `Показаны первые ${data.limit} записей. Уточните фильтры. Сумма показанных платежей: ${money(total)} ₸`
             : `Найдено: ${data.rows.length} · Общая сумма: ${money(total)} ₸`;
+
+        document.dispatchEvent(
+            new CustomEvent('payment-search-results', {detail: data})
+        );
     }
     form.elements.reference.addEventListener('input', updateRequired);
     updateRequired();
