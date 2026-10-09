@@ -338,12 +338,7 @@ dict_reports = {
                                     "type": "date",
                                     "required": True
                                 },
-                                "region": {
-                                    "display_name": "Филиал",
-                                    "type": "string",
-                                    "length": 4,
-                                    "required": True
-                                }
+                                "rfbn_id": LIST_REGION
                             }
                     }
                 }

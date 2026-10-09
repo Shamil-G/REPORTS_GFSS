@@ -69,7 +69,7 @@ src_mnth AS (
     from src_year src, rfon_organization o, cato_branch rc
     WHERE src.LAST_RNN=o.bin(+)
     and   o.cato=rc.code(+)
-    and   coalesce(rc.rfbn_id,'zzzz') like :region || '%'
+    and   coalesce(rc.rfbn_id,'zzzz') like :rfbn_id || '%'
     GROUP BY src.SICID, rc.rfbn_id
 )
 , org_src_mnth as (
@@ -80,7 +80,7 @@ src_mnth AS (
     from src_mnth src, rfon_organization o, cato_branch rc
     WHERE src.LAST_RNN=o.bin(+)
     and   o.cato=rc.code(+)
-    and   coalesce(rc.rfbn_id,'zzzz') like :region || '%'
+    and   coalesce(rc.rfbn_id,'zzzz') like :rfbn_id || '%'
     GROUP BY src.SICID, rc.rfbn_id
 )
 , all_year as(
@@ -164,7 +164,7 @@ def format_worksheet(worksheet, common_format):
         worksheet.write(4, start_col + 2, 'Женщин', common_format)
 
 
-def do_report(file_name: str, date_first: str, region: str):
+def do_report(file_name: str, date_first: str, rfbn_id: str):
     if os.path.isfile(file_name):
         log.info(f'Отчет уже существует {file_name}')
         return file_name
@@ -259,12 +259,12 @@ def do_report(file_name: str, date_first: str, region: str):
             format_worksheet(worksheet=worksheet[page_num - 1], common_format=title_format)
 
             worksheet[page_num - 1].write(0, 0, report_name, title_name_report)
-            worksheet[page_num - 1].write(1, 0, f'За период: {date_first} в {region} регионе', title_name_report)
+            worksheet[page_num - 1].write(1, 0, f'За период: {date_first}' + (f'. Регион: {rfbn_id}' if rfbn_id else '. Вся республика'), title_name_report)
 
             log.info(f'REPORT {report_code}. CREATING REPORT')
 
             try:
-                cursor.execute(stmt_report, dt_from=date_first, region=region)
+                cursor.execute(stmt_report, dt_from=date_first, rfbn_id=rfbn_id or None)
             except oracledb.DatabaseError as e:
                 error, = e.args
                 log.error(f"ERROR. REPORT {report_code}. error_code: {error.code}, error: {error.message}")
@@ -342,11 +342,11 @@ def do_report(file_name: str, date_first: str, region: str):
                 f'REPORT: {report_code}. Формирование отчета {file_name} завершено ({s_date} - {stop_time}). Загружено {all_cnt} записей')
 
 
-def thread_report(file_name: str, date_first: str, region: str):
+def thread_report(file_name: str, date_first: str, rfbn_id: str):
     import threading
     log.info(f'THREAD REPORT. {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} -> {file_name}')
     log.info(f'THREAD REPORT. PARAMS: date_from: {date_first}')
-    threading.Thread(target=do_report, args=(file_name, date_first, region), daemon=True).start()
+    threading.Thread(target=do_report, args=(file_name, date_first, rfbn_id), daemon=True).start()
     return {"status": 1, "file_path": file_name}
 
 
