@@ -4,84 +4,110 @@
     if (!form) return;
     const results = document.getElementById('ps-results');
     const error = document.getElementById('ps-error');
-    const from = form.elements.dateFrom;
-    const to = form.elements.dateTo;
-    const isoDate = date => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    const today = new Date();
-    const todayISO = isoDate(today);
-    const monthStart = isoDate(new Date(today.getFullYear(), today.getMonth(), 1));
-    from.defaultValue = monthStart;
-    to.defaultValue = todayISO;
+    const summary = document.getElementById('ps-summary');
+    const empty = document.getElementById('ps-empty');
+    const button = form.querySelector('button[type="submit"]');
+    const initialSummary = summary.textContent;
+    const columns = ['pay_date', 'doc_date', 'doc_nmb', 'refer', 'cipher_id_knp',
+        'pay_sum', 'doc_err', 'tmst_id', 'p_name', 'p_rnn', 'rfbk_mfo_pbank',
+        'p_account', 'r_name', 'r_rnn', 'rfbk_mfo_rbank', 'r_account', 'doc_assign', 'doc_err'];
+    const money = value => new Intl.NumberFormat('ru-RU', {
+        minimumFractionDigits: 2, maximumFractionDigits: 2
+    }).format(Number(value || 0));
+    let controller = null;
+    let sequence = 0;
 
-    // Вымышленные записи для проверки интерфейса. Запросов к серверу нет.
-    // При подключении API заменить этот массив ответом сервера и справочники
-    // формы — действующими значениями из БД.
-    const demoRows = [
-        {id: 'DEMO-001', knp: '012', amount: 25000, direction: 'incoming', paymentType: 'payment', payer: 'ТОО «Пример Альфа»', payerBin: '000000000001', recipient: 'АО «Пример Фонд»', recipientBin: '000000000099', date: todayISO},
-        {id: 'DEMO-002', knp: '012', amount: 125000.50, direction: 'incoming', paymentType: 'payment', payer: 'ТОО «Пример Бета»', payerBin: '000000000002', recipient: 'АО «Пример Фонд»', recipientBin: '000000000099', date: monthStart},
-        {id: 'DEMO-003', knp: '048', amount: 395503389, direction: 'outgoing', paymentType: 'payment', payer: 'АО «Пример Фонд»', payerBin: '000000000099', recipient: 'АО «Пример Получатель»', recipientBin: '000000000003', date: todayISO},
-        {id: 'DEMO-004', knp: '012', amount: 10000, direction: 'outgoing', paymentType: 'return', payer: 'АО «Пример Фонд»', payerBin: '000000000099', recipient: 'ТОО «Пример Альфа»', recipientBin: '000000000001', date: todayISO},
-    ].map((row, index) => ({
-        ...row, status: '5', errorCode: '—', documentNumber: String(1408 + index),
-        reference: row.id, paymentDate: row.date, processedDate: row.date,
-        documentDate: isoDate(new Date(Number(row.date.slice(0, 4)), Number(row.date.slice(5, 7)) - 1, Number(row.date.slice(8, 10)) - 1)),
-        payerMfo: 'DEMOXXXX', payerAccount: `KZ00DEMO00000000000${index + 1}`,
-    }));
-    const money = value => new Intl.NumberFormat('ru-RU', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(value);
-    const formatDate = value => value.split('-').reverse().join('.');
-
-    function render(rows) {
+    function updateRequired() {
+        const required = !form.elements.reference.value.trim();
+        form.elements.dateFrom.required = required;
+        form.elements.dateTo.required = required;
+    }
+    function showError(message) {
+        error.textContent = message;
+        error.hidden = false;
+    }
+    function render(data) {
         results.replaceChildren();
-        for (const row of rows) {
+        const fragment = document.createDocumentFragment();
+        for (const row of data.rows) {
             const tr = document.createElement('tr');
-            const cells = [formatDate(row.paymentDate), formatDate(row.documentDate), row.documentNumber,
-                row.reference, row.knp, money(row.amount), row.errorCode, `${row.status} — Обработан`,
-                row.payer, row.payerBin, row.payerMfo, row.payerAccount, row.recipient, row.recipientBin];
-            cells.forEach((value, index) => {
+            columns.forEach((key, index) => {
                 const td = document.createElement('td');
-                td.textContent = value;
+                td.textContent = index === 5 ? money(row[key]) : (row[key] ?? '');
                 if (index === 5) td.classList.add('ps-money');
                 tr.appendChild(td);
             });
-            results.appendChild(tr);
+            fragment.appendChild(tr);
         }
-        document.getElementById('ps-empty').hidden = rows.length > 0;
-        const totalCents = rows.reduce((total, row) => total + Math.round(row.amount * 100), 0);
-        document.getElementById('ps-summary').textContent = `Найдено: ${rows.length} · Общая сумма: ${money(totalCents / 100)} ₸`;
+        results.appendChild(fragment);
+        empty.hidden = data.rows.length > 0;
+        const total = data.rows.reduce((sum, row) => sum + Number(row.pay_sum || 0), 0);
+        summary.textContent = data.truncated
+            ? `Показаны первые ${data.limit} записей. Уточните фильтры. Сумма показанных платежей: ${money(total)} ₸`
+            : `Найдено: ${data.rows.length} · Общая сумма: ${money(total)} ₸`;
     }
-
-    function search() {
+    form.elements.reference.addEventListener('input', updateRequired);
+    updateRequired();
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
         error.hidden = true;
         const filters = Object.fromEntries(new FormData(form));
+        if (!filters.reference.trim() && (!filters.dateFrom || !filters.dateTo)) {
+            showError('Укажите обе даты периода или референс.');
+            return;
+        }
+        if (Boolean(filters.dateFrom) !== Boolean(filters.dateTo)) {
+            showError('Укажите обе даты периода или очистите их для поиска по референсу.');
+            return;
+        }
         if (filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo) {
-            error.textContent = 'Дата «с» не должна быть позже даты «по».';
-            error.hidden = false;
-            from.focus();
+            showError('Дата «с» не должна быть позже даты «по».');
             return;
         }
-        const amountText = filters.amount.trim().replace(/\s/g, '').replace(',', '.');
-        if (amountText && (!/^\d+(\.\d{1,2})?$/.test(amountText) || !Number.isSafeInteger(Math.round(Number(amountText) * 100)))) {
-            error.textContent = 'Введите неотрицательную сумму с точностью до двух знаков после запятой.';
-            error.hidden = false;
-            form.elements.amount.focus();
-            return;
+        if (controller) controller.abort();
+        const currentController = new AbortController();
+        controller = currentController;
+        const currentSequence = ++sequence;
+        const timer = setTimeout(() => currentController.abort(), 45000);
+        button.disabled = true;
+        results.replaceChildren();
+        empty.hidden = true;
+        summary.textContent = 'Поиск платежей...';
+        try {
+            const response = await fetch(`${form.dataset.url}?${new URLSearchParams(filters)}`, {
+                signal: currentController.signal, headers: {'Accept': 'application/json'}
+            });
+            if (response.redirected) throw new Error('Сессия завершена. Обновите страницу и войдите снова.');
+            if (!(response.headers.get('content-type') || '').includes('application/json')) {
+                throw new Error('Сервер вернул некорректный ответ. Обновите страницу и повторите поиск.');
+            }
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error || 'Не удалось выполнить поиск.');
+            if (currentSequence === sequence) render(data);
+        } catch (exc) {
+            if (currentSequence === sequence) {
+                showError(exc.name === 'AbortError'
+                    ? 'Превышено время ожидания. Уточните период или другие фильтры.'
+                    : (exc.message || 'Не удалось связаться с сервером.'));
+                summary.textContent = 'Поиск не выполнен.';
+            }
+        } finally {
+            clearTimeout(timer);
+            if (currentSequence === sequence) {
+                button.disabled = false;
+                controller = null;
+            }
         }
-        const reference = filters.reference.trim().toLocaleLowerCase('ru');
-        const bin = filters.bin.trim();
-        render(demoRows.filter(row =>
-            (!filters.status || row.status === filters.status) &&
-            (!filters.knp || row.knp === filters.knp) &&
-            (!filters.direction || row.direction === filters.direction) &&
-            (!filters.paymentType || row.paymentType === filters.paymentType) &&
-            (!reference || row.reference.toLocaleLowerCase('ru').includes(reference)) &&
-            (!bin || row.payerBin.includes(bin) || row.recipientBin.includes(bin)) &&
-            (!amountText || Math.round(row.amount * 100) === Math.round(Number(amountText) * 100)) &&
-            (!filters.dateFrom || row[filters.dateType] >= filters.dateFrom) &&
-            (!filters.dateTo || row[filters.dateType] <= filters.dateTo)
-        ));
-    }
-    form.addEventListener('submit', event => { event.preventDefault(); search(); });
-    // После штатного сброса формы возвращаем исходные фильтры и результаты.
-    form.addEventListener('reset', () => { setTimeout(search, 0); });
-    search();
+    });
+    form.addEventListener('reset', () => {
+        ++sequence;
+        if (controller) controller.abort();
+        controller = null;
+        button.disabled = false;
+        results.replaceChildren();
+        empty.hidden = true;
+        error.hidden = true;
+        summary.textContent = initialSummary;
+        setTimeout(updateRequired, 0);
+    });
 })();

@@ -7,7 +7,7 @@
 {% endblock %}
 {% block set_style %}
 <link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='3') }}">
-<script src="{{ url_for('static', filename='js/payment_search.js', v='3') }}" defer></script>
+<script src="{{ url_for('static', filename='js/payment_search.js', v='4') }}" defer></script>
 {% endblock %}
 
 {% block body %}
@@ -15,7 +15,7 @@
     <div class="ps-intro">
         <p>Укажите параметры для поиска платёжных документов.</p>
     </div>
-    <form id="payment-filters" class="ps-filters" data-url="{{ url_for('view_payment_search') }}">
+    <form id="payment-filters" class="ps-filters" data-url="{{ url_for('view_payment_search_data') }}">
         <fieldset>
             <legend>Параметры платежа</legend>
             <label for="ps-status">Состояние</label>
@@ -62,18 +62,12 @@
                 <option value="097">097 — Возврат по берем</option>
                 <option value="099">099 — Прочие платежи</option>
             </select>
-            <label for="ps-type">Вид платежа</label>
-            <select class="input_s" id="ps-type" name="paymentType">
+            <label for="ps-direction">Направление</label>
+            <select class="input_s" id="ps-direction" name="direction">
                 <option value="" selected>Все</option>
-                <option value="payment">Социальные отчисления</option>
-                <option value="return">Социальные выплаты</option>
+                <option value="incoming">Входящие</option>
+                <option value="outgoing">Исходящие</option>
             </select>
-        </fieldset>
-        <fieldset class="ps-direction">
-            <legend>Направление</legend>
-            <label><input type="radio" name="direction" value="incoming"> Входящие</label>
-            <label><input type="radio" name="direction" value="outgoing"> Исходящие</label>
-            <label><input type="radio" name="direction" value="" checked> Все</label>
         </fieldset>
         <fieldset>
             <legend>Реквизиты</legend>
@@ -81,15 +75,15 @@
             <input class="input_s" id="ps-reference" name="reference" type="text" placeholder="Полный референс" maxlength="100">
             <label for="ps-amount">Сумма, ₸</label>
             <input class="input_s" id="ps-amount" name="amount" type="text" inputmode="decimal" placeholder="Например, 25 000,00" maxlength="24">
-            <label for="ps-bin">БИН плательщика / получателя</label>
+            <label for="ps-bin">БИН плательщика</label>
             <input class="input_s" id="ps-bin" name="bin" type="text" inputmode="numeric" pattern="[0-9]{1,12}" maxlength="12" placeholder="Полностью или часть БИН" title="От 1 до 12 цифр">
         </fieldset>
         <fieldset>
             <legend>Период поиска</legend>
             <label for="ps-date-type">Дата поиска</label>
             <select class="input_s" id="ps-date-type" name="dateType">
-                <option value="processedDate" selected>Дата обработки</option>
-                <option value="paymentDate">Дата платежа</option>
+                <option value="paymentDate" selected>Дата платежа</option>
+                <option value="processedDate">Дата обработки</option>
             </select>
             <label for="ps-date-from">Дата с</label>
             <input class="input_s" id="ps-date-from" name="dateFrom" type="date">
@@ -140,7 +134,5 @@
             <p>Измените параметры поиска или сбросьте фильтры.</p>
         </div>
     </div>
-    <p class="ps-footnote">Референс и сумма ищутся по точному совпадению, БИН — по части значения. Все выбранные фильтры применяются одновременно. Для поиска только по референсу оставьте остальные фильтры пустыми или выберите «Все». Даты включают обе границы периода.</p>
-    <p class="ps-footnote">Направление и вид платежа требуют уточнения правил поиска; пока используйте значение «Все». При большом количестве результатов уточните фильтры: отображаются первые 1000 записей.</p>
 </section>
 {% endblock %}

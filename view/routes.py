@@ -1,5 +1,5 @@
 from os import path
-from flask import  session, flash, request, render_template, redirect, url_for, send_from_directory, g
+from flask import  session, flash, request, render_template, redirect, url_for, send_from_directory, g, jsonify
 from flask_login import  login_required
 from werkzeug.utils import secure_filename
 
@@ -279,3 +279,15 @@ def view_load_minso_dia():
 @login_required
 def view_payment_search():
     return render_template("payment_search.html")
+
+@app.route('/payment-search/data', methods=['GET'])
+@login_required
+def view_payment_search_data():
+    from model.payment_search import search_payments
+    try:
+        return jsonify(search_payments(request.args))
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    except Exception:
+        log.exception('Ошибка поиска платежей в PMPD_PAY_DOC')
+        return jsonify(error='Не удалось получить платежи из БД. Возможно, запрос превысил время ожидания. Уточните фильтры. Подробности записаны в журнал приложения.'), 500
