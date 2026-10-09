@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Поиск платежей{% endblock %}
+{% block main_title %}Поиск платежей{% endblock %}
+{% block navigate %}
+<a class="nav_button" href="/">{{ res_value('RETURN') }}</a>
+{% endblock %}
+{% block set_style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='3') }}">
+<script src="{{ url_for('static', filename='js/payment_search.js', v='4') }}" defer></script>
+<script src="{{ url_for('static', filename='js/payment_search_excel.js', v='1') }}" defer></script>
+{% endblock %}
+
+{% block body %}
+<section class="payment-search" data-theme="{{ session.get('style', 'color') }}" aria-label="Поиск платежей">
+    <div class="ps-intro">
+        <p>Укажите параметры для поиска платежей.</p>
+    </div>
+    <form id="payment-filters" class="ps-filters" data-url="{{ url_for('view_payment_search_data') }}">
+        <fieldset>
+            <legend>Параметры платежа</legend>
+            <label for="ps-status">Состояние</label>
+            <select class="input_s" id="ps-status" name="status">
+                <option value="" selected>Все</option>
+                <option value="1">1 — Поступил</option>
+                <option value="2">2 — Брак</option>
+                <option value="4">4 — Не рассчитанные</option>
+                <option value="5">5 — Обработанные</option>
+                <option value="6">6 — Сторнированные</option>
+                <option value="7">7 — Проведен сторн.</option>
+                <option value="8">8 — Проведен</option>
+                <option value="9">9 — Аннулирован</option>
+                <option value="65">65 — Провед. раздел.</option>
+                <option value="66">66 — Сторн. разделен.</option>
+                <option value="101">101 — Сформированные</option>
+                <option value="102">102 — Не доставленные</option>
+                <option value="103">103 — Доставленные</option>
+                <option value="104">104 — Возвращенные</option>
+                <option value="105">105 — Рабочий</option>
+                <option value="106">106 — Аннулированные</option>
+            </select>
+            <label for="ps-knp">КНП</label>
+            <select class="input_s" id="ps-knp" name="knp">
+                <option value="" selected>Все</option>
+                <option value="012">012 — Страховые взносы</option>
+                <option value="017">017 — Пеня по соцстраху</option>
+                <option value="020">020 — Удержание из пенсии</option>
+                <option value="021">021 — Возврат Гос</option>
+                <option value="026">026 — Возвраты из ГФСС</option>
+                <option value="027">027 — По утрате трудосп</option>
+                <option value="028">028 — Возврат соцвыпл УТ</option>
+                <option value="032">032 — Возврат НПФ ОПВ</option>
+                <option value="039">039 — Возв пособ по возрас</option>
+                <option value="046">046 — По утере кормильца</option>
+                <option value="047">047 — Возврат соцвыпл УК</option>
+                <option value="048">048 — По утере работы</option>
+                <option value="049">049 — Возврат соцвыпл ПР</option>
+                <option value="091">091 — По уходу до года</option>
+                <option value="092">092 — Возв по уходу до года</option>
+                <option value="094">094 — Возвраты из ГФСС 094</option>
+                <option value="095">095 — Возврат НПФ пени</option>
+                <option value="096">096 — По берем и родам</option>
+                <option value="097">097 — Возврат по берем</option>
+                <option value="099">099 — Прочие платежи</option>
+            </select>
+            <label for="ps-direction">Направление</label>
+            <select class="input_s" id="ps-direction" name="direction">
+                <option value="" selected>Все</option>
+                <option value="incoming">Входящие</option>
+                <option value="outgoing">Исходящие</option>
+            </select>
+        </fieldset>
+        <fieldset>
+            <legend>Реквизиты</legend>
+            <label for="ps-reference">Референс</label>
+            <input class="input_s" id="ps-reference" name="reference" type="text" placeholder="Полный референс" maxlength="100">
+            <label for="ps-amount">Сумма, ₸</label>
+            <input class="input_s" id="ps-amount" name="amount" type="text" inputmode="decimal" placeholder="Например, 25 000,00" maxlength="24">
+            <label for="ps-bin">БИН плательщика</label>
+            <input class="input_s" id="ps-bin" name="bin" type="text" inputmode="numeric" pattern="[0-9]{1,12}" maxlength="12" placeholder="Полностью или часть БИН" title="От 1 до 12 цифр">
+        </fieldset>
+        <fieldset>
+            <legend>Период поиска</legend>
+            <label for="ps-date-type">Дата поиска</label>
+            <select class="input_s" id="ps-date-type" name="dateType">
+                <option value="paymentDate" selected>Дата платежа</option>
+                <option value="processedDate">Дата обработки</option>
+            </select>
+            <label for="ps-date-from">Дата с</label>
+            <input class="input_s" id="ps-date-from" name="dateFrom" type="date">
+            <label for="ps-date-to">Дата по</label>
+            <input class="input_s" id="ps-date-to" name="dateTo" type="date">
+        </fieldset>
+        <div class="ps-actions">
+            <button type="submit" class="ps-find">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+                Найти
+            </button>
+            <button type="reset" class="ps-reset">Сбросить</button>
+        </div>
+        <p id="ps-error" class="ps-error" role="alert" hidden></p>
+    </form>
+
+    <div class="ps-results-heading">
+        <h2>Результаты поиска</h2>
+        <p id="ps-summary" role="status" aria-live="polite">Введите референс или задайте период и нажмите «Найти».</p>
+        <button type="button"
+                id="ps-export"
+                class="ps-reset"
+                data-url="{{ url_for('view_payment_search_excel') }}"
+                disabled>
+            Выгрузить в Excel
+        </button>
+    </div>
+    <div class="ps-table-wrap" tabindex="0" role="region" aria-label="Результаты поиска. Таблица прокручивается по горизонтали.">
+        <table class="ps-table">
+            <caption class="ps-sr-only">Платежные документы</caption>
+            <colgroup span="8"></colgroup><colgroup span="4"></colgroup><colgroup span="4"></colgroup><colgroup span="2"></colgroup>
+            <thead>
+                <tr class="ps-groups">
+                    <th colspan="8" scope="colgroup">Общие</th>
+                    <th colspan="4" scope="colgroup">Плательщик</th>
+                    <th colspan="4" scope="colgroup">Получатель</th>
+                    <th colspan="2" scope="colgroup">Дополнительно</th>
+                </tr>
+                <tr>
+                    <th scope="col">Дата платежа</th><th scope="col">Дата документа</th>
+                    <th scope="col">Номер документа</th><th scope="col">Референс</th>
+                    <th scope="col">КНП</th><th scope="col">Сумма, ₸</th>
+                    <th scope="col">Код ошибки</th><th scope="col">Статус</th>
+                    <th scope="col">Наименование</th><th scope="col">БИН</th>
+                    <th scope="col">МФО</th><th scope="col">Счёт</th>
+                    <th scope="col">Наименование</th><th scope="col">БИН</th>
+                    <th scope="col">МФО</th><th scope="col">Счет</th>
+                    <th scope="col">Назначение</th><th scope="col">Ошибка</th>
+                </tr>
+            </thead>
+            <tbody id="ps-results"></tbody>
+        </table>
+        <div id="ps-empty" class="ps-empty" hidden>
+            <strong>Платежи не найдены</strong>
+            <p>Измените параметры поиска или сбросьте фильтры.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

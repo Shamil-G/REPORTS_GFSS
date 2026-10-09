@@ -48,6 +48,7 @@
         <nav>
             {% block navigate %}{% endblock %}
             {% if g.user.is_active %}
+            <a class="nav_button" href="{{ url_for('view_payment_search') }}">{{ 'Төлемдерді іздеу' if session.get('language') == 'kz' else 'Поиск платежей' }}</a>
             <a class="nav_button" href="/running-reports">{{ res_value('RUNNING_REPORTS') }}</a>
             {% if 'Admin' in g.user.roles %}
             <a class="nav_button" id="aux_task" href="/auxiliary-task-dia">{{ res_value('AUXILIARY_TASK') }}</a>

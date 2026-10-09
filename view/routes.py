@@ -1,5 +1,5 @@
 from os import path
-from flask import  session, flash, request, render_template, redirect, url_for, send_from_directory, g
+from flask import  session, flash, request, render_template, redirect, url_for, send_from_directory, g, jsonify
 from flask_login import  login_required
 from werkzeug.utils import secure_filename
 
@@ -273,3 +273,45 @@ def view_load_minso_dia():
                 return send_from_directory(LOG_PATH, f'load_{table_name}.log')                
     log.info(f"VIEW_LOAD_MINSO\n\tUSER: {g.user.full_name}\n\tROLE: {g.user.roles}")
     return redirect(url_for('view_auxiliary_task_dia'))
+
+
+@app.route('/payment-search', methods=['GET'])
+@login_required
+def view_payment_search():
+    return render_template("payment_search.html")
+
+@app.route('/payment-search/data', methods=['GET'])
+@login_required
+def view_payment_search_data():
+    from model.payment_search import search_payments
+    try:
+        return jsonify(search_payments(request.args))
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    except Exception:
+        log.exception('Ошибка поиска платежей в PMPD_PAY_DOC')
+        return jsonify(error='Не удалось получить платежи из БД. Возможно, запрос превысил время ожидания. Уточните фильтры. Подробности записаны в журнал приложения.'), 500
+
+@app.route('/payment-search/excel', methods=['POST'])
+@login_required
+def view_payment_search_excel():
+    from flask import send_file
+    from model.payment_excel import make_payment_excel
+
+    payload = request.get_json(silent=True)
+    if not isinstance(payload, dict):
+        return jsonify(error='Некорректные данные для выгрузки.'), 400
+
+    try:
+        output = make_payment_excel(payload.get('rows'))
+        return send_file(
+            output,
+            as_attachment=True,
+            download_name='payments.xlsx',
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    except Exception:
+        log.exception('Ошибка выгрузки платежей в Excel')
+        return jsonify(error='Не удалось сформировать Excel.'), 500
