@@ -9,8 +9,8 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3020.КНП - Список возвратов СВ перечисленных в ГФСС'
-report_code = '3020'
+report_name = '3020.ИИН - Список возвратов СВ перечисленных в ГФСС (по ИИН)'
+report_code = '3020.ИИН'
 
 stmt_report = """
 select /*+parallel(2)*/ ROWNUM rn, s.* from (
@@ -33,38 +33,27 @@ select /*+parallel(2)*/ ROWNUM rn, s.* from (
       and trunc(pd.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
       and dl.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD')
       and trunc(dl.pay_date, 'DD') <= TO_DATE(:dt_to,'YYYY-MM-DD')
-      and pd.cipher_id_knp in ({knp_in})
+      and dl.rnn = :iin
       and pd.r_account = 'KZ70125KZT1001300134'
 ) s
 order by s.cipher_id_knp, s.rfbn_id, s.doc_date
 """
 
 
-def parse_knp(knp: str):
-    """КНП, введённые через запятую без апострофов ("97, 092,49"), -> список
-    трёхзначных кодов ("097", "092", "049") без повторов, по возрастанию:
-    короткие коды дополняются нулями спереди. Пустой список - если ввод
-    некорректен (пусто, не цифры или больше трёх цифр)."""
-    codes = []
-    for code in (knp or '').split(','):
-        code = code.strip()
-        if not code:
-            continue
-        if not (code.isascii() and code.isdigit()) or len(code) > 3:
-            return []
-        code = code.zfill(3)
-        if code not in codes:
-            codes.append(code)
-    return sorted(codes)
+def parse_iin(iin: str):
+    """ИИН - ровно 12 цифр. Возвращает очищенный ИИН или None, если ввод некорректен."""
+    iin = (iin or '').strip()
+    if len(iin) == 12 and iin.isascii() and iin.isdigit():
+        return iin
+    return None
 
 
 def normalize_params(params: dict):
-    """Вызывается из call_report до сборки имени файла: КНП приводятся к виду
-    "097,092,049", чтобы "97, 92" и "097,092" давали один и тот же файл.
+    """Вызывается из call_report до сборки имени файла: убираем пробелы вокруг ИИН.
     Некорректный ввод не трогаем - отчёт отклонит его сам."""
-    knp_list = parse_knp(params.get('knp'))
-    if knp_list:
-        params['knp'] = ','.join(knp_list)
+    iin = parse_iin(params.get('iin'))
+    if iin:
+        params['iin'] = iin
     return params
 
 
@@ -97,24 +86,23 @@ def format_worksheet(worksheet, common_format):
     worksheet.write(2, 11,'БИН/ИИН платежного поручения', common_format)
 
 
-def do_report(file_name: str, date_first: str, date_second: str, knp: str):
+def do_report(file_name: str, date_first: str, date_second: str, iin: str):
     if os.path.isfile(file_name):
         log.info(f'Отчет уже существует {file_name}')
         return file_name
 
     s_date = datetime.datetime.now().strftime("%H:%M:%S")
 
-    log.info(f'DO REPORT. START {report_code}. DATE_FROM: {date_first}, KNP: {knp}, FILE_PATH: {file_name}')
+    log.info(f'DO REPORT. START {report_code}. DATE_FROM: {date_first}, IIN: {iin}, FILE_PATH: {file_name}')
 
-    knp_list = parse_knp(knp)
-    if not knp_list:
-        log.error(f'ERROR. REPORT {report_code}. Некорректный список КНП: {knp!r}')
+    iin_raw, iin = iin, parse_iin(iin)
+    if not iin:
+        log.error(f'ERROR. REPORT {report_code}. Некорректный ИИН: {iin_raw!r}')
         set_status_report(file_name, 3)
         return None
 
-    # КНП идут биндами, не подстановкой текста: пользовательский ввод в SQL не попадает
-    knp_binds = {f'knp{i}': code for i, code in enumerate(knp_list)}
-    stmt = stmt_report.format(knp_in=', '.join(f':{name}' for name in knp_binds))
+    # ИИН идёт биндом, не подстановкой текста
+    stmt = stmt_report
 
     config = ConfigParser()
     config.read('db_config.ini')
@@ -202,12 +190,12 @@ def do_report(file_name: str, date_first: str, date_second: str, knp: str):
             format_worksheet(worksheet=worksheet[page_num - 1], common_format=title_format)
 
             worksheet[page_num - 1].write(0, 0, report_name, title_name_report)
-            worksheet[page_num - 1].write(1, 0, f'За период: {date_first} - {date_second}. КНП: {", ".join(knp_list)}', title_name_report)
+            worksheet[page_num - 1].write(1, 0, f'За период: {date_first} - {date_second}. ИИН: {iin}', title_name_report)
 
             log.info(f'REPORT {report_code}. CREATING REPORT')
 
             try:
-                cursor.execute(stmt, dt_from=date_first, dt_to=date_second, **knp_binds)
+                cursor.execute(stmt, dt_from=date_first, dt_to=date_second, iin=iin)
             except oracledb.DatabaseError as e:
                 error, = e.args
                 log.error(f"ERROR. REPORT {report_code}. error_code: {error.code}, error: {error.message}")
@@ -285,10 +273,10 @@ def do_report(file_name: str, date_first: str, date_second: str, knp: str):
                 f'REPORT: {report_code}. Формирование отчета {file_name} завершено ({s_date} - {stop_time}). Загружено {all_cnt} записей')
 
 
-def thread_report(file_name: str, date_first: str, date_second: str, knp: str):
+def thread_report(file_name: str, date_first: str, date_second: str, iin: str):
     import threading
     log.info(f'THREAD REPORT. {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} -> {file_name}')
     log.info(f'THREAD REPORT. PARAMS: date_from: {date_first}')
-    threading.Thread(target=do_report, args=(file_name, date_first, date_second, knp), daemon=True).start()
+    threading.Thread(target=do_report, args=(file_name, date_first, date_second, iin), daemon=True).start()
     return {"status": 1, "file_path": file_name}
 
