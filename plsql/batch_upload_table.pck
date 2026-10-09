@@ -1,5 +1,7 @@
 CREATE OR REPLACE Package batch_upload_table Is
-  -- Загрузка таблиц по настройкам s_load_table. Заменяет move_obj.Mv_Tabs.
+  -- Загрузка таблиц SSWH из LOADER по настройкам load_tables_status. Заменяет move_obj.Mv_Tabs
+  -- (s_load_table пакет не читает). Источник приёмника - LOADER.<src_name>, пусто - одноимённая таблица.
+  -- Нет такой таблицы в потоках LOADER - таблица строится из таблиц SSWH (своя LOAD_<таблица>.MAKE, в группах).
   -- iStream   - поток LOADER (loader.load_table.period), например 'STREAM_REF';
   --             грузятся только источники, которые LOADER загрузил успешно (state = 2)
   -- iDst_Name - необязательный фильтр по началу имени приёмника (ручная перезагрузка одной таблицы)
@@ -8,62 +10,57 @@ CREATE OR REPLACE Package batch_upload_table Is
   --   пусто - своя процедура LOAD_<table_name>.MAKE, если такая есть (в протоколе и table_list - L);
   --           статус по таким таблицам ведёт она сама (load_procedurs), пакет его не пишет;
   --   X - новая таблица, не грузится, пока ей не выставят P, M или не очистят load_type.
-  -- Новые приёмники потока Load(iStream) и Register(iStream) заводят в load_tables_status с load_type = 'X'.
+  -- Новые таблицы потока LOADER Load(iStream) и Register(iStream) заводят в load_tables_status с load_type = 'X'.
   --   P - очистка (таблицы или партиций) и вставка; больше cMerge_Max строк
   --   M - merge по уникальному ключу и удаление строк, которых нет в источнике;
   --       без уникального ключа - сверка по всем колонкам: лишние строки удаляются, новые добавляются
   -- Run (для джоба) грузит приёмник, если источник загружен в LOADER успешно и позже нашей последней
   -- загрузки, а наша последняя загрузка не упала; после ошибки приёмник ждёт разбора (state != 2).
+  -- Группы: load_tables_status.group_num объединяет таблицы, которые грузятся вместе, внутри группы -
+  -- по id. Их грузит Run_Groups (Run по потоку их пропускает), см. описание Run_Groups.
 
-  -- приёмники к загрузке: то же, что v_load_table, но без списка исключений по id -
-  -- отключённые строки s_load_table имеют period = 'N'
-  -- iStream = Null - все потоки; iReady = 1 - только готовые к загрузке по правилу Run
+  -- приёмники к загрузке: строки load_tables_status, источник которых - локальная таблица потока LOADER
+  -- iStream = Null - все потоки; iReady = 1 - только готовые к загрузке по правилу Run;
+  -- iTable - один приёмник по точному имени (для Run_Groups)
   Cursor cDst
   (
     iStream   Varchar2,
     iDst_Name Varchar2,
-    iReady    Number := 0
+    iReady    Number := 0,
+    iTable    Varchar2 := Null
   ) Is
     Select *
-      From (Select dt.id,
-                   dt.ord,
-                   Nvl(dt.src_owner, 'LOADER') src_owner,
-                   Nvl(dt.src_name, dt.ldr_name) src_name,
-                   Nvl(dt.src_owner, 'LOADER') || '.' || Nvl(dt.src_name, dt.ldr_name) src_full_name,
+      From (Select ls.id,
+                   'LOADER' src_owner,
+                   lt.dtable_name src_name,
+                   'LOADER.' || lt.dtable_name src_full_name,
                    lt.dpart_name_1 src_p1,
                    lt.dpart_name_2 src_p2,
-                   Nvl(dt.dst_owner, User) dst_owner,
-                   Coalesce(dt.dst_name, dt.src_name, dt.ldr_name) dst_name,
-                   Nvl(dt.dst_owner, User) || '.' || Coalesce(dt.dst_name, dt.src_name, dt.ldr_name) dst_full_name,
+                   User dst_owner,
+                   ls.table_name dst_name,
+                   User || '.' || ls.table_name dst_full_name,
                    Nvl(st.partitioned, 'NO') partitioned,
-                   dt.dst_p1,
-                   dt.dst_p2,
-                   Nvl(dt.cond, '1 = 1') cond,
                    Nvl(ls.load_type, 'L') load_type,
-                   Case When ls.load_type Is Null Then
-                     Nvl(dt.dst_owner, User) || '.LOAD_' || ls.table_name || '.MAKE'
-                   End load_proc,
+                   Case When ls.load_type Is Null Then User || '.LOAD_' || ls.table_name || '.MAKE' End load_proc,
                    ls.state ls_state,
                    ls.end_time ls_end,
                    ls.loaded_rows ls_rows,
+                   ls.group_num,
                    lt.period stream,
                    lst.state ldr_state,
                    lst.end_time ldr_end,
                    lst.loaded_rows ldr_rows
-              From s_load_table dt, loader.load_table lt, dba_tables st, load_tables_status ls,
-                   loader.load_tables_status lst
-             Where dt.period != 'N'
-               And lt.dtable_name = dt.ldr_name
+              From load_tables_status ls, loader.load_table lt, dba_tables st, loader.load_tables_status lst
+             Where upper(lt.dtable_name) = Nvl(upper(ls.src_name), ls.table_name)
                And lt.is_remote = 'N'
                And substr(lt.period, 1, 7) = 'STREAM_'
-               And st.owner(+) = Nvl(dt.dst_owner, User)
-               And st.table_name(+) = Coalesce(dt.dst_name, dt.src_name, dt.ldr_name)
-               And ls.table_name = upper(Coalesce(dt.dst_name, dt.src_name, dt.ldr_name))
+               And st.owner(+) = User
+               And st.table_name(+) = ls.table_name
                And (ls.load_type In ('P', 'M') Or
                    ls.load_type Is Null And
                    Exists (Select 1
                              From all_procedures pr
-                            Where pr.owner = Nvl(dt.dst_owner, User)
+                            Where pr.owner = User
                               And pr.object_name = 'LOAD_' || ls.table_name
                               And pr.procedure_name = 'MAKE'))
                And lst.table_name(+) = lt.dtable_name) t
@@ -71,10 +68,10 @@ CREATE OR REPLACE Package batch_upload_table Is
        And t.dst_name Like iDst_Name || '%'
        And t.ldr_state = 2
        And (iReady = 0 Or t.ldr_end > Nvl(t.ls_end, date '1900-01-01') And Nvl(t.ls_state, 2) = 2)
-     -- источники - по наименьшему ord их приёмников (зависимые таблицы - после тех, из которых строятся),
-     -- строки одного источника идут подряд
-     Order By Min(t.ord) Over(Partition By t.src_full_name) Nulls Last, t.src_full_name, t.ord Nulls Last,
-              t.dst_full_name;
+       And (iTable Is Null Or upper(t.dst_name) = upper(iTable))
+       And (iTable Is Not Null Or iReady = 0 Or t.group_num Is Null) -- таблицы групп Run пропускает
+     -- источники - по наименьшему id их приёмников, строки одного источника идут подряд
+     Order By Min(t.id) Over(Partition By t.src_full_name), t.src_full_name, t.id;
 
   Type TDstList Is Table Of cDst%Rowtype;
 
@@ -89,7 +86,15 @@ CREATE OR REPLACE Package batch_upload_table Is
   -- нечего грузить - выход без записей в протокол. Новые таблицы не регистрирует.
   Procedure Run(iStream Varchar2);
 
-  -- завести в load_tables_status новые приёмники потока с load_type = 'X' (не грузятся до P/M);
+  -- для джоба групп: группы по порядку group_num, внутри группы таблицы по id.
+  -- Группа пропускается, если её первая таблица не готова к загрузке по правилу Run или у какой-либо
+  -- таблицы группы прошлая загрузка не завершилась успешно (state не 2 и не пусто). На первой ошибке
+  -- группа останавливается. Таблица группы без источника в LOADER (строится из таблиц SSWH)
+  -- грузится своей LOAD_<таблица>.MAKE; у первой таблицы группы источник в LOADER должен быть.
+  -- Нечего грузить - выход без записей в протокол.
+  Procedure Run_Groups;
+
+  -- завести в load_tables_status новые таблицы потока LOADER с load_type = 'X' (не грузятся до P/M);
   -- вызывается и из Load(iStream). Без имени потока не делает ничего.
   Procedure Register(iStream Varchar2);
 
@@ -113,6 +118,15 @@ CREATE OR REPLACE Package Body batch_upload_table Is
   p_LOk  Boolean; -- своя процедура (L) по текущему источнику отработала без ошибок
   p_Rows Pls_Integer; -- число строк, обработанных последней командой Exec
   p_Err  Varchar2(2000); -- первая ошибка по текущему источнику - для load_tables_status
+
+  -- таблицы групп для Run_Groups: по порядку групп, внутри группы - по id
+  Cursor cGrp Is
+    Select ls.group_num, ls.id, ls.table_name, ls.load_type, ls.state
+      From load_tables_status ls
+     Where ls.group_num Is Not Null
+     Order By ls.group_num, ls.id;
+
+  Type TGrpList Is Table Of cGrp%Rowtype;
 
   ---------------------------------------------------------------- протокол
   -- длины в байтах: object Varchar2(64), info Varchar2(4000), база AL32UTF8
@@ -162,10 +176,11 @@ CREATE OR REPLACE Package Body batch_upload_table Is
   End;
 
   ---------------------------------------------------------------- партиции
-  -- переключаемые партиции приёмника (без повторов); имя партиции = 'P' || PART_ID
+  -- партиции приёмника = пара партиций источника из loader.load_table (pkg_load имена не меняет);
+  -- имя партиции = 'P' || PART_ID
   Function Parts(d cDst%Rowtype) Return TNames Is
   Begin
-    Return TNames(d.src_p1, d.src_p2) Multiset Union Distinct TNames(d.dst_p1, d.dst_p2);
+    Return Set(TNames(d.src_p1, d.src_p2));
   End;
 
   -- список значений PART_ID для условия In (...)
@@ -200,16 +215,14 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     p_Id    load_tables_status.id%Type;
     p_Names Varchar2(4000);
   Begin
-    For r In (Select Distinct upper(Coalesce(dt.dst_name, dt.src_name, dt.ldr_name)) table_name
-                From s_load_table dt, loader.load_table lt
-               Where dt.period != 'N'
-                 And lt.dtable_name = dt.ldr_name
-                 And lt.is_remote = 'N'
+    For r In (Select Distinct upper(lt.dtable_name) table_name
+                From loader.load_table lt
+               Where lt.is_remote = 'N'
                  And substr(lt.period, 1, 7) = 'STREAM_'
                  And upper(lt.period) = upper(iStream)
                  And Not Exists (Select 1
                         From load_tables_status ls
-                       Where ls.table_name = upper(Coalesce(dt.dst_name, dt.src_name, dt.ldr_name))))
+                       Where upper(lt.dtable_name) In (ls.table_name, upper(ls.src_name))))
     Loop
       Select Nvl(Max(s.id), 0) + 1 Into p_Id From load_tables_status s;
       Insert Into load_tables_status
@@ -464,9 +477,9 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     If p_On Is Null Then
       p_Index := Null; -- ключ из одного PART_ID - сверка по всем колонкам
     End If;
-    p_Src := '(Select ' || substr(p_Cols, 3) || ' From ' || iSrc || ' Where (' || d.cond || ')';
+    p_Src := '(Select ' || substr(p_Cols, 3) || ' From ' || iSrc;
     If d.partitioned = 'YES' Then
-      p_Src := p_Src || ' And PART_ID In (' || Keys(Parts(d)) || ')';
+      p_Src := p_Src || ' Where PART_ID In (' || Keys(Parts(d)) || ')';
     End If;
     p_Src := p_Src || ')';
     Execute Immediate 'Select Count(*) From ' || p_Src
@@ -542,7 +555,8 @@ CREATE OR REPLACE Package Body batch_upload_table Is
   End;
 
   ---------------------------------------------------------------- источник
-  -- Insert All: по ветке When на каждый приёмник, вставляются общие колонки
+  -- Insert All: по ветке When на каждый приёмник (партиционированный - только его партиции),
+  -- вставляются общие колонки
   Function Insert_Sql
   (
     iSrc Varchar2,
@@ -563,13 +577,13 @@ CREATE OR REPLACE Package Body batch_upload_table Is
          And d.owner = upper(iDst(i).dst_owner)
          And d.table_name = upper(iDst(i).dst_name)
          And d.column_name = s.column_name;
-      p_Sql := p_Sql || chr(10) || 'When (' || iDst(i).cond || ')';
       If iDst(i).partitioned = 'YES' Then
         -- в партиционированный приёмник - только строки его партиций
         p_Parts    := Parts(iDst(i));
-        p_Sql      := p_Sql || ' And PART_ID In (' || Keys(p_Parts) || ')';
+        p_Sql      := p_Sql || chr(10) || 'When PART_ID In (' || Keys(p_Parts) || ')';
         p_AllParts := p_AllParts Multiset Union Distinct p_Parts;
       Else
+        p_Sql     := p_Sql || chr(10) || 'When 1 = 1';
         p_AllPart := False;
       End If;
       p_Sql := p_Sql || ' Then Into ' || iDst(i).dst_full_name || chr(10) || ' (' || p_Cols || ')' ||
@@ -656,17 +670,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
         Call_Proc(p_Dst(i));
       End If;
     End Loop;
-    -- 5. всё успешно - переключаем имена партиций (у L - своя процедура)
-    If p_Ok Then
-      For i In 1 .. p_Dst.Count Loop
-        If p_Dst(i).partitioned = 'YES' And p_Dst(i).load_type != 'L' Then
-          Update s_load_table t
-             Set t.dst_p1 = p_Dst(i).src_p1, t.dst_p2 = p_Dst(i).src_p2
-           Where t.id = p_Dst(i).id;
-        End If;
-      End Loop;
-      Commit;
-    End If;
+    -- 5. итог
     If p_Ok And p_LOk Then
       Log(p_Obj, 'Загрузка завершена');
     Else
@@ -741,6 +745,121 @@ CREATE OR REPLACE Package Body batch_upload_table Is
   Procedure Run(iStream Varchar2) Is
   Begin
     Do_Load(iStream, Null, 1);
+  End;
+
+  ---------------------------------------------------------------- группы
+  -- группа готова: первая таблица готова по правилу Run, у всех таблиц прошлая загрузка успешна
+  Function Group_Ready
+  (
+    iGrp TGrpList,
+    iBeg Pls_Integer,
+    iEnd Pls_Integer
+  ) Return Boolean Is
+  Begin
+    For i In iBeg .. iEnd Loop
+      If Nvl(iGrp(i).state, 2) != 2 Then
+        Return False;
+      End If;
+    End Loop;
+    For r In cDst(Null, Null, 1, iGrp(iBeg).table_name) Loop
+      Return True;
+    End Loop;
+    Return False;
+  End;
+
+  -- загрузить одну таблицу группы: с источником в LOADER - как обычно, без него - своей процедурой
+  Procedure Load_Member(iTable Varchar2) Is
+    p_Dst  TDstList;
+    p_Src  Pls_Integer; -- у таблицы есть источник в потоке LOADER
+    p_Proc Pls_Integer; -- есть LOAD_<таблица>.MAKE
+    d      cDst%Rowtype;
+  Begin
+    Open cDst(Null, Null, 0, iTable);
+    Fetch cDst Bulk Collect
+      Into p_Dst;
+    Close cDst;
+    If p_Dst.Count > 0 Then
+      -- одна строка: у источника может быть по строке на каждый поток LOADER
+      Load_Source(p_Dst(1).src_full_name, TDstList(p_Dst(1)));
+      Return;
+    End If;
+    p_Ok  := True;
+    p_LOk := True;
+    p_Err := Null;
+    Select Count(*)
+      Into p_Src
+      From load_tables_status ls, loader.load_table lt
+     Where ls.table_name = upper(iTable)
+       And upper(lt.dtable_name) = Nvl(upper(ls.src_name), ls.table_name)
+       And lt.is_remote = 'N'
+       And substr(lt.period, 1, 7) = 'STREAM_';
+    Select Count(*)
+      Into p_Proc
+      From all_procedures pr
+     Where pr.owner = User
+       And pr.object_name = 'LOAD_' || upper(iTable)
+       And pr.procedure_name = 'MAKE';
+    If p_Src = 0 And p_Proc > 0 Then
+      d.dst_name      := upper(iTable);
+      d.dst_full_name := User || '.' || upper(iTable);
+      d.load_type     := 'L';
+      d.load_proc     := User || '.LOAD_' || upper(iTable) || '.MAKE';
+      Call_Proc(d);
+    Else
+      p_LOk := False;
+      Log(User || '.' || upper(iTable), 'Ошибка !',
+          'Таблицу группы нельзя загрузить: источник в LOADER не загружен успешно, load_type = X ' ||
+          'или нет LOAD_' || upper(iTable) || '.MAKE');
+    End If;
+  End;
+
+  Procedure Run_Groups Is
+    p_All TGrpList;
+    p_Beg Pls_Integer := 1; -- первая таблица текущей группы
+    p_End Pls_Integer; -- последняя таблица текущей группы
+    p_Cnt Pls_Integer := 0; -- загружено групп
+    p_Bad Pls_Integer := 0; -- из них остановлено на ошибке
+  Begin
+    Open cGrp;
+    Fetch cGrp Bulk Collect
+      Into p_All;
+    Close cGrp;
+    While p_Beg <= p_All.Count Loop
+      p_End := p_Beg;
+      While p_End < p_All.Count And p_All(p_End + 1).group_num = p_All(p_Beg).group_num Loop
+        p_End := p_End + 1;
+      End Loop;
+      If Group_Ready(p_All, p_Beg, p_End) Then
+        If p_Cnt = 0 Then
+          Log(cObject, 'Начало загрузки', 'Run_Groups');
+        End If;
+        p_Cnt := p_Cnt + 1;
+        Log(cObject, 'Группа ' || p_All(p_Beg).group_num, 'Таблиц: ' || (p_End - p_Beg + 1));
+        For i In p_Beg .. p_End Loop
+          dbms_application_info.set_client_info('Group ' || p_All(i).group_num || ': ' || p_All(i).table_name);
+          Load_Member(p_All(i).table_name);
+          If Not p_Ok Or Not p_LOk Then
+            p_Bad := p_Bad + 1;
+            Log(cObject, 'Группа ' || p_All(p_Beg).group_num || ' остановлена', 'На ' || p_All(i).table_name);
+            Exit;
+          End If;
+        End Loop;
+      End If;
+      p_Beg := p_End + 1;
+    End Loop;
+    If p_Cnt > 0 Then
+      Log(cObject, 'Загрузка завершена', 'Групп: ' || p_Cnt || ', остановлено на ошибке: ' || p_Bad);
+    End If;
+  Exception
+    When Others Then
+      If cGrp%Isopen Then
+        Close cGrp;
+      End If;
+      If cDst%Isopen Then
+        Close cDst;
+      End If;
+      Log(cObject, 'Ошибка !', Sqlerrm);
+      Raise;
   End;
 
   Function table_list(iStream Varchar2) Return TDstList
