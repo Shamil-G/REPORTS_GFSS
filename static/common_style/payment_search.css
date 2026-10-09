@@ -36,6 +36,13 @@ body:has(.payment-search) article { min-width: 0; }
 .payment-search h2 { font-size: 18px; margin: 0; }
 .payment-search #ps-summary { font-size: 17px; font-weight: bold; color: var(--ps-muted); margin: 0; }
 .payment-search .ps-table-wrap { overflow: auto; max-height: 60vh; min-height: 300px; background: var(--ps-row); border: 1px solid var(--ps-line); border-radius: 5px; }
+/* Полоса прокрутки списка - как в основном списке отчётов (main.css): зелёная, 4px; сверху и сбоку, т.к. таблица шире экрана */
+@supports not selector(::-webkit-scrollbar) {
+    .payment-search .ps-table-wrap { scrollbar-color: var(--scrollbar-color, currentColor) transparent; }
+}
+.payment-search .ps-table-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
+.payment-search .ps-table-wrap::-webkit-scrollbar-track { background: transparent; }
+.payment-search .ps-table-wrap::-webkit-scrollbar-thumb { background-color: var(--scrollbar-color, currentColor); border-radius: 1px; }
 .payment-search .ps-table { width: 100%; min-width: 1780px; border-collapse: separate; border-spacing: 0; color: var(--ps-text); }
 .payment-search .ps-table thead { position: sticky; top: 0; z-index: 1; }
 .payment-search .ps-table th { background: var(--ps-head); font-size: 14px; text-align: left; padding: 10px 12px; border: 0; border-right: 1px solid var(--ps-line); border-bottom: 1px solid var(--ps-line); white-space: nowrap; }
