@@ -6,7 +6,7 @@
 <a class="nav_button" href="/">{{ res_value('RETURN') }}</a>
 {% endblock %}
 {% block set_style %}
-<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='3') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='4') }}">
 <script src="{{ url_for('static', filename='js/payment_search.js', v='4') }}" defer></script>
 <script src="{{ url_for('static', filename='js/payment_search_excel.js', v='1') }}" defer></script>
 {% endblock %}
@@ -96,7 +96,7 @@
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
                 Найти
             </button>
-            <button type="reset" class="ps-reset">Сбросить</button>
+            <button type="reset" class="ps-reset">Сбросить фильтр</button>
         </div>
         <p id="ps-error" class="ps-error" role="alert" hidden></p>
     </form>
@@ -106,7 +106,7 @@
         <p id="ps-summary" role="status" aria-live="polite">Введите референс или задайте период и нажмите «Найти».</p>
         <button type="button"
                 id="ps-export"
-                class="ps-reset"
+                class="ps-find"
                 data-url="{{ url_for('view_payment_search_excel') }}"
                 disabled>
             Выгрузить в Excel
