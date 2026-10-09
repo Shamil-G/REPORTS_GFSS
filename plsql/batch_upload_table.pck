@@ -3,10 +3,12 @@ CREATE OR REPLACE Package batch_upload_table Is
   -- iStream   - поток LOADER (loader.load_table.period), например 'STREAM_REF';
   --             грузятся только источники, которые LOADER загрузил успешно (state = 2)
   -- iDst_Name - необязательный фильтр по началу имени приёмника (ручная перезагрузка одной таблицы)
-  -- Пакет грузит только приёмники, которым load_tables_status.load_type выставлен вручную в P или M.
-  -- Новые приёмники потока Load(iStream) и Register(iStream) заводят в load_tables_status с load_type = 'X' -
-  -- такие не грузятся, пока им не выставят P или M. Строки без load_type (их грузит что-то другое)
-  -- пакет не трогает. Дальше P/M уточняется сам:
+  -- Способ загрузки - load_tables_status.load_type:
+  --   P, M - грузит сам пакет (выставляются вручную, дальше P/M уточняется сам, см. ниже);
+  --   пусто - своя процедура LOAD_<table_name>.MAKE, если такая есть (в протоколе и table_list - L);
+  --           статус по таким таблицам ведёт она сама (load_procedurs), пакет его не пишет;
+  --   X - новая таблица, не грузится, пока ей не выставят P, M или не очистят load_type.
+  -- Новые приёмники потока Load(iStream) и Register(iStream) заводят в load_tables_status с load_type = 'X'.
   --   P - очистка (таблицы или партиций) и вставка; больше cMerge_Max строк
   --   M - merge по уникальному ключу и удаление строк, которых нет в источнике;
   --       без уникального ключа - сверка по всем колонкам: лишние строки удаляются, новые добавляются
@@ -37,7 +39,10 @@ CREATE OR REPLACE Package batch_upload_table Is
                    dt.dst_p1,
                    dt.dst_p2,
                    Nvl(dt.cond, '1 = 1') cond,
-                   ls.load_type,
+                   Nvl(ls.load_type, 'L') load_type,
+                   Case When ls.load_type Is Null Then
+                     Nvl(dt.dst_owner, User) || '.LOAD_' || ls.table_name || '.MAKE'
+                   End load_proc,
                    ls.state ls_state,
                    ls.end_time ls_end,
                    ls.loaded_rows ls_rows,
@@ -54,13 +59,22 @@ CREATE OR REPLACE Package batch_upload_table Is
                And st.owner(+) = Nvl(dt.dst_owner, User)
                And st.table_name(+) = Coalesce(dt.dst_name, dt.src_name, dt.ldr_name)
                And ls.table_name = upper(Coalesce(dt.dst_name, dt.src_name, dt.ldr_name))
-               And ls.load_type In ('P', 'M')
+               And (ls.load_type In ('P', 'M') Or
+                   ls.load_type Is Null And
+                   Exists (Select 1
+                             From all_procedures pr
+                            Where pr.owner = Nvl(dt.dst_owner, User)
+                              And pr.object_name = 'LOAD_' || ls.table_name
+                              And pr.procedure_name = 'MAKE'))
                And lst.table_name(+) = lt.dtable_name) t
      Where (iStream Is Null Or upper(t.stream) = upper(iStream))
        And t.dst_name Like iDst_Name || '%'
        And t.ldr_state = 2
        And (iReady = 0 Or t.ldr_end > Nvl(t.ls_end, date '1900-01-01') And Nvl(t.ls_state, 2) = 2)
-     Order By t.src_full_name, t.ord Nulls Last, t.dst_full_name;
+     -- источники - по наименьшему ord их приёмников (зависимые таблицы - после тех, из которых строятся),
+     -- строки одного источника идут подряд
+     Order By Min(t.ord) Over(Partition By t.src_full_name) Nulls Last, t.src_full_name, t.ord Nulls Last,
+              t.dst_full_name;
 
   Type TDstList Is Table Of cDst%Rowtype;
 
@@ -96,6 +110,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
   cMin_Share Constant Number := 0.5; -- P: LOADER загрузил меньше этой доли от нашей прошлой загрузки - сбой
 
   p_Ok   Boolean; -- все операции по текущему источнику прошли без ошибок
+  p_LOk  Boolean; -- своя процедура (L) по текущему источнику отработала без ошибок
   p_Rows Pls_Integer; -- число строк, обработанных последней командой Exec
   p_Err  Varchar2(2000); -- первая ошибка по текущему источнику - для load_tables_status
 
@@ -251,6 +266,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       End If;
     End Loop;
     For i In 1 .. iDst.Count Loop
+      Continue When iDst(i).load_type = 'L'; -- статус ведёт своя процедура
       If p_Ok Then
         If iDst(i).load_type = 'P' And p_NP = 1 Then
           p_Cnt := iRows;
@@ -507,6 +523,24 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       Fail(d.dst_full_name, Sqlerrm);
   End;
 
+  -- L: своя процедура LOAD_<таблица>.MAKE. Ошибки она обрабатывает и пишет в load_tables_status сама,
+  -- поэтому на p_Ok и на статус приёмников P/M того же источника не влияет.
+  Procedure Call_Proc(d cDst%Rowtype) Is
+    p_State load_tables_status.state%Type;
+  Begin
+    Log(d.dst_full_name, 'Своя процедура', d.load_proc);
+    Execute Immediate 'Begin ' || d.load_proc || '; End;';
+    Select s.state Into p_State From load_tables_status s Where s.table_name = upper(d.dst_name);
+    If p_State != 2 Then
+      p_LOk := False;
+      Log(d.dst_full_name, 'Своя процедура завершилась с ошибкой', 'state = ' || p_State);
+    End If;
+  Exception
+    When Others Then
+      p_LOk := False;
+      Log(d.dst_full_name, 'Ошибка !', Sqlerrm || ' | ' || d.load_proc);
+  End;
+
   ---------------------------------------------------------------- источник
   -- Insert All: по ветке When на каждый приёмник, вставляются общие колонки
   Function Insert_Sql
@@ -562,6 +596,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     p_Obj Varchar2(261) := Case When iDst.Count = 1 Then iDst(1).dst_full_name Else iSrc End;
   Begin
     p_Ok  := True;
+    p_LOk := True;
     p_Err := Null;
     Log(p_Obj, 'Начало загрузки', 'Из ' || iSrc);
     -- 0. P: источник подозрительно мал по сравнению с прошлой загрузкой - приёмники не трогаем
@@ -577,14 +612,16 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       Status_End(p_Dst, Null);
       Return;
     End If;
-    -- 1. подготовить приёмники: P - очистить, M - только добавить партиции
+    -- 1. подготовить приёмники: P - очистить, M - только добавить партиции, L - ничего
     For i In 1 .. p_Dst.Count Loop
-      Status_Beg(p_Dst(i));
+      If p_Dst(i).load_type != 'L' Then
+        Status_Beg(p_Dst(i));
+      End If;
       If p_Dst(i).load_type = 'P' Then
         Prepare_Dst(p_Dst(i));
         p_PDst.Extend;
         p_PDst(p_PDst.Count) := p_Dst(i);
-      Elsif p_Dst(i).partitioned = 'YES' Then
+      Elsif p_Dst(i).load_type = 'M' And p_Dst(i).partitioned = 'YES' Then
         Add_Parts(p_Dst(i));
       End If;
       p_Names := p_Names || ', ' || Case When p_Dst.Count > 1 Then p_Dst(i).dst_full_name || ' ' End ||
@@ -611,22 +648,26 @@ CREATE OR REPLACE Package Body batch_upload_table Is
         Finish_Dst(p_PDst(i));
       End Loop;
     End If;
-    -- 4. M: merge в каждый такой приёмник
+    -- 4. M: merge в каждый такой приёмник, L: своя процедура
     For i In 1 .. p_Dst.Count Loop
       If p_Dst(i).load_type = 'M' Then
         Merge_Dst(iSrc, p_Dst(i));
+      Elsif p_Dst(i).load_type = 'L' Then
+        Call_Proc(p_Dst(i));
       End If;
     End Loop;
-    -- 5. всё успешно - переключаем имена партиций
+    -- 5. всё успешно - переключаем имена партиций (у L - своя процедура)
     If p_Ok Then
       For i In 1 .. p_Dst.Count Loop
-        If p_Dst(i).partitioned = 'YES' Then
+        If p_Dst(i).partitioned = 'YES' And p_Dst(i).load_type != 'L' Then
           Update s_load_table t
              Set t.dst_p1 = p_Dst(i).src_p1, t.dst_p2 = p_Dst(i).src_p2
            Where t.id = p_Dst(i).id;
         End If;
       End Loop;
       Commit;
+    End If;
+    If p_Ok And p_LOk Then
       Log(p_Obj, 'Загрузка завершена');
     Else
       Log(p_Obj, 'Загрузка завершена с ошибками');
@@ -672,7 +713,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
         Load_Source(p_All(i).src_full_name, p_Dst);
         p_Dst := TDstList();
         p_Cnt := p_Cnt + 1;
-        If Not p_Ok Then
+        If Not p_Ok Or Not p_LOk Then
           p_Bad := p_Bad + 1;
         End If;
       End If;
