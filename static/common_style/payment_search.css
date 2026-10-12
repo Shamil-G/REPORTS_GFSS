@@ -50,7 +50,7 @@ body:has(.payment-search) article { display: flex; flex-direction: column; }
 @supports not selector(::-webkit-scrollbar) {
     .payment-search .ps-table-wrap { scrollbar-color: var(--scrollbar-color, currentColor) transparent; }
 }
-.payment-search .ps-table-wrap::-webkit-scrollbar { width: 4px; height: 4px; }
+.payment-search .ps-table-wrap::-webkit-scrollbar { width: 4px; height: 6px; }
 .payment-search .ps-table-wrap::-webkit-scrollbar-track { background: transparent; }
 .payment-search .ps-table-wrap::-webkit-scrollbar-thumb { background-color: var(--scrollbar-color, currentColor); border-radius: 1px; }
 .payment-search .ps-table { width: 100%; min-width: 1780px; border-collapse: separate; border-spacing: 0; color: var(--ps-text); }
@@ -74,21 +74,39 @@ body:has(.payment-search) article { display: flex; flex-direction: column; }
 .payment-search .ps-tabs .ps-tab-close { padding: 6px 10px; }
 .payment-search .ps-tabs .ps-tab-close:hover { color: var(--ps-error); }
 .payment-search .ps-table tr.ps-open { cursor: pointer; }
-/* Таб платежа: шапка платёжного поручения и списочная часть */
-.payment-search .ps-doc-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; }
-.payment-search .ps-doc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 18px; border: 1px solid var(--ps-line); background: var(--ps-panel); border-radius: 5px; }
-.payment-search .ps-doc .ps-doc-wide { grid-column: 1 / -1; }
-.payment-search .ps-doc dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; margin: 0; }
-.payment-search .ps-doc dt { color: var(--ps-muted); font-size: 14px; }
-.payment-search .ps-doc dd { margin: 0; overflow-wrap: anywhere; }
-.payment-search .ps-doc p { margin: 0 0 6px; }
-.payment-search .ps-doc-summary { font-size: 17px; font-weight: bold; color: var(--ps-muted); margin: 0; }
+/* Таб платежа - области как в форме «Списочная часть» старого приложения:
+   рамка с заголовком на линии, поля «подпись - значение в рамке» */
+.payment-search .ps-doc-actions { display: flex; justify-content: flex-end; margin: 0 0 6px; padding: 0; border: 0; }
+.payment-search fieldset.ps-area { display: block; margin: 0 0 8px; padding: 6px 12px 10px; border: 1px solid var(--ps-line); border-radius: 5px; background: var(--ps-panel); }
+.payment-search fieldset.ps-area legend { margin: 0; padding: 0 6px; font-size: 15px; }
+.payment-search .ps-area-pay { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 24px; }
+.payment-search .ps-fields { display: grid; gap: 4px 8px; align-items: center; }
+.payment-search .ps-fields-2 { grid-template-columns: max-content minmax(0, 1fr); align-items: start; }
+.payment-search .ps-fields-4 { grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1fr); }
+.payment-search .ps-fields-6 { grid-template-columns: max-content minmax(0, 1fr) max-content minmax(0, 1.3fr) max-content minmax(0, 1.6fr); }
+.payment-search .ps-l { color: var(--ps-muted); font-size: 14px; text-align: right; }
+.payment-search .ps-v { min-height: 24px; box-sizing: border-box; padding: 2px 6px; font-size: 14px; background: var(--ps-input); border: 1px solid var(--ps-line); border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.payment-search .ps-v.ps-span3 { grid-column: span 3; }
+.payment-search .ps-v.ps-money { text-align: right; font-variant-numeric: tabular-nums; }
+.payment-search .ps-v.ps-box { min-height: 48px; max-height: 72px; overflow-x: hidden; overflow-y: auto; white-space: normal; overflow-wrap: anywhere; }
+.payment-search .ps-v.ps-box::-webkit-scrollbar { width: 4px; }
+.payment-search .ps-v.ps-box::-webkit-scrollbar-thumb { background-color: var(--scrollbar-color, currentColor); border-radius: 1px; }
+/* Списочная часть забирает остаток высоты таба, таблица прокручивается внутри */
+.payment-search .ps-panel > fieldset.ps-area-list { flex: 1 1 0; min-height: 260px; display: flex; flex-direction: column; margin-bottom: 0; }
+.payment-search .ps-area-list .ps-table-wrap { flex: 1 1 0; min-height: 0; }
+.payment-search .ps-area-list .ps-empty { margin: 0; padding: 24px; }
 .payment-search .ps-table.ps-list-table { min-width: 1200px; }
+.payment-search .ps-table tfoot { position: sticky; bottom: 0; }
+.payment-search .ps-table tfoot td { background: var(--ps-head); font-weight: bold; border-top: 1px solid var(--ps-line); }
 .payment-search .ps-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 @media (max-width: 1200px) {
     .payment-search .ps-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .payment-search .ps-actions { grid-column: 1 / -1; flex-direction: row; justify-content: flex-end; }
-    .payment-search .ps-doc { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 900px) {
+    .payment-search .ps-area-pay, .payment-search .ps-fields-4, .payment-search .ps-fields-6 { grid-template-columns: minmax(0, 1fr); }
+    .payment-search .ps-v.ps-span3 { grid-column: auto; }
+    .payment-search .ps-l { text-align: left; }
 }
 @media (max-width: 640px) {
     body:has(.payment-search) common-container { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto 1fr auto; grid-template-areas: "header" "nav" "article_title" "article" "footer"; }
