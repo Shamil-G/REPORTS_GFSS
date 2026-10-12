@@ -43,7 +43,7 @@ s.* from (
 def format_worksheet(worksheet, common_format):
 
     worksheet.set_row(2, 40)
-    worksheet.set_row(3, 30)
+    worksheet.set_row(3, 48)
 
     worksheet.set_column(0, 1, 8)
     worksheet.set_column(2, 2, 30)
@@ -213,8 +213,8 @@ def do_report(file_name: str, date_first: str, date_second: str, knp: str):
 
             for i in range(page_num):
                 # Шифр отчета
-                worksheet[i].write(0, 5, report_code, title_report_code)
-                worksheet[i].write(1, 5, f'Дата формирования: {now.strftime("%d.%m.%Y ")}({s_date} - {stop_time})',
+                worksheet[i].write(0, 9, report_code, title_report_code)
+                worksheet[i].write(1, 9, f'Дата формирования: {now.strftime("%d.%m.%Y ")}({s_date} - {stop_time})',
                                    title_format_it)
 
             workbook.close()

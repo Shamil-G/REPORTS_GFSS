@@ -70,8 +70,7 @@ def normalize_params(params: dict):
 
 def format_worksheet(worksheet, common_format):
 
-    worksheet.set_row(2, 40)
-    worksheet.set_row(3, 30)
+    worksheet.set_row(2, 48)
 
     worksheet.set_column(0, 1, 8)
     worksheet.set_column(2, 3, 15)
@@ -223,6 +222,10 @@ def do_report(file_name: str, date_first: str, date_second: str, knp: str):
 
             if not rows:
                 log.warning(f'REPORT {report_code}. Данные отсутствуют')
+                stop_time = datetime.datetime.now().strftime("%H:%M:%S")
+                worksheet[0].write(0, 11, report_code, title_report_code)
+                worksheet[0].write(1, 11, f'Дата формирования: {now.strftime("%d.%m.%Y ")}({s_date} - {stop_time})',
+                                   title_format_it)
                 workbook.close()
                 set_status_report(file_name, 2)
                 return None
