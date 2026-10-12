@@ -74,8 +74,8 @@ def format_worksheet(worksheet, common_format):
     worksheet.merge_range(2, 1, 3, 1, 'Наименование региона', common_format)
 
 
-    worksheet.merge_range(2, 2, 2, 3, 'Социальная выплата на случай потери кормильца', common_format)
-    worksheet.merge_range(2, 4, 2, 5, 'Социальная выплата на случай утраты трудоспособности', common_format)
+    worksheet.merge_range(2, 2, 2, 3, 'Социальная выплата на случай утраты трудоспособности', common_format)
+    worksheet.merge_range(2, 4, 2, 5, 'Социальная выплата на случай потери кормильца', common_format)
     worksheet.merge_range(2, 6, 2, 7, 'Социальная выплата на случай потери работы', common_format)
     worksheet.merge_range(2, 8, 2, 9, 'Социальная выплата на случай потери дохода в связи с беременностью и родами', common_format)
     worksheet.merge_range(2, 10, 2, 11, 'Социальная выплата на случай потери дохода в связи с уходом за ребенком до года', common_format)
@@ -215,11 +215,12 @@ def do_report(file_name: str, date_first: str, date_second: str, rfbn_id: str):
                 worksheet[0].write(row_num, 0, record[0], digital_format)
                 worksheet[0].write(row_num, 1, record[1], region_name_format)
 
-                worksheet[0].write(row_num, 2, record[2], digital_format)
-                worksheet[0].write(row_num, 3, record[3], money_format)
+                # утрата трудоспособности (0702) и потеря кормильца (0701) в порядке шапки
+                worksheet[0].write(row_num, 2, record[4], digital_format)
+                worksheet[0].write(row_num, 3, record[5], money_format)
 
-                worksheet[0].write(row_num, 4, record[4], digital_format)
-                worksheet[0].write(row_num, 5, record[5], money_format)
+                worksheet[0].write(row_num, 4, record[2], digital_format)
+                worksheet[0].write(row_num, 5, record[3], money_format)
 
                 worksheet[0].write(row_num, 6, record[6], digital_format)
                 worksheet[0].write(row_num, 7, record[7], money_format)
