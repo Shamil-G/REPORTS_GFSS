@@ -93,9 +93,12 @@ FOOTNOTE = ('* - участники системы обязательного с
 # :d_from / :d_to - границы отчётного периода, :d_to исключительная.
 #
 # so  - бывшая FF_SECTION_SO: срез СО за период (см. docstring про knp).
-# reg - справочник rfrr_id_region с областями 17..20, вынесенными из
-#       rfbn_id (четыре списка из оригинала, строки 10589-10639, повторяются в запросе трижды). Для
-#       платёжного идентификатора без записи в справочнике регион '00'.
+# reg - регион плательщика по новой схеме, как в rep_dia_5CO:
+#       rfon_organization.bin = РНН -> cato_branch.code -> первые 2 знака
+#       rfbn_id (01..20, включая 17..20). Старый rfrr_id_region с ручной
+#       раскладкой областей 17..20 не используется. bin уникален (индекс
+#       XU_RFON_ORGANIZATION_BIN), соединение строки не размножает. Без записи
+#       регион '00'.
 # g   - по одному ряду на участника (sicid): сумма СО, число БИН- и
 #       ИИН-перечислений. Тип перечисления определяет 5-й символ РНН.
 # w   - участники по региону последнего РНН. Ярлык 'R'/'I' в соединении с
@@ -125,17 +128,10 @@ with so as (
        and pdi.pay_date <  :d_to
 ),
 reg as (
-    select r.id,
-           r.typ,
-           nvl(case when r.rfbn_id in ('1403', '1416', '1417', '1418') then '17'
-                    when r.rfbn_id in ('0503', '0504', '0505', '0506', '0507',
-                                       '0508', '0510', '0518') then '18'
-                    when r.rfbn_id in ('0303', '0304', '0305', '0306', '0311',
-                                       '0313', '0314', '0315', '0317', '0318') then '19'
-                    when r.rfbn_id in ('0802', '0804', '0812', '0816', '0818') then '20'
-                    else r.rfrg_id
-               end, '00') reg_id
-      from rfrr_id_region r
+    select o.bin id,
+           substr(cb.rfbn_id, 1, 2) reg_id
+      from rfon_organization o, cato_branch cb
+     where o.cato = cb.code
 ),
 g as (
     select distinct
@@ -158,9 +154,7 @@ w as (
            count(distinct case when g.cnt_u = 0 and g.cnt_f > 0 then g.sicid end) cnt_sic_f,
            sum(case when g.cnt_u = 0 and g.cnt_f > 0 then g.sum_sic end)          sm_f12
       from g, reg r
-     where (case when g.last_date < to_date('01.01.2013', 'dd.mm.yyyy')
-                 then 'R' else 'I' end) = r.typ(+)
-       and g.last_rnn = r.id(+)
+     where g.last_rnn = r.id(+)
      group by nvl(r.reg_id, '00')
 ),
 d as (
@@ -177,9 +171,7 @@ v as (
            count(distinct case when d.rnn_fl = 'U' then d.p_rnn end) cnt_u_rnn,
            count(distinct case when d.rnn_fl = 'F' then d.p_rnn end) cnt_f_rnn
       from d, reg r
-     where (case when d.py_dt < to_date('01.01.2013', 'dd.mm.yyyy')
-                 then 'R' else 'I' end) = r.typ(+)
-       and d.p_rnn = r.id(+)
+     where d.p_rnn = r.id(+)
      group by nvl(r.reg_id, '00')
 ),
 dt as (
