@@ -9,7 +9,7 @@ import oracledb
 import os.path
 from model.manage_reports import set_status_report
 
-report_name = '3020.ИИН - Список возвратов СВ перечисленных в ГФСС (по ИИН)'
+report_name = '3020.ИИН - Список возвратов СВ перечисленных в ГФСС (по ИИН), учитываются с 15.03.2020г.'
 report_code = '3020.ИИН'
 
 stmt_report = """
