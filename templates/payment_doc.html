@@ -1,0 +1,87 @@
+{# Фрагмент таба платежа на странице «Платежи», вставляется в страницу payment_search.js #}
+{% macro money(value) %}{{ '{:,.2f}'.format(value or 0)|replace(',', ' ')|replace('.', ',') }}{% endmacro %}
+<form class="ps-doc-actions" action="{{ url_for('view_payment_doc_excel', mhmh_id=doc.mhmh_id) }}" method="get" target="_blank">
+    <button type="submit" class="ps-find">Выгрузить в Excel</button>
+</form>
+<div class="ps-doc">
+    <fieldset>
+        <legend>Данные платежа</legend>
+        <dl>
+            <dt>Дата валют.</dt><dd>{{ doc.pay_date }}</dd>
+            <dt>Референс</dt><dd>{{ doc.refer }}</dd>
+            <dt>№ док-та</dt><dd>{{ doc.doc_nmb }}</dd>
+            <dt>Дата док-та</dt><dd>{{ doc.doc_date }}</dd>
+            <dt>Сумма</dt><dd class="ps-money">{{ money(doc.pay_sum) }}</dd>
+            <dt>КНП</dt><dd>{{ doc.cipher_id_knp }}</dd>
+            <dt>Период</dt><dd>{{ doc.period }}</dd>
+            <dt>Состояние</dt><dd>{{ doc.tmst_id }}</dd>
+            <dt>Примечание</dt><dd>{{ doc.doc_note }}</dd>
+        </dl>
+    </fieldset>
+    <fieldset>
+        <legend>Плательщик</legend>
+        <dl>
+            <dt>Наименование</dt><dd>{{ doc.p_name }}</dd>
+            <dt>БИН</dt><dd>{{ doc.p_rnn }}</dd>
+            <dt>МФО</dt><dd>{{ doc.rfbk_mfo_pbank }}</dd>
+            <dt>Счет</dt><dd>{{ doc.p_account }}</dd>
+            <dt>Руководитель</dt><dd>{{ doc.p_chief }}</dd>
+            <dt>Бухгалтер</dt><dd>{{ doc.p_mainbk }}</dd>
+        </dl>
+    </fieldset>
+    <fieldset>
+        <legend>Получатель</legend>
+        <dl>
+            <dt>Наименование</dt><dd>{{ doc.r_name }}</dd>
+            <dt>БИН</dt><dd>{{ doc.r_rnn }}</dd>
+            <dt>МФО</dt><dd>{{ doc.rfbk_mfo_rbank }}</dd>
+            <dt>Счет</dt><dd>{{ doc.r_account }}</dd>
+        </dl>
+    </fieldset>
+    <fieldset class="ps-doc-wide">
+        <legend>Назначение платежа</legend>
+        <p>{{ doc.doc_assign }}</p>
+        {% if doc.doc_err or doc.rfem_id %}
+        <p class="ps-error">Ошибки: {{ doc.rfem_id }} {{ doc.err_name }} {{ doc.doc_err }}</p>
+        {% endif %}
+    </fieldset>
+</div>
+
+<div class="ps-results-heading">
+    <h2>Списочная часть</h2>
+    <p class="ps-doc-summary">
+        {% if doc.rows %}Лиц: {{ doc.rows|length }} · Сумма: {{ money(doc.list_sum) }} ₸{% else %}Списочной части нет{% endif %}
+    </p>
+</div>
+{% if doc.rows %}
+<div class="ps-table-wrap" tabindex="0" role="region" aria-label="Списочная часть платежа">
+    <table class="ps-table ps-list-table">
+        <thead>
+            <tr class="ps-groups">
+                <th colspan="5"></th>
+                <th colspan="3" scope="colgroup">Текущие ФИО</th>
+                <th colspan="3" scope="colgroup">ФИО при регистрации</th>
+                <th colspan="3"></th>
+            </tr>
+            <tr>
+                <th scope="col">№ в списке</th><th scope="col">Сумма</th>
+                <th scope="col">Период</th><th scope="col">Код ошибки</th><th scope="col">Наименование ошибки</th>
+                <th scope="col">Фамилия</th><th scope="col">Имя</th><th scope="col">Отчество</th>
+                <th scope="col">Фамилия</th><th scope="col">Имя</th><th scope="col">Отчество</th>
+                <th scope="col">Дата рожд</th><th scope="col">СИК</th><th scope="col">РНН</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in doc.rows %}
+            <tr>
+                <td>{{ row.pmdl_n }}</td><td class="ps-money">{{ money(row.pay_sum) }}</td>
+                <td>{{ row.period }}</td><td>{{ row.rfem_id }}</td><td>{{ row.err_name }}</td>
+                <td>{{ row.fm }}</td><td>{{ row.nm }}</td><td>{{ row.ft }}</td>
+                <td>{{ row.fm2 }}</td><td>{{ row.nm2 }}</td><td>{{ row.ft2 }}</td>
+                <td>{{ row.dt }}</td><td>{{ row.sic }}</td><td>{{ row.rnn }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}

@@ -53,10 +53,31 @@ body:has(.payment-search) article { min-width: 0; }
 .payment-search .ps-empty { padding: 64px 20px; text-align: center; color: var(--ps-muted); }
 .payment-search .ps-empty p { margin: 8px 0 0; }
 .payment-search .ps-footnote { font-size: 13px; color: var(--ps-muted); line-height: 1.5; }
+/* Табы: «Карточка» / «Информация по отчислениям и назначениям», внутри - поиск и открытые платежи */
+.payment-search .ps-tabs { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px; margin-bottom: 14px; border-bottom: 2px solid var(--ps-line); }
+.payment-search .ps-tabs button { min-height: 34px; padding: 6px 16px; color: var(--ps-muted); background: transparent; border: 1px solid transparent; border-bottom: 0; border-radius: 5px 5px 0 0; cursor: pointer; }
+.payment-search .ps-tabs .ps-tab[aria-selected="true"] { color: var(--ps-text); font-weight: bold; background: var(--ps-panel); border-color: var(--ps-line); }
+.payment-search .ps-subtabs { margin-top: -4px; }
+.payment-search .ps-tab-wrap { display: inline-flex; }
+.payment-search .ps-tabs .ps-tab-wrap .ps-tab { padding-right: 6px; }
+.payment-search .ps-tabs .ps-tab-close { padding: 6px 10px; }
+.payment-search .ps-tabs .ps-tab-close:hover { color: var(--ps-error); }
+.payment-search .ps-table tr.ps-open { cursor: pointer; }
+/* Таб платежа: шапка платёжного поручения и списочная часть */
+.payment-search .ps-doc-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.payment-search .ps-doc { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; padding: 18px; border: 1px solid var(--ps-line); background: var(--ps-panel); border-radius: 5px; }
+.payment-search .ps-doc .ps-doc-wide { grid-column: 1 / -1; }
+.payment-search .ps-doc dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 12px; margin: 0; }
+.payment-search .ps-doc dt { color: var(--ps-muted); font-size: 14px; }
+.payment-search .ps-doc dd { margin: 0; overflow-wrap: anywhere; }
+.payment-search .ps-doc p { margin: 0 0 6px; }
+.payment-search .ps-doc-summary { font-size: 17px; font-weight: bold; color: var(--ps-muted); margin: 0; }
+.payment-search .ps-table.ps-list-table { min-width: 1200px; }
 .payment-search .ps-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 @media (max-width: 1200px) {
     .payment-search .ps-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .payment-search .ps-actions { grid-column: 1 / -1; flex-direction: row; justify-content: flex-end; }
+    .payment-search .ps-doc { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 640px) {
     body:has(.payment-search) common-container { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto auto auto 1fr auto; grid-template-areas: "header" "nav" "article_title" "article" "footer"; }

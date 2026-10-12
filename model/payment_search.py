@@ -10,8 +10,17 @@ COLUMNS = (
     'pay_date', 'doc_date', 'doc_nmb', 'refer', 'cipher_id_knp',
     'pay_sum', 'doc_err', 'tmst_id', 'p_name', 'p_rnn',
     'rfbk_mfo_pbank', 'p_account', 'r_name', 'r_rnn',
-    'rfbk_mfo_rbank', 'r_account', 'doc_assign',
+    'rfbk_mfo_rbank', 'r_account', 'doc_assign', 'mhmh_id',
 )
+
+# Платёжная система хранит казахские буквы подменёнными на похожие из CP1251
+# (ЖЎМАЄАЛИЎЛЫ, Маќтажан). Таблица выверена по PMDL_DOC_LIST и PMPD_PAY_DOC,
+# правильных казахских букв там нет, поэтому замена однозначна. І - уже верная.
+KZ_FIX = str.maketrans('ЈЄЌЅҐЎЇЋјєќѕґўїћ', 'ӘҒҚҢӨҰҮҺәғқңөұүһ')
+
+
+def fix_kz(text):
+    return text.translate(KZ_FIX)
 
 
 def build_query(filters):
@@ -103,7 +112,7 @@ def search_payments(filters):
                         elif key in ('pay_date', 'doc_date'):
                             item[key] = value.strftime('%d.%m.%Y')
                         else:
-                            item[key] = str(value)
+                            item[key] = fix_kz(str(value))
                     results.append(item)
         finally:
             connection.call_timeout = old_timeout

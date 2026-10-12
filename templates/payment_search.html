@@ -1,18 +1,31 @@
 {% extends 'base.html' %}
 
-{% block title %}Поиск платежей{% endblock %}
-{% block main_title %}Поиск платежей{% endblock %}
+{% block title %}Платежи{% endblock %}
+{% block main_title %}Платежи{% endblock %}
 {% block navigate %}
 <a class="nav_button" href="/">{{ res_value('RETURN') }}</a>
 {% endblock %}
 {% block set_style %}
-<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='5') }}">
-<script src="{{ url_for('static', filename='js/payment_search.js', v='4') }}" defer></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='6') }}">
+<script src="{{ url_for('static', filename='js/payment_search.js', v='5') }}" defer></script>
 <script src="{{ url_for('static', filename='js/payment_search_excel.js', v='1') }}" defer></script>
+<script src="{{ url_for('static', filename='js/payment_tabs.js', v='1') }}" defer></script>
 {% endblock %}
 
 {% block body %}
-<section class="payment-search" data-theme="{{ session.get('style', 'color') }}" aria-label="Поиск платежей">
+<section class="payment-search" data-theme="{{ session.get('style', 'color') }}" aria-label="Платежи">
+<div class="ps-tabs" role="tablist" aria-label="Разделы">
+    <button type="button" class="ps-tab" role="tab" aria-selected="false" aria-controls="ps-card">Карточка</button>
+    <button type="button" class="ps-tab" role="tab" aria-selected="true" aria-controls="ps-info">Информация по отчислениям и назначениям</button>
+</div>
+<div id="ps-card" class="ps-panel" role="tabpanel" hidden>
+    <div class="ps-empty"><strong>Раздел в разработке</strong></div>
+</div>
+<div id="ps-info" class="ps-panel" role="tabpanel">
+<div id="ps-doc-tabs" class="ps-tabs ps-subtabs" role="tablist" aria-label="Открытые документы" data-url="{{ url_for('view_payment_search') }}/doc/">
+    <button type="button" class="ps-tab" role="tab" aria-selected="true" aria-controls="ps-search">Поиск платежей</button>
+</div>
+<div id="ps-search" class="ps-panel" role="tabpanel">
     <div class="ps-intro">
         <p>Укажите параметры для поиска платежей.</p>
     </div>
@@ -103,7 +116,7 @@
 
     <div class="ps-results-heading">
         <h2>Результаты поиска</h2>
-        <p id="ps-summary" role="status" aria-live="polite">Введите референс или задайте период и нажмите «Найти».</p>
+        <p id="ps-summary" role="status" aria-live="polite">Введите референс или задайте период и нажмите «Найти». Щелчок по платежу открывает его списочную часть.</p>
         <button type="button"
                 id="ps-export"
                 class="ps-find"
@@ -142,5 +155,7 @@
             <p>Измените параметры поиска или сбросьте фильтры.</p>
         </div>
     </div>
+</div>
+</div>
 </section>
 {% endblock %}

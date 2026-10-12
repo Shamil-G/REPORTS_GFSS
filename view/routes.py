@@ -315,3 +315,36 @@ def view_payment_search_excel():
     except Exception:
         log.exception('Ошибка выгрузки платежей в Excel')
         return jsonify(error='Не удалось сформировать Excel.'), 500
+
+@app.route('/payment-search/doc/<int:mhmh_id>', methods=['GET'])
+@login_required
+def view_payment_doc(mhmh_id):
+    # Фрагмент для таба платежа на странице «Платежи»: шапка и списочная часть
+    from model.payment_doc import get_payment_doc
+    try:
+        doc = get_payment_doc(mhmh_id)
+    except Exception:
+        log.exception(f'Ошибка чтения платежа MHMH_ID={mhmh_id}')
+        return jsonify(error='Не удалось получить платеж из БД. Подробности записаны в журнал приложения.'), 500
+    if doc is None:
+        return jsonify(error='Платеж не найден.'), 404
+    return render_template("payment_doc.html", doc=doc)
+
+@app.route('/payment-search/doc/<int:mhmh_id>/excel', methods=['GET'])
+@login_required
+def view_payment_doc_excel(mhmh_id):
+    from flask import send_file
+    from model.payment_doc import get_payment_doc, make_payment_doc_excel
+    try:
+        doc = get_payment_doc(mhmh_id)
+        if doc is None:
+            return jsonify(error='Платеж не найден.'), 404
+        return send_file(
+            make_payment_doc_excel(doc),
+            as_attachment=True,
+            download_name=f"payment_{secure_filename(doc['refer']) or mhmh_id}.xlsx",
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+    except Exception:
+        log.exception(f'Ошибка выгрузки платежа MHMH_ID={mhmh_id} в Excel')
+        return jsonify(error='Не удалось сформировать Excel.'), 500

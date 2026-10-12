@@ -31,6 +31,12 @@
         const fragment = document.createDocumentFragment();
         for (const row of data.rows) {
             const tr = document.createElement('tr');
+            // Открытие платежа в отдельном табе - payment_tabs.js
+            tr.dataset.id = row.mhmh_id;
+            tr.dataset.refer = row.refer;
+            tr.tabIndex = 0;
+            tr.title = 'Открыть платеж';
+            tr.classList.add('ps-open');
             columns.forEach((key, index) => {
                 const td = document.createElement('td');
                 td.textContent = index === 5 ? money(row[key]) : (row[key] ?? '');
