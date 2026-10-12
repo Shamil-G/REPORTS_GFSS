@@ -8,9 +8,9 @@ from db.connect import get_connection
 LIMIT = 3000
 COLUMNS = (
     'pay_date', 'doc_date', 'doc_nmb', 'refer', 'cipher_id_knp',
-    'pay_sum', 'doc_err', 'tmst_id', 'p_name', 'p_rnn',
+    'pay_sum', 'rfem_id', 'tmst_id', 'p_name', 'p_rnn',
     'rfbk_mfo_pbank', 'p_account', 'r_name', 'r_rnn',
-    'rfbk_mfo_rbank', 'r_account', 'doc_assign', 'mhmh_id',
+    'rfbk_mfo_rbank', 'r_account', 'doc_assign', 'doc_err', 'mhmh_id',
 )
 
 # Платёжная система хранит казахские буквы подменёнными на похожие из CP1251

@@ -9,7 +9,7 @@
     const button = form.querySelector('button[type="submit"]');
     const initialSummary = summary.textContent;
     const columns = ['pay_date', 'doc_date', 'doc_nmb', 'refer', 'cipher_id_knp',
-        'pay_sum', 'doc_err', 'tmst_id', 'p_name', 'p_rnn', 'rfbk_mfo_pbank',
+        'pay_sum', 'rfem_id', 'tmst_id', 'p_name', 'p_rnn', 'rfbk_mfo_pbank',
         'p_account', 'r_name', 'r_rnn', 'rfbk_mfo_rbank', 'r_account', 'doc_assign', 'doc_err'];
     const money = value => new Intl.NumberFormat('ru-RU', {
         minimumFractionDigits: 2, maximumFractionDigits: 2
@@ -41,6 +41,11 @@
                 const td = document.createElement('td');
                 td.textContent = index === 5 ? money(row[key]) : (row[key] ?? '');
                 if (index === 5) td.classList.add('ps-money');
+                // Назначение и текст ошибки бывают в сотни символов - обрезаются, полный текст в подсказке
+                if (key === 'doc_assign' || key === 'doc_err') {
+                    td.classList.add('ps-long');
+                    td.title = td.textContent;
+                }
                 tr.appendChild(td);
             });
             fragment.appendChild(tr);

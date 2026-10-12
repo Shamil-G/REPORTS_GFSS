@@ -35,7 +35,17 @@ body:has(.payment-search) article { min-width: 0; }
 .payment-search .ps-results-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 22px 0 10px; }
 .payment-search h2 { font-size: 18px; margin: 0; }
 .payment-search #ps-summary { font-size: 17px; font-weight: bold; color: var(--ps-muted); margin: 0; }
-.payment-search .ps-table-wrap { overflow: auto; max-height: 60vh; min-height: 300px; background: var(--ps-row); border: 1px solid var(--ps-line); border-radius: 5px; }
+/* Страница - во всю высоту article: фильтр (и шапка платежа) стоят на месте,
+   таблица забирает остаток высоты и сама прокручивается в обе стороны -
+   её горизонтальная полоса всегда на экране. Если экран совсем низкий,
+   таблица не сжимается меньше 200px, тогда прокручивается article. */
+body:has(.payment-search) article { display: flex; flex-direction: column; }
+.payment-search { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.payment-search .ps-panel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+.payment-search .ps-panel > * { flex: none; }
+.payment-search .ps-panel > .ps-panel { flex: 1 1 auto; }
+.payment-search .ps-table-wrap { overflow: auto; background: var(--ps-row); border: 1px solid var(--ps-line); border-radius: 5px; }
+.payment-search .ps-panel > .ps-table-wrap { flex: 1 1 0; min-height: 200px; }
 /* Полоса прокрутки списка - как в основном списке отчётов (main.css): зелёная, 4px; сверху и сбоку, т.к. таблица шире экрана */
 @supports not selector(::-webkit-scrollbar) {
     .payment-search .ps-table-wrap { scrollbar-color: var(--scrollbar-color, currentColor) transparent; }
@@ -45,10 +55,11 @@ body:has(.payment-search) article { min-width: 0; }
 .payment-search .ps-table-wrap::-webkit-scrollbar-thumb { background-color: var(--scrollbar-color, currentColor); border-radius: 1px; }
 .payment-search .ps-table { width: 100%; min-width: 1780px; border-collapse: separate; border-spacing: 0; color: var(--ps-text); }
 .payment-search .ps-table thead { position: sticky; top: 0; z-index: 1; }
-.payment-search .ps-table th { background: var(--ps-head); font-size: 14px; text-align: left; padding: 10px 12px; border: 0; border-right: 1px solid var(--ps-line); border-bottom: 1px solid var(--ps-line); white-space: nowrap; }
+.payment-search .ps-table th { background: var(--ps-head); font-size: 14px; text-align: left; padding: 5px 8px; border: 0; border-right: 1px solid var(--ps-line); border-bottom: 1px solid var(--ps-line); white-space: nowrap; }
 .payment-search .ps-table .ps-groups th { background: var(--ps-panel); color: var(--ps-muted); font-weight: normal; }
-.payment-search .ps-table td { font-size: 14px; padding: 12px; text-align: left; border: 0; border-bottom: 1px solid var(--ps-line); white-space: nowrap; }
+.payment-search .ps-table td { font-size: 14px; padding: 3px 8px; text-align: left; border: 0; border-bottom: 1px solid var(--ps-line); white-space: nowrap; }
 .payment-search .ps-table tbody tr:hover { background: var(--ps-hover); }
+.payment-search .ps-table td.ps-long { max-width: 420px; overflow: hidden; text-overflow: ellipsis; }
 .payment-search .ps-table td.ps-money { text-align: right; font-variant-numeric: tabular-nums; }
 .payment-search .ps-empty { padding: 64px 20px; text-align: center; color: var(--ps-muted); }
 .payment-search .ps-empty p { margin: 8px 0 0; }
