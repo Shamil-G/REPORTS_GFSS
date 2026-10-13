@@ -76,89 +76,124 @@ def get_payment_doc(mhmh_id):
     return doc
 
 
+# Цвета экрана (payment_search.css): фон области, поле, линия, текст, подпись, шапка таблицы, строки
+PANEL, INPUT, LINE, TEXT, MUTED, HEAD, ROW, ERROR = (
+    '#E9F4E5', '#EFEFD3', '#BFD0BC', '#24542C', '#506A53', '#DFEDDA', '#F3F9F0', '#A52432')
+# Колонки листа: A и P - узкие поля внутри рамок, B..O - таблица лиц (LIST_COLUMNS)
+SHEET_WIDTHS = [2, 10, 14, 10, 10, 40, 18, 18, 18, 18, 18, 18, 12, 20, 20, 2]
+
+
 def make_payment_doc_excel(doc):
-    # Раскладка - как на экране и в старой форме «Списочная часть»: области
-    # «Данные платежа», «Плательщик», «Получатель», затем таблица лиц.
-    # Ширины колонок задаёт таблица (A..N), поля шапки - объединёнными ячейками.
+    # Вид - как таб платежа на экране: области в рамках на зелёном фоне, подписи
+    # прижаты к полю, значения в жёлтых рамках. Последние колонки областей
+    # прижаты к правому краю (колонка O), как и на экране. Ширины колонок листа
+    # задаёт таблица лиц, поля шапки собраны из объединённых ячеек.
     output = BytesIO()
     with xlsxwriter.Workbook(output, {
         'in_memory': True, 'strings_to_formulas': False, 'strings_to_urls': False,
     }) as workbook:
         sheet = workbook.add_worksheet('Списочная часть')
-        title = workbook.add_format({'bold': True, 'font_size': 12})
-        area = workbook.add_format({'bold': True, 'bottom': 1})
-        label = workbook.add_format({'font_color': '#506A53', 'align': 'right', 'valign': 'top'})
-        value = workbook.add_format({'num_format': '@', 'border': 1, 'bg_color': '#F2F2F2', 'valign': 'top'})
-        value_wrap = workbook.add_format({'num_format': '@', 'border': 1, 'bg_color': '#F2F2F2', 'valign': 'top', 'text_wrap': True})
-        value_money = workbook.add_format({'num_format': '#,##0.00', 'border': 1, 'bg_color': '#F2F2F2'})
-        header = workbook.add_format({'bold': True, 'border': 1, 'bg_color': '#DCE6F1', 'text_wrap': True, 'align': 'center', 'valign': 'vcenter'})
-        text = workbook.add_format({'num_format': '@', 'border': 1})
-        number = workbook.add_format({'border': 1})
-        money = workbook.add_format({'num_format': '#,##0.00', 'border': 1})
-        total_text = workbook.add_format({'bold': True, 'border': 1, 'bg_color': '#DCE6F1'})
-        total_money = workbook.add_format({'bold': True, 'num_format': '#,##0.00', 'border': 1, 'bg_color': '#DCE6F1'})
+        for col, width in enumerate(SHEET_WIDTHS):
+            sheet.set_column(col, col, width)
+        last_col = len(SHEET_WIDTHS) - 1
+        formats = {}
 
-        def cell(row, first, last, data, fmt):
-            if first == last:
-                sheet.write(row, first, data, fmt)
+        def fmt(**props):
+            props = {'font_color': TEXT, 'valign': 'vcenter', **props}
+            key = tuple(sorted(props.items()))
+            if key not in formats:
+                formats[key] = workbook.add_format(props)
+            return formats[key]
+
+        label = fmt(bg_color=PANEL, font_color=MUTED, align='right')
+        label_top = fmt(bg_color=PANEL, font_color=MUTED, align='right', valign='top')
+        box = dict(bg_color=INPUT, border=1, border_color=LINE)
+        value = fmt(num_format='@', **box)
+        value_money = fmt(num_format='#,##0.00', **box)
+        value_wrap = fmt(num_format='@', text_wrap=True, valign='top', **box)
+        value_error = fmt(num_format='@', text_wrap=True, valign='top', **{**box, 'font_color': ERROR})
+
+        def frame(top, bottom, title):
+            # Фон области и рамка по её краю; заголовок - в верхней строке рамки
+            for r in range(top, bottom + 1):
+                for c in range(last_col + 1):
+                    props = {'bg_color': PANEL}
+                    for side, edge in (('top', r == top), ('bottom', r == bottom),
+                                       ('left', c == 0), ('right', c == last_col)):
+                        if edge:
+                            props[side] = 1
+                            props[side + '_color'] = LINE
+                    sheet.write_blank(r, c, None, fmt(**props))
+            sheet.write_string(top, 1, title, fmt(bg_color=PANEL, bold=True, top=1, top_color=LINE))
+
+        def cell(r1, c1, r2, c2, data, f):
+            if (r1, c1) == (r2, c2):
+                sheet.write(r1, c1, data, f)
             else:
-                sheet.merge_range(row, first, row, last, data, fmt)
+                sheet.merge_range(r1, c1, r2, c2, data, f)
 
-        # Пары «подпись - значение»: (колонка подписи с..по, колонка значения с..по)
-        slot1, slot2, slot3 = ((0, 1), (2, 4)), ((5, 5), (6, 7)), ((8, 8), (9, 13))
-        wide1 = ((0, 1), (2, 7))
+        def pair(row, lab, val, name, data, f=value, rows=1):
+            # lab / val - колонки подписи и значения «с..по»; rows - высота значения в строках
+            cell(row, lab[0], row, lab[1], name, label_top if rows > 1 else label)
+            cell(row, val[0], row + rows - 1, val[1], data, f)
 
-        def pair(row, slot, name, data, fmt=value):
-            (l1, l2), (v1, v2) = slot
-            cell(row, l1, l2, name, label)
-            cell(row, v1, v2, data, fmt)
+        sheet.write_string(0, 1, f"Платеж {doc['refer']}", fmt(bold=True, font_size=12))
 
-        def area_title(row, name):
-            sheet.merge_range(row, 0, row, 13, name, area)
-
-        sheet.write_string(0, 0, f"Платеж {doc['refer']}", title)
-
-        area_title(2, 'Данные платежа')
-        pair(3, slot1, 'Дата валют.', doc['pay_date']); pair(3, slot2, '№ док-та', doc['doc_nmb'])
-        pair(4, slot1, 'Референс', doc['refer']); pair(4, slot2, 'Дата док-та', doc['doc_date'])
-        pair(5, slot1, 'БИН', doc['p_rnn']); pair(5, slot2, 'Сумма', float(doc['pay_sum'] or 0), value_money)
-        pair(6, slot1, 'Период', doc['period']); pair(6, slot2, 'КНП', doc['cipher_id_knp'])
-        pair(7, ((0, 1), (2, 13)), 'Примечание', doc['doc_note'])
-        pair(8, ((0, 1), (2, 13)), 'Назначение платежа', doc['doc_assign'], value_wrap)
+        # Данные платежа: две колонки полей рядом, назначение и ошибки - справа
+        frame(2, 8, 'Данные платежа')
+        c1, c2, c3 = ((1, 2), (3, 4)), ((5, 5), (6, 6)), ((8, 10), (11, 14))
+        pair(3, *c1, 'Дата валют.', doc['pay_date'])
+        pair(3, *c2, '№ док-та', doc['doc_nmb'])
+        pair(4, *c1, 'Референс', doc['refer'])
+        pair(4, *c2, 'Дата док-та', doc['doc_date'])
+        pair(5, *c1, 'БИН', doc['p_rnn'])
+        pair(5, *c2, 'Сумма', float(doc['pay_sum'] or 0), value_money)
+        pair(6, *c1, 'Период', doc['period'])
+        pair(6, *c2, 'КНП', doc['cipher_id_knp'])
+        pair(7, (1, 2), (3, 6), 'Примечание', doc['doc_note'])
+        pair(3, *c3, 'Назначение платежа', doc['doc_assign'], value_wrap, rows=2)
         errors = (f"{doc['rfem_id']} {doc['err_name']} " if doc['rfem_id'] else '') + doc['doc_err']
-        pair(9, ((0, 1), (2, 13)), 'Ошибки', errors.strip(), value_wrap)
-        sheet.set_row(8, 30)
-        sheet.set_row(9, 30)
+        pair(5, *c3, 'Ошибки', errors.strip(), value_error, rows=3)
 
-        area_title(11, 'Плательщик')
-        pair(12, wide1, 'Наименование', doc['p_name']); pair(12, slot3, 'БИН', doc['p_rnn'])
-        pair(13, slot1, 'МФО', doc['rfbk_mfo_pbank']); pair(13, slot2, 'Счет', doc['p_account']); pair(13, slot3, 'Банк', doc['p_bank'])
-        pair(14, slot1, 'Руководитель', doc['p_chief']); pair(14, slot2, 'Бухгалтер', doc['p_mainbk'])
+        # Плательщик / Получатель: вторая колонка прижата к правому краю
+        n1, n2 = ((1, 2), (3, 5)), ((12, 12), (13, 14))
+        frame(10, 15, 'Плательщик')
+        pair(11, *n1, 'Наименование', doc['p_name'])
+        pair(11, *n2, 'БИН', doc['p_rnn'])
+        pair(12, *n1, 'МФО', doc['rfbk_mfo_pbank'])
+        pair(12, *n2, 'Счет', doc['p_account'])
+        pair(13, *n1, 'Банк', doc['p_bank'])
+        pair(14, *n1, 'Руководитель', doc['p_chief'])
+        pair(14, *n2, 'Бухгалтер', doc['p_mainbk'])
 
-        area_title(16, 'Получатель')
-        pair(17, wide1, 'Наименование', doc['r_name']); pair(17, slot3, 'БИН', doc['r_rnn'])
-        pair(18, slot1, 'МФО', doc['rfbk_mfo_rbank']); pair(18, slot2, 'Счет', doc['r_account']); pair(18, slot3, 'Банк', doc['r_bank'])
+        frame(17, 21, 'Получатель')
+        pair(18, *n1, 'Наименование', doc['r_name'])
+        pair(18, *n2, 'БИН', doc['r_rnn'])
+        pair(19, *n1, 'МФО', doc['rfbk_mfo_rbank'])
+        pair(19, *n2, 'Счет', doc['r_account'])
+        pair(20, *n1, 'Банк', doc['r_bank'])
 
-        area_title(20, 'Списочная часть')
-        head = 21
-        sheet.merge_range(head, 5, head, 7, 'Текущие ФИО', header)
-        sheet.merge_range(head, 8, head, 10, 'ФИО при регистрации', header)
-        for col, (_, name) in enumerate(LIST_COLUMNS):
-            if col < 5 or col > 10:
-                sheet.merge_range(head, col, head + 1, col, name, header)
-            else:
-                sheet.write_string(head + 1, col, name, header)
-        sheet.set_column(0, 0, 10)
-        sheet.set_column(1, 1, 14)
-        sheet.set_column(2, 3, 10)
-        sheet.set_column(4, 4, 40)
-        sheet.set_column(5, 10, 18)
-        sheet.set_column(11, 11, 12)
-        sheet.set_column(12, 13, 20)
-
+        # Списочная часть: рамка вокруг таблицы, таблица - в колонках B..O
+        head = 24
         first_row = head + 2
+        total_row = first_row + len(doc['rows'])
+        frame(23, total_row + 1, 'Списочная часть')
+        line = dict(border=1, border_color=LINE)
+        group = fmt(bg_color=PANEL, font_color=MUTED, **line)
+        header = fmt(bg_color=HEAD, bold=True, text_wrap=True, **line)
+        for col in range(1, last_col):
+            sheet.write_blank(head, col, None, group)
+        sheet.merge_range(head, 6, head, 8, 'Текущие ФИО', group)
+        sheet.merge_range(head, 9, head, 11, 'ФИО при регистрации', group)
+        for col, (_, name) in enumerate(LIST_COLUMNS, 1):
+            sheet.write_string(head + 1, col, name, header)
+
+        cell_line = dict(bg_color=ROW, bottom=1, bottom_color=LINE)
+        text = fmt(num_format='@', **cell_line)
+        number = fmt(align='left', **cell_line)
+        money = fmt(num_format='#,##0.00', **cell_line)
         for row_num, row in enumerate(doc['rows'], first_row):
-            for col, (key, _) in enumerate(LIST_COLUMNS):
+            for col, (key, _) in enumerate(LIST_COLUMNS, 1):
                 if key == 'pay_sum':
                     sheet.write_number(row_num, col, float(row[key] or 0), money)
                 elif key == 'pmdl_n':
@@ -166,11 +201,11 @@ def make_payment_doc_excel(doc):
                 else:
                     sheet.write_string(row_num, col, row[key], text)
         # Итог - как в старой форме: количество лиц под «№», сумма под «Сумма»
-        total_row = first_row + len(doc['rows'])
-        sheet.write_number(total_row, 0, len(doc['rows']), total_text)
-        sheet.write_formula(total_row, 1, f'=SUM(B{first_row + 1}:B{total_row})', total_money,
-                            float(doc['list_sum']))
-        for col in range(2, 14):
-            sheet.write_blank(total_row, col, None, total_text)
+        total = dict(bg_color=HEAD, bold=True, **line)
+        for col in range(1, last_col):
+            sheet.write_blank(total_row, col, None, fmt(**total))
+        sheet.write_number(total_row, 1, len(doc['rows']), fmt(align='left', **total))
+        sheet.write_formula(total_row, 2, f'=SUM(C{first_row + 1}:C{total_row})',
+                            fmt(num_format='#,##0.00', **total), float(doc['list_sum']))
     output.seek(0)
     return output
