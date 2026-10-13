@@ -910,34 +910,41 @@ dict_reports = {
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
                 "02": {
+                    "name": "3003 - Оперативные сведения по социальным выплатам",
+                    "proc": "rep_dia_3003",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR},
+                },
+                "03": {
                     "name": "3005 - Сведения о градации вновь назначенных получателей социальных выплат",
                     "proc": "rep_dia_3005",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
-                "03": {
+                "04": {
                     "name": "3007 - Сведения о градации по годам назначения",
                     "proc": "rep_dia_3007",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH, "rfpm_id": {**LIST_RFPM, "required": True}},
                 },
-                "04": {
+                "05": {
                     "name": "3009 - Сведения о численности получателей, за которых производятся ОПВ",
                     "proc": "rep_dia_3009",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
                 },
-                "05": {
+                "06": {
                     "name": "3011 - Сведения по первому разделу",
                     "proc": "rep_dia_3011",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
                 },
-                "06": {
+                "07": {
                     "name": "3016 - Реестр сумм возвратов социальных выплат(3107)",
                     "proc": "rep_dia_3016",
                     "data_approve": "14.03.2025",
@@ -956,7 +963,7 @@ dict_reports = {
                             }
                         }
                 },
-                "07": {
+                "08": {
                     "name": "3019 - статус 103 (3103)",
                     "proc": "rep_dia_3019",
                     "data_approve": "14.03.2025",
@@ -975,7 +982,7 @@ dict_reports = {
                             }
                         }
                 },
-                "08": {
+                "09": {
                     "name": "3020.КНП - Список возвратов СВ перечисленных в ГФСС",
                     "proc": "rep_dia_3020",
                     "data_approve": "14.03.2025",
@@ -1001,7 +1008,7 @@ dict_reports = {
                             }
                         }
                 },
-                "09": {
+                "10": {
                     "name": "3020.ИИН - Список возвратов СВ перечисленных в ГФСС (по ИИН)",
                     "proc": "rep_dia_3020_iin",
                     "data_approve": "14.03.2025",
@@ -1027,21 +1034,21 @@ dict_reports = {
                             }
                         }
                 },
-                "10": {
+                "11": {
                     "name": "3022 - Аналитический отчет стаж участия в СОСС в разрезе возраста",
                     "proc": "rep_dia_3022",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
-                "11": {
+                "12": {
                     "name": "Стаж участия в СОСС (3023)",
                     "proc": "rep_dia_3023",
                     "data_approve": "12.03.2025",
                     "author": "Гусейнов Ш.А.",
                     "params": {"date_first": "С", "date_second": "по"},
                 },
-                "12": {
+                "13": {
                     "name": "3027 - Список лиц, являющихся плательщиками ЕСП, которым назначена социальная выплата",
                     "proc": "rep_dia_3027",
                     "data_approve": "14.03.2025",
@@ -1060,21 +1067,21 @@ dict_reports = {
                             }
                         }
                 },
-                "13": {
+                "14": {
                     "name": "СО по категориям МЗП и регионам (3029)",
                     "proc": "rep_dia_3029",
                     "data_approve": "14.03.2025",
                     "author": "Гусейнов Ш.А.",
                     "params": {"date_first": "С", "date_second": "по"},
                 },
-                "14": {
+                "15": {
                     "name": "СО по категориям МЗП и районам (3029-районы)",
                     "proc": "rep_dia_3029_1",
                     "data_approve": "14.03.2025",
                     "author": "Гусейнов Ш.А.",
                     "params": {"date_first": "С", "date_second": "по"},
                 },
-                "15": {
+                "16": {
                     "name": "3030 - Отчет 9V (для Министерства)",
                     "proc": "rep_dia_3030",
                     "data_approve": "15.04.2025",
@@ -1093,7 +1100,7 @@ dict_reports = {
                             }
                         }
                 },
-                "16": {
+                "17": {
                     "name": "3100 - Ведомость перечисленных социальных выплат в разрезе БВУ",
                     "proc": "rep_dia_3100",
                     "data_approve": "14.03.2025",
@@ -1112,7 +1119,7 @@ dict_reports = {
                             }
                         }
                 },
-                "17": {
+                "18": {
                     "name": "3101 - Ведомость перечисленных ОПВ",
                     "proc": "rep_dia_3101",
                     "data_approve": "14.03.2025",
@@ -1131,7 +1138,7 @@ dict_reports = {
                             }
                         }
                 },
-                "18": {
+                "19": {
                     "name": "3102 - Ведомость перечисленных социальных выплат в разрезе областей",
                     "proc": "rep_dia_3102",
                     "data_approve": "14.03.2025",
@@ -1150,7 +1157,7 @@ dict_reports = {
                             }
                         }
                 },
-                "19": {
+                "20": {
                     "name": "3103 - Отчет о поступивших социальных отчислениях",
                     "proc": "rep_dia_3103",
                     "data_approve": "14.03.2025",
@@ -1169,7 +1176,7 @@ dict_reports = {
                             }
                         }
                 },
-                "20": {
+                "21": {
                     "name": "3104 - Список, возвратов ОПВ",
                     "proc": "rep_dia_3104",
                     "data_approve": "14.03.2025",
@@ -1194,14 +1201,14 @@ dict_reports = {
                             }
                         }
                 },
-                "21": {
+                "22": {
                     "name": "3105 - Ведомость возвращенных излишне уплаченных СО",
                     "proc": "rep_dia_3105",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
-                "22": {
+                "23": {
                     "name": "3106 - Отчет о возвратах СО в разрезе видов ошибок",
                     "proc": "rep_dia_3106",
                     "data_approve": "14.03.2025",
@@ -1220,7 +1227,7 @@ dict_reports = {
                             }
                         }
                 },
-                "23": {
+                "24": {
                     "name": "3107 - Реестр сумм возвратов социальных выплат",
                     "proc": "rep_dia_3107",
                     "data_approve": "14.03.2025",
@@ -1234,7 +1241,7 @@ dict_reports = {
                             }
                         }
                 },
-                "24": {
+                "25": {
                     "name": "3108 - Отчет по платежам в разрезе КНП",
                     "proc": "rep_dia_3108",
                     "data_approve": "14.03.2025",
@@ -1253,7 +1260,7 @@ dict_reports = {
                             }
                         }
                 },
-                "25": {
+                "26": {
                     "name": "3109 - Количество взносов участников СОСС",
                     "proc": "rep_dia_3109",
                     "data_approve": "14.03.2025",
@@ -1272,7 +1279,7 @@ dict_reports = {
                             }
                         }
                 },
-                "26": {
+                "27": {
                     "name": "3110 - Численность участников СОСС, в разрезе пола и возраста",
                     "proc": "rep_dia_3110",
                     "data_approve": "14.03.2025",
@@ -1291,7 +1298,7 @@ dict_reports = {
                             }
                         }
                 },
-                "27": {
+                "28": {
                     "name": "3111 - Женщины-участники СОСС 50+, СО по БИН и ИИН",
                     "proc": "rep_dia_3111",
                     "data_approve": "14.03.2025",
@@ -1310,7 +1317,7 @@ dict_reports = {
                             }
                         }
                 },
-                "28": {
+                "29": {
                     "name": "3112 - Женщины-участники СОСС 50+, СО от нескольких работодателей",
                     "proc": "rep_dia_3112",
                     "data_approve": "14.03.2025",
@@ -1329,7 +1336,7 @@ dict_reports = {
                             }
                         }
                 },
-                "29": {
+                "30": {
                     "name": "3113 - Перевод денежных средств в АО 'ГФСС'",
                     "proc": "rep_dia_3113",
                     "data_approve": "14.03.2025",
@@ -1348,49 +1355,49 @@ dict_reports = {
                             }
                         }
                 },
-                "30": {
+                "31": {
                     "name": "3114 - Потребность",
                     "proc": "rep_dia_3114",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
                 },
-                "31": {
+                "32": {
                     "name": "3115 - График выплаты социальных выплат",
                     "proc": "rep_dia_3115",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"pay_day": {"display_name": "День выплаты", "type": "date", "required": True}, "pay_type": {"display_name": "Тип графика", "type": "list", "required": True, "default": "1", "values": {"1": "1 - выплаты, удержания и недополученное", "2": "2 - перечисления в НПФ (10%)"}}, "rfbn_id": LIST_REGION},
                 },
-                "32": {
+                "33": {
                     "name": "3118 - График выплат",
                     "proc": "rep_dia_3118",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
                 },
-                "33": {
+                "34": {
                     "name": "3119 - Иностранные граждане (Участники СОСС)",
                     "proc": "rep_dia_3119",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
-                "34": {
+                "35": {
                     "name": "3120 - Иностранные граждане-получатели, в разрезе стран",
                     "proc": "rep_dia_3120",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
                 },
-                "35": {
+                "36": {
                     "name": "3121 - Иностранные граждане-получатели, в разрезе документов",
                     "proc": "rep_dia_3121",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
                 },
-                "36": {
+                "37": {
                     "name": "3122 - Сведения о числе получателей, количестве и суммах выплат",
                     "proc": "rep_dia_3122",
                     "data_approve": "14.03.2025",
@@ -1409,7 +1416,7 @@ dict_reports = {
                             }
                         }
                 },
-                "37": {
+                "38": {
                     "name": "3123 - Сведения о числе получателей по области",
                     "proc": "rep_dia_3123",
                     "data_approve": "14.03.2025",
@@ -1421,7 +1428,7 @@ dict_reports = {
                             "rfbn_id": LIST_REGION
                         }
                 },
-                "38": {
+                "39": {
                     "name": "3124 - Сведения о размерах выплат по районам",
                     "proc": "rep_dia_3124",
                     "data_approve": "14.03.2025",
