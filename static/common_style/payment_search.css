@@ -89,25 +89,36 @@ body:has(.payment-search) article { display: flex; flex-direction: column; }
 .payment-search .ps-doc-head { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
 .payment-search .ps-doc-areas { display: flex; flex-direction: column; max-width: 100%; }
 .payment-search .ps-doc-actions { margin: 8px 0 0; padding: 0; border: 0; }
-.payment-search fieldset.ps-area { display: block; margin: 0 0 8px; padding: 6px 12px 10px; border: 1px solid var(--ps-line); border-radius: 5px; background: var(--ps-panel); }
+/* Правого отступа у области нет - его роль играет промежуток после последней колонки */
+.payment-search fieldset.ps-area { display: block; margin: 0 0 8px; padding: 6px 0 10px 12px; border: 1px solid var(--ps-line); border-radius: 5px; background: var(--ps-panel); }
 .payment-search fieldset.ps-area legend { margin: 0; padding: 0 6px; font-size: 15px; }
-.payment-search .ps-area-pay { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 24px; }
-.payment-search .ps-fields { display: grid; gap: 4px 8px; align-items: center; }
-.payment-search .ps-fields-2 { grid-template-columns: max-content max-content; align-items: start; }
-.payment-search .ps-fields-4 { grid-template-columns: repeat(2, max-content max-content); }
-.payment-search .ps-l { color: var(--ps-muted); font-size: 14px; text-align: right; }
+/* Сетка области: колонка = «подпись, значение, промежуток». Промежутки после
+   каждой колонки (в т.ч. последней - до правой рамки) не меньше 24px и делят
+   свободную ширину области поровну, поэтому колонки отстоят друг от друга
+   и от правой рамки одинаково. Колонку поля задаёт класс ps-colN. */
+.payment-search .ps-grid { display: grid; gap: 4px 0; align-items: center; }
+.payment-search .ps-grid-2 { grid-template-columns: repeat(2, max-content max-content minmax(24px, 1fr)); }
+.payment-search .ps-grid-3 { grid-template-columns: repeat(3, max-content max-content minmax(24px, 1fr)); }
+.payment-search .ps-l.ps-col1 { grid-column: 1; }
+.payment-search .ps-v.ps-col1 { grid-column: 2; }
+.payment-search .ps-l.ps-col2 { grid-column: 4; }
+.payment-search .ps-v.ps-col2 { grid-column: 5; }
+.payment-search .ps-l.ps-col3 { grid-column: 7; align-self: start; padding-top: 3px; }
+.payment-search .ps-v.ps-col3 { grid-column: 8; }
+.payment-search .ps-rows2 { grid-row: span 2; }
+.payment-search .ps-rows3 { grid-row: span 3; }
+.payment-search .ps-l { margin-right: 8px; color: var(--ps-muted); font-size: 14px; text-align: right; }
 /* Колонка - по самому длинному значению в ней + 3 символа (padding 1,5ch
    с каждой стороны), значения колонки растянуты до её ширины - правые края ровные */
 .payment-search .ps-v { min-width: 5ch; min-height: 24px; box-sizing: border-box; padding: 2px 1.5ch; font-size: 14px; background: var(--ps-input); border: 1px solid var(--ps-line); border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* Примечание растягивается на свои три колонки, но их ширину не задаёт */
-.payment-search .ps-v.ps-span3 { grid-column: span 3; width: 0; min-width: 100%; }
-/* Наименование - на 40% уже прежних ~890px; ch здесь от шрифта 14px */
+/* Примечание - от первой колонки значений до конца второй, их ширину не задаёт */
+.payment-search .ps-v.ps-wide { grid-column: 2 / 6; width: 0; min-width: 100%; }
+/* Наименование и Банк - на 40% уже прежних ~890px; ch здесь от шрифта 14px */
 .payment-search .ps-v.ps-name { width: 76ch; }
-/* Банк - своей строкой под МФО, правый край - по Наименованию */
-.payment-search .ps-v.ps-bank { grid-column: span 3; justify-self: start; width: 76ch; }
-.payment-search .ps-v.ps-box { width: 50ch; }
 .payment-search .ps-v.ps-money { text-align: right; font-variant-numeric: tabular-nums; }
-.payment-search .ps-v.ps-box { min-height: 48px; max-height: 72px; overflow-x: hidden; overflow-y: auto; white-space: normal; overflow-wrap: anywhere; }
+/* Назначение и ошибки - по высоте своих строк (2 и 3), длинный текст прокручивается
+   внутри; contain: size - чтобы текст не раздвигал строки соседних колонок */
+.payment-search .ps-v.ps-box { width: 50ch; align-self: stretch; contain: size; overflow-x: hidden; overflow-y: auto; white-space: normal; overflow-wrap: anywhere; }
 .payment-search .ps-v.ps-box::-webkit-scrollbar { width: 4px; }
 .payment-search .ps-v.ps-box::-webkit-scrollbar-thumb { background-color: var(--scrollbar-color, currentColor); border-radius: 1px; }
 /* Списочная часть забирает остаток высоты таба, таблица прокручивается внутри */
@@ -118,11 +129,20 @@ body:has(.payment-search) article { display: flex; flex-direction: column; }
 .payment-search .ps-table tfoot { position: sticky; bottom: 0; }
 .payment-search .ps-table tfoot td { background: var(--ps-head); font-weight: bold; border-top: 1px solid var(--ps-line); }
 .payment-search .ps-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+/* Окно уже ~1150px: три колонки «Данных платежа» не помещаются - назначение
+   и ошибки уходят строками под поля (order - после всех полей), Наименование уже */
+@media (max-width: 1180px) {
+    .payment-search .ps-grid-3 { grid-template-columns: repeat(2, max-content max-content minmax(24px, 1fr)); }
+    .payment-search .ps-grid-3 > .ps-col3 { order: 1; grid-row: auto; }
+    .payment-search .ps-grid-3 > .ps-l.ps-col3 { grid-column: 1; }
+    .payment-search .ps-grid-3 > .ps-v.ps-col3 { grid-column: 2 / 6; width: auto; min-height: 48px; }
+    .payment-search .ps-v.ps-name { width: 64ch; }
+}
 @media (max-width: 900px) {
-    .payment-search .ps-area-pay { display: grid; }
-    .payment-search .ps-area-pay, .payment-search .ps-fields-2, .payment-search .ps-fields-4 { grid-template-columns: minmax(0, 1fr); }
-    .payment-search .ps-v, .payment-search .ps-v.ps-name, .payment-search .ps-v.ps-bank, .payment-search .ps-v.ps-box { width: auto; max-width: 100%; justify-self: stretch; }
-    .payment-search .ps-v.ps-span3, .payment-search .ps-v.ps-bank { grid-column: auto; min-width: 0; }
+    .payment-search .ps-grid-2, .payment-search .ps-grid-3 { grid-template-columns: minmax(0, 1fr); padding-right: 12px; }
+    .payment-search .ps-grid > .ps-l, .payment-search .ps-grid > .ps-v, .payment-search .ps-grid-3 > .ps-l.ps-col3, .payment-search .ps-grid-3 > .ps-v.ps-col3 { grid-column: auto; grid-row: auto; }
+    .payment-search .ps-v, .payment-search .ps-v.ps-name, .payment-search .ps-v.ps-box, .payment-search .ps-v.ps-wide { grid-column: auto; width: auto; min-width: 0; max-width: 100%; }
+    .payment-search .ps-v.ps-box { contain: none; min-height: 48px; max-height: 96px; }
     .payment-search .ps-l { text-align: left; }
 }
 @media (max-width: 640px) {

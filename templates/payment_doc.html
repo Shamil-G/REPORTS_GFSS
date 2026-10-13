@@ -1,40 +1,37 @@
 {# Фрагмент таба платежа на странице «Платежи», вставляется в страницу payment_tabs.js.
    Раскладка областей - как в форме «Списочная часть» старого приложения. #}
 {% macro money(value) %}{{ '{:,.2f}'.format(value or 0)|replace(',', ' ')|replace('.', ',') }}{% endmacro %}
-{% macro field(label, value, cls='') %}<span class="ps-l">{{ label }}</span><span class="ps-v {{ cls }}" title="{{ value }}">{{ value }}</span>{% endmacro %}
+{# col - номер колонки области (1, 2, 3): по нему поле встаёт на свои дорожки сетки #}
+{% macro field(label, value, col, cls='') %}<span class="ps-l ps-col{{ col }}">{{ label }}</span><span class="ps-v ps-col{{ col }} {{ cls }}" title="{{ value }}">{{ value }}</span>{% endmacro %}
 <div class="ps-doc-head">
 <div class="ps-doc-areas">
 <fieldset class="ps-area">
     <legend>Данные платежа</legend>
-    <div class="ps-area-pay">
-        <div class="ps-fields ps-fields-4">
-            {{ field('Дата валют.', doc.pay_date) }}{{ field('№ док-та', doc.doc_nmb) }}
-            {{ field('Референс', doc.refer) }}{{ field('Дата док-та', doc.doc_date) }}
-            {{ field('БИН', doc.p_rnn) }}{{ field('Сумма', money(doc.pay_sum), 'ps-money') }}
-            {{ field('Период', doc.period) }}{{ field('КНП', doc.cipher_id_knp) }}
-            {{ field('Примечание', doc.doc_note, 'ps-span3') }}
-        </div>
-        <div class="ps-fields ps-fields-2">
-            <span class="ps-l">Назначение платежа</span><span class="ps-v ps-box">{{ doc.doc_assign }}</span>
-            <span class="ps-l">Ошибки</span><span class="ps-v ps-box ps-error">{% if doc.rfem_id %}{{ doc.rfem_id }} {{ doc.err_name }} {% endif %}{{ doc.doc_err }}</span>
-        </div>
+    <div class="ps-grid ps-grid-3">
+        {{ field('Дата валют.', doc.pay_date, 1) }}{{ field('№ док-та', doc.doc_nmb, 2) }}
+        <span class="ps-l ps-col3 ps-rows2">Назначение платежа</span><span class="ps-v ps-col3 ps-box ps-rows2">{{ doc.doc_assign }}</span>
+        {{ field('Референс', doc.refer, 1) }}{{ field('Дата док-та', doc.doc_date, 2) }}
+        {{ field('БИН', doc.p_rnn, 1) }}{{ field('Сумма', money(doc.pay_sum), 2, 'ps-money') }}
+        <span class="ps-l ps-col3 ps-rows3">Ошибки</span><span class="ps-v ps-col3 ps-box ps-rows3 ps-error">{% if doc.rfem_id %}{{ doc.rfem_id }} {{ doc.err_name }} {% endif %}{{ doc.doc_err }}</span>
+        {{ field('Период', doc.period, 1) }}{{ field('КНП', doc.cipher_id_knp, 2) }}
+        {{ field('Примечание', doc.doc_note, 1, 'ps-wide') }}
     </div>
 </fieldset>
 <fieldset class="ps-area">
     <legend>Плательщик</legend>
-    <div class="ps-fields ps-fields-4">
-        {{ field('Наименование', doc.p_name, 'ps-name') }}{{ field('БИН', doc.p_rnn) }}
-        {{ field('МФО', doc.rfbk_mfo_pbank) }}{{ field('Счет', doc.p_account) }}
-        {{ field('Банк', doc.p_bank, 'ps-bank') }}
-        {{ field('Руководитель', doc.p_chief) }}{{ field('Бухгалтер', doc.p_mainbk) }}
+    <div class="ps-grid ps-grid-2">
+        {{ field('Наименование', doc.p_name, 1, 'ps-name') }}{{ field('БИН', doc.p_rnn, 2) }}
+        {{ field('МФО', doc.rfbk_mfo_pbank, 1) }}{{ field('Счет', doc.p_account, 2) }}
+        {{ field('Банк', doc.p_bank, 1, 'ps-name') }}
+        {{ field('Руководитель', doc.p_chief, 1) }}{{ field('Бухгалтер', doc.p_mainbk, 2) }}
     </div>
 </fieldset>
 <fieldset class="ps-area">
     <legend>Получатель</legend>
-    <div class="ps-fields ps-fields-4">
-        {{ field('Наименование', doc.r_name, 'ps-name') }}{{ field('БИН', doc.r_rnn) }}
-        {{ field('МФО', doc.rfbk_mfo_rbank) }}{{ field('Счет', doc.r_account) }}
-        {{ field('Банк', doc.r_bank, 'ps-bank') }}
+    <div class="ps-grid ps-grid-2">
+        {{ field('Наименование', doc.r_name, 1, 'ps-name') }}{{ field('БИН', doc.r_rnn, 2) }}
+        {{ field('МФО', doc.rfbk_mfo_rbank, 1) }}{{ field('Счет', doc.r_account, 2) }}
+        {{ field('Банк', doc.r_bank, 1, 'ps-name') }}
     </div>
 </fieldset>
 </div>
