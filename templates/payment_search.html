@@ -6,7 +6,7 @@
 <a class="nav_button" href="/">{{ res_value('RETURN') }}</a>
 {% endblock %}
 {% block set_style %}
-<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='11') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='12') }}">
 <script src="{{ url_for('static', filename='js/payment_search.js', v='6') }}" defer></script>
 <script src="{{ url_for('static', filename='js/payment_search_excel.js', v='1') }}" defer></script>
 <script src="{{ url_for('static', filename='js/payment_tabs.js', v='1') }}" defer></script>
@@ -26,9 +26,6 @@
     <button type="button" class="ps-tab" role="tab" aria-selected="true" aria-controls="ps-search">Поиск платежей</button>
 </div>
 <div id="ps-search" class="ps-panel" role="tabpanel">
-    <div class="ps-intro">
-        <p>Укажите параметры для поиска платежей.</p>
-    </div>
     <form id="payment-filters" class="ps-filters" data-url="{{ url_for('view_payment_search_data') }}">
         <fieldset>
             <legend>Параметры платежа</legend>
@@ -116,7 +113,7 @@
 
     <div class="ps-results-heading">
         <h2>Результаты поиска</h2>
-        <p id="ps-summary" role="status" aria-live="polite">Введите референс или задайте период и нажмите «Найти». Щелчок по платежу открывает его списочную часть.</p>
+        <p id="ps-summary" role="status" aria-live="polite"></p>
         <button type="button"
                 id="ps-export"
                 class="ps-find"

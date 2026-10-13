@@ -16,8 +16,6 @@ body:has(.payment-search) article { min-width: 0; }
     --ps-error: #ff9a9a; color-scheme: dark;
 }
 .payment-search [hidden] { display: none !important; }
-.payment-search .ps-intro { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
-.payment-search .ps-intro p { margin: 0; font-size: 20px; font-weight: bold; }
 .payment-search .ps-demo { font-size: 13px; padding: 5px 10px; background: var(--ps-head); border: 1px solid var(--ps-line); border-radius: 4px; }
 .payment-search .ps-filters { display: flex; flex-wrap: wrap; align-items: stretch; gap: 12px; margin: 0; padding: 0; border: 0; background: transparent; }
 .payment-search fieldset { display: flex; flex-direction: column; min-width: 0; margin: 0; padding: 0; border: 0; gap: 6px; }
@@ -27,7 +25,7 @@ body:has(.payment-search) article { min-width: 0; }
 /* Группы фильтров - в рамках, как области таба платежа; подпись слева от поля.
    Ширина полей в символах: «Параметры платежа» и «Реквизиты» - в 1,5 раза уже
    прежних 55ch/32ch, «Период поиска» - в 3 раза уже прежних 55ch */
-.payment-search .ps-filters fieldset { display: grid; grid-template-columns: max-content max-content; align-items: center; gap: 4px 8px; padding: 4px 12px 10px; border: 1px solid var(--ps-line); border-radius: 5px; background: var(--ps-panel); }
+.payment-search .ps-filters fieldset { display: grid; grid-template-columns: max-content max-content; align-items: center; gap: 6px 10px; padding: 8px 18px 14px; border: 1px solid var(--ps-line); border-radius: 5px; background: var(--ps-panel); }
 .payment-search .ps-filters legend { margin: 0; padding: 0 6px; font-size: 15px; }
 .payment-search .ps-filters label { text-align: right; }
 .payment-search .ps-filters .input_s { height: 30px; margin: 0; padding: 3px 8px; }
@@ -38,11 +36,11 @@ body:has(.payment-search) article { min-width: 0; }
 .payment-search .ps-direction label { display: flex; gap: 7px; align-items: center; min-height: 38px; color: var(--ps-text); font-size: 16px; }
 .payment-search input[type="radio"] { accent-color: var(--ps-accent); width: 17px; height: 17px; margin: 0; }
 .payment-search :is(input, select, button, .ps-table-wrap):focus-visible { outline: 2px solid var(--ps-accent); outline-offset: 3px; }
-.payment-search .ps-actions { display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding-bottom: 10px; }
+.payment-search .ps-actions { display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding-bottom: 14px; }
 .payment-search button { display: inline-flex; justify-content: center; gap: 8px; margin: 0; padding: 8px 16px; min-height: 38px; border: 1px solid var(--ps-line); border-radius: 4px; font: inherit; }
 .payment-search .ps-reset { color: var(--ps-text); background: transparent; }
 .payment-search .ps-error { flex-basis: 100%; color: var(--ps-error); margin: 0; }
-.payment-search .ps-results-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 22px 0 10px; }
+.payment-search .ps-results-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 8px 0 6px; }
 .payment-search h2 { font-size: 18px; margin: 0; }
 .payment-search #ps-summary { font-size: 17px; font-weight: bold; color: var(--ps-muted); margin: 0; }
 /* Страница - во всю высоту article: фильтр (и шапка платежа) стоят на месте,
@@ -75,7 +73,7 @@ body:has(.payment-search) article { display: flex; flex-direction: column; }
 .payment-search .ps-empty p { margin: 8px 0 0; }
 .payment-search .ps-footnote { font-size: 13px; color: var(--ps-muted); line-height: 1.5; }
 /* Табы: «Карточка» / «Информация по отчислениям и назначениям», внутри - поиск и открытые платежи */
-.payment-search .ps-tabs { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px; margin-bottom: 14px; border-bottom: 2px solid var(--ps-line); }
+.payment-search .ps-tabs { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 4px; margin-bottom: 8px; border-bottom: 2px solid var(--ps-line); }
 .payment-search .ps-tabs button { min-height: 34px; padding: 6px 16px; color: var(--ps-muted); background: transparent; border: 1px solid transparent; border-bottom: 0; border-radius: 5px 5px 0 0; cursor: pointer; }
 .payment-search .ps-tabs .ps-tab[aria-selected="true"] { color: var(--ps-text); font-weight: bold; background: var(--ps-panel); border-color: var(--ps-line); }
 .payment-search .ps-subtabs { margin-top: -4px; }
