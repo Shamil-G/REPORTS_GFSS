@@ -6,7 +6,7 @@
 <a class="nav_button" href="/">{{ res_value('RETURN') }}</a>
 {% endblock %}
 {% block set_style %}
-<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='12') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='13') }}">
 <script src="{{ url_for('static', filename='js/payment_search.js', v='6') }}" defer></script>
 <script src="{{ url_for('static', filename='js/payment_search_excel.js', v='1') }}" defer></script>
 <script src="{{ url_for('static', filename='js/payment_tabs.js', v='1') }}" defer></script>
@@ -87,7 +87,7 @@
             <label for="ps-amount">Сумма, ₸</label>
             <input class="input_s" id="ps-amount" name="amount" type="text" inputmode="decimal" placeholder="Например, 25 000,00" maxlength="24">
             <label for="ps-bin">БИН плательщика</label>
-            <input class="input_s" id="ps-bin" name="bin" type="text" inputmode="numeric" pattern="[0-9]{1,12}" maxlength="12" placeholder="Полностью или часть БИН" title="От 1 до 12 цифр">
+            <input class="input_s" id="ps-bin" name="bin" type="text" inputmode="numeric" pattern="[0-9]{1,12}" maxlength="12" placeholder="Весь БИН или часть" title="От 1 до 12 цифр">
         </fieldset>
         <fieldset>
             <legend>Период поиска</legend>

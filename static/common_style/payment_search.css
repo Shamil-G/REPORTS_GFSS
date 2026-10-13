@@ -23,14 +23,15 @@ body:has(.payment-search) article { min-width: 0; }
 .payment-search label { color: var(--ps-muted); font-size: 14px; }
 .payment-search .input_s { width: 100%; min-width: 0; height: 38px; margin: 0 0 5px; padding: 7px 9px; font: inherit; color: var(--ps-text); background: var(--ps-input); border: 1px solid var(--ps-line); border-radius: 4px; box-shadow: none; }
 /* Группы фильтров - в рамках, как области таба платежа; подпись слева от поля.
-   Ширина полей в символах: «Параметры платежа» и «Реквизиты» - в 1,5 раза уже
-   прежних 55ch/32ch, «Период поиска» - в 3 раза уже прежних 55ch */
-.payment-search .ps-filters fieldset { display: grid; grid-template-columns: max-content max-content; align-items: center; gap: 6px 10px; padding: 8px 18px 14px; border: 1px solid var(--ps-line); border-radius: 5px; background: var(--ps-panel); }
+   Ширина полей в символах: «Параметры платежа» - самый длинный пункт списка
+   («094 — Возвраты из ГФСС 094») + 3 символа, «Реквизиты» - самый длинный
+   референс (16 символов), «Период поиска» - в 3 раза уже прежних 55ch */
+.payment-search .ps-filters fieldset { display: grid; grid-template-columns: max-content max-content; align-items: center; gap: 6px 10px; padding: 11px 18px 14px; border: 1px solid var(--ps-line); border-radius: 5px; background: var(--ps-panel); }
 .payment-search .ps-filters legend { margin: 0; padding: 0 6px; font-size: 15px; }
 .payment-search .ps-filters label { text-align: right; }
 .payment-search .ps-filters .input_s { height: 30px; margin: 0; padding: 3px 8px; }
-.payment-search .ps-filters fieldset:nth-of-type(1) .input_s { width: 37ch; }
-.payment-search .ps-filters fieldset:nth-of-type(2) .input_s { width: 21ch; }
+.payment-search .ps-filters fieldset:nth-of-type(1) .input_s { width: 32ch; }
+.payment-search .ps-filters fieldset:nth-of-type(2) .input_s { width: 20ch; }
 .payment-search .ps-filters fieldset:nth-of-type(3) .input_s { width: 18ch; }
 .payment-search .input_s::placeholder { color: var(--ps-muted); opacity: .85; font-size: 14px; }
 .payment-search .ps-direction label { display: flex; gap: 7px; align-items: center; min-height: 38px; color: var(--ps-text); font-size: 16px; }
@@ -90,19 +91,20 @@ body:has(.payment-search) article { display: flex; flex-direction: column; }
 .payment-search .ps-doc-actions { margin: 8px 0 0; padding: 0; border: 0; }
 .payment-search fieldset.ps-area { display: block; margin: 0 0 8px; padding: 6px 12px 10px; border: 1px solid var(--ps-line); border-radius: 5px; background: var(--ps-panel); }
 .payment-search fieldset.ps-area legend { margin: 0; padding: 0 6px; font-size: 15px; }
-.payment-search .ps-area-pay { display: grid; grid-template-columns: max-content max-content; gap: 24px; }
+.payment-search .ps-area-pay { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 8px 24px; }
 .payment-search .ps-fields { display: grid; gap: 4px 8px; align-items: center; }
 .payment-search .ps-fields-2 { grid-template-columns: max-content max-content; align-items: start; }
 .payment-search .ps-fields-4 { grid-template-columns: repeat(2, max-content max-content); }
 .payment-search .ps-l { color: var(--ps-muted); font-size: 14px; text-align: right; }
-/* Значение - по ширине данных + 3 символа (padding 1,5ch с каждой стороны) */
-.payment-search .ps-v { justify-self: start; width: max-content; min-width: 5ch; min-height: 24px; box-sizing: border-box; padding: 2px 1.5ch; font-size: 14px; background: var(--ps-input); border: 1px solid var(--ps-line); border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Колонка - по самому длинному значению в ней + 3 символа (padding 1,5ch
+   с каждой стороны), значения колонки растянуты до её ширины - правые края ровные */
+.payment-search .ps-v { min-width: 5ch; min-height: 24px; box-sizing: border-box; padding: 2px 1.5ch; font-size: 14px; background: var(--ps-input); border: 1px solid var(--ps-line); border-radius: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Примечание растягивается на свои три колонки, но их ширину не задаёт */
 .payment-search .ps-v.ps-span3 { grid-column: span 3; width: 0; min-width: 100%; }
 /* Наименование - на 40% уже прежних ~890px; ch здесь от шрифта 14px */
 .payment-search .ps-v.ps-name { width: 76ch; }
-/* Банк - своей строкой под МФО, в колонке Наименования и не шире её */
-.payment-search .ps-v.ps-bank { grid-column: span 3; max-width: 76ch; }
+/* Банк - своей строкой под МФО, правый край - по Наименованию */
+.payment-search .ps-v.ps-bank { grid-column: span 3; justify-self: start; width: 76ch; }
 .payment-search .ps-v.ps-box { width: 50ch; }
 .payment-search .ps-v.ps-money { text-align: right; font-variant-numeric: tabular-nums; }
 .payment-search .ps-v.ps-box { min-height: 48px; max-height: 72px; overflow-x: hidden; overflow-y: auto; white-space: normal; overflow-wrap: anywhere; }
@@ -117,8 +119,9 @@ body:has(.payment-search) article { display: flex; flex-direction: column; }
 .payment-search .ps-table tfoot td { background: var(--ps-head); font-weight: bold; border-top: 1px solid var(--ps-line); }
 .payment-search .ps-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 @media (max-width: 900px) {
+    .payment-search .ps-area-pay { display: grid; }
     .payment-search .ps-area-pay, .payment-search .ps-fields-2, .payment-search .ps-fields-4 { grid-template-columns: minmax(0, 1fr); }
-    .payment-search .ps-v, .payment-search .ps-v.ps-name, .payment-search .ps-v.ps-box { width: auto; max-width: 100%; justify-self: stretch; }
+    .payment-search .ps-v, .payment-search .ps-v.ps-name, .payment-search .ps-v.ps-bank, .payment-search .ps-v.ps-box { width: auto; max-width: 100%; justify-self: stretch; }
     .payment-search .ps-v.ps-span3, .payment-search .ps-v.ps-bank { grid-column: auto; min-width: 0; }
     .payment-search .ps-l { text-align: left; }
 }
