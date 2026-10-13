@@ -2843,6 +2843,56 @@ dict_reports = {
                 },
             }
         },
+        "5000 - Социальная напряженность":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.5000",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "5001 - Свод по областям",
+                    "proc": "rep_dia_5001",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "02": {
+                    "name": "5002 - Свод по районам",
+                    "proc": "rep_dia_5002",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "03": {
+                    "name": "5003 - По регионам - предприятия со снижением числа работников более 2 раз",
+                    "proc": "rep_dia_5003",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "04": {
+                    "name": "5004 - По секторам - предприятия со снижением числа работников более 2 раз",
+                    "proc": "rep_dia_5004",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "05": {
+                    "name": "5005 - По регионам и ВЭД - предприятия со снижением числа работников более 2 раз",
+                    "proc": "rep_dia_5005",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "06": {
+                    "name": "5006 - Список предприятий",
+                    "proc": "rep_dia_5006",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+            }
+        },
         "6000 - Квартальные отчеты":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6000",
