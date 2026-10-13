@@ -24,22 +24,23 @@ SELECT
    SUM(CASE WHEN knp = '017' THEN sm ELSE 0 END) sm17
 FROM
 (
-  SELECT substr(reg.rfbn_id,1,2) rfbn,
+  SELECT substr(cb.rfbn_id,1,2) rfbn,
          pd.CIPHER_ID_KNP knp,
          dl.sicid,
          count(dl.pmdl_n) cnt,
          sum(dl.pay_sum) sm
     FROM PMPD_PAY_DOC PD,
          pmdl_doc_list dl,
-         RFRR_ID_REGION REG
+         rfon_organization o,
+         cato_branch cb
    WHERE pd.mhmh_id = dl.mhmh_id
      AND PD.TMST_ID = 5
-     AND PD.P_RNN = REG.ID(+)
-     AND ((reg.typ = 'I') OR (reg.typ IS NULL) OR (reg.typ = 'R' AND pd.p_rnn = '000000000000'))
+     AND PD.P_RNN = o.bin(+)
+     AND o.cato = cb.code(+)
      AND dl.rfem_id IS NULL
      AND PD.CIPHER_ID_KNP IN ('012', '017')
      AND PD.PAY_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND PD.PAY_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
-  GROUP BY pd.CIPHER_ID_KNP, dl.sicid,substr(reg.rfbn_id,1,2)) t
+  GROUP BY pd.CIPHER_ID_KNP, dl.sicid,substr(cb.rfbn_id,1,2)) t
   GROUP BY cnt,rfbn
   ORDER BY cnt
 """

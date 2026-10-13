@@ -22,18 +22,13 @@ select
     SUM(CASE WHEN d.knp = '017' THEN d.sm ELSE 0 END) s017
 from(
   Select
-       Nvl(nullif(case when r.rfbn_id IN ('1403', '1416', '1417', '1418') then '17'
-       when r.rfbn_id IN ('0503', '0504', '0505', '0506', '0507', '0508', '0510', '0518') then '18'
-       when r.rfbn_id IN ('0303', '0304', '0305', '0306', '0311', '0313', '0314', '0315', '0317', '0318') then '19'
-       when r.rfbn_id IN ('0802', '0804', '0812', '0816', '0818') then '20'
-       else r.Rfrg_Id end, '00'), 'ZZ') reg,
+       Nvl(substr(cb.rfbn_id, 1, 2), 'ZZ') reg,
        s.knp,
        Count(Unique s.sicid) cnt,
        Sum(s.sum_pay) sm
     From( Select --/*+ ORDERED index (vd) use_nl (pdo vd dl pdi)*/
               dl.sicid, pdi.cipher_id_knp knp, dl.pay_sum sum_pay,
-              first_value(pdi.p_rnn) Over(Partition By dl.sicid Order By decode(pdi.cipher_id_knp, '012', 0, 1), pdi.pay_date Desc rows Between unbounded preceding And unbounded following) last_rnn,
-              first_value(pdi.pay_date) Over(Partition By dl.sicid Order By decode(pdi.cipher_id_knp, '012', 0, 1), pdi.pay_date Desc rows Between unbounded preceding And unbounded following) last_date
+              first_value(pdi.p_rnn) Over(Partition By dl.sicid Order By decode(pdi.cipher_id_knp, '012', 0, 1), pdi.pay_date Desc rows Between unbounded preceding And unbounded following) last_rnn
           From pmpd_pay_doc pdo,
 --                    mhmh_msg_head mh,
               virtual_doc_list vd,
@@ -51,19 +46,10 @@ from(
           And vd.mhmh_id_in = dl.mhmh_id
           And vd.pmdl_n_in = dl.pmdl_n
           And dl.mhmh_id = pdi.mhmh_id
-         ) s, rfrr_id_region r
- Where (Case
-         When s.last_date < to_date('01.01.2013', 'dd.mm.yyyy') Then
-          'R'
-         Else
-          'I'
-       End) = r.typ(+)
-   And s.last_rnn = r.id(+)
- Group By Nvl(nullif(case when r.rfbn_id IN ('1403', '1416', '1417', '1418') then '17'
- when r.rfbn_id IN ('0503', '0504', '0505', '0506', '0507', '0508', '0510', '0518') then '18'
- when r.rfbn_id IN ('0303', '0304', '0305', '0306', '0311', '0313', '0314', '0315', '0317', '0318') then '19'
- when r.rfbn_id IN ('0802', '0804', '0812', '0816', '0818') then '20'
- else r.Rfrg_Id end, '00'), 'ZZ'), s.knp
+         ) s, rfon_organization o, cato_branch cb
+ Where s.last_rnn = o.bin(+)
+   And o.cato = cb.code(+)
+ Group By Nvl(substr(cb.rfbn_id, 1, 2), 'ZZ'), s.knp
  ) d, rfbn_branch br
  where br.RFBN_ID(+)=reg||'00'
  group by reg,nvl(br.NAME,'Не определен')

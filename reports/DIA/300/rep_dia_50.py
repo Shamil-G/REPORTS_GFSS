@@ -31,12 +31,13 @@ FROM
   GROUP BY m.p_rnn, trunc(m.pay_date, 'MONTH')
   HAVING count(DISTINCT m.sicid) >= 50
 ) pd,
-  RFRR_ID_REGION REG,
+  rfon_organization o,
+  cato_branch cb,
   rfbn_branch br,
   nk_minfin_iin nk
-WHERE PD.P_RNN = REG.ID(+)
-AND ((reg.typ = 'I') OR (reg.typ IS NULL))
-AND reg.rfbn_id = br.RFBN_ID (+)
+WHERE PD.P_RNN = o.bin(+)
+AND o.cato = cb.code(+)
+AND cb.rfbn_id = br.RFBN_ID (+)
 AND pd.p_rnn = nk.iin(+)
 """
 

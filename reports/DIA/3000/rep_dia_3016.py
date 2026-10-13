@@ -15,7 +15,7 @@ report_code = '3016'
 stmt_report = """
 SELECT
     rownum rn,
-    reg.rfbn_id,
+    cb.rfbn_id,
     pd.doc_date,
     pd.doc_nmb,
     pd.cipher_id_knp,
@@ -25,14 +25,15 @@ SELECT
     pd.rfbk_mfo_pbank,
     pd.p_rnn
   FROM pmpd_pay_doc pd,
-  RFRR_ID_REGION REG
+  rfon_organization o,
+  cato_branch cb
   WHERE
   pd.pay_date >= TO_DATE(:dt_from,'YYYY-MM-DD') AND pd.pay_date <= TO_DATE(:dt_to,'YYYY-MM-DD')
   and pd.tmst_id=5
   AND pd.cipher_id_knp IN ('020', '028', '047', '049', '092', '097','039','120')
-  AND PD.P_RNN = REG.ID(+)
-  AND ((reg.typ = 'I') OR (reg.typ IS NULL) OR (reg.typ = 'R' AND pd.p_rnn = '000000000000'))
-  order by reg.rfbn_id desc
+  AND PD.P_RNN = o.bin(+)
+  AND o.cato = cb.code(+)
+  order by cb.rfbn_id desc
 """
 
 

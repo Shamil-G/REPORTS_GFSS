@@ -11,9 +11,9 @@ AIS_GFSS, группа «Отчеты ДСР», отчёт 3401 (процеду�
 Источник - `si_member_2` (КНП 012, окна дат как в F3 REP_MINTRUD:
 `pay_date_gfss` в периоде, `pay_date` на месяц шире слева). Работодатель -
 `p_rnn`; число работодателей участника - `count(unique p_rnn)`. Регион
-участника - по организации (`rfrr_id_region`) его ПОСЛЕДНЕГО по дате
-поступления работодателя: справочник читается по типу `R` (последний платёж
-до 01.01.2013) или `I` и по `last_rnn`; «00» и не найденное -> «ZZ»
+участника - по организации его ПОСЛЕДНЕГО по дате поступления
+работодателя: `rfon_organization.bin = last_rnn` -> `cato_branch.code` ->
+первые 2 знака `rfbn_id` (как в rep_dia_5CO); не найденное -> «ZZ»
 («Не определена»). Название региона - `rfbn_branch`.
 
 В `sum(case ... end)` по числу участников нет `else 0` (в оригинале):
@@ -24,7 +24,7 @@ AIS_GFSS, группа «Отчеты ДСР», отчёт 3401 (процеду�
 Название дословно, но «с» перед датой кириллическая (в оригинале латинская «c»). Итоги по всем колонкам
 (`SetColSumTotal(3..14)`).
 
-`rfrr_id_region` в тестовой reports_test недоступна: на данных отчёт не сверен.
+`si_member_2` в тестовой reports_test недоступна: на данных отчёт не сверен.
 """
 from db.connect import LOADER_PROFILE
 from util.xlsx_report import build_report, Col, Group
@@ -66,7 +66,7 @@ select /*+parallel(4)*/
        sum(case when c = 5 then sm else 0 end) s5,
        sum(case when c >= 6 then 1 end) c6,
        sum(case when c >= 6 then sm else 0 end) s6
-  from (select nvl(nullif(r.rfrg_id, '00'), 'ZZ') rfbn_id,
+  from (select nvl(substr(cb.rfbn_id, 1, 2), 'ZZ') rfbn_id,
                s.sicid,
                count(unique s.p_rnn) c,
                sum(s.sum_pay) sm
@@ -75,20 +75,18 @@ select /*+parallel(4)*/
                        sm.p_rnn,
                        first_value(sm.p_rnn) over (
                            partition by sm.sicid order by sm.pay_date_gfss desc
-                           rows between unbounded preceding and unbounded following) last_rnn,
-                       first_value(sm.pay_date_gfss) over (
-                           partition by sm.sicid order by sm.pay_date_gfss desc
-                           rows between unbounded preceding and unbounded following) last_date
+                           rows between unbounded preceding and unbounded following) last_rnn
                   from si_member_2 sm
                  where sm.pay_date_gfss >= :d_from
                    and sm.pay_date_gfss <  :d_to
                    and sm.pay_date      >= add_months(:d_from, -1)
                    and sm.pay_date      <  :d_to
                    and sm.knp = '012') s,
-               rfrr_id_region r
-         where (case when s.last_date < date '2013-01-01' then 'R' else 'I' end) = r.typ(+)
-           and s.last_rnn = r.id(+)
-         group by nvl(nullif(r.rfrg_id, '00'), 'ZZ'), s.sicid) t,
+               rfon_organization o,
+               cato_branch cb
+         where s.last_rnn = o.bin(+)
+           and o.cato = cb.code(+)
+         group by nvl(substr(cb.rfbn_id, 1, 2), 'ZZ'), s.sicid) t,
        rfbn_branch br
  where t.rfbn_id || '00' = br.rfbn_id(+)
  group by br.rfbn_id, br.name

@@ -33,23 +33,19 @@ FROM (
           then (select NVL(REPLACE(case when rbranchid IN ('1403', '1416', '1417', '1418') then '17' else substr(rbranchid,1,2) end, '00', '99'), '99')
                 from person p where p.sicid=dl.sicid)
       else
-          FIRST_VALUE(NVL(REPLACE(case when reg.rfbn_id IN ('1403', '1416', '1417', '1418') then '17' else reg.Rfrg_Id end, '00', '99'), '99')) OVER(PARTITION BY dl.sicid ORDER BY pd.pay_date DESC)
+          FIRST_VALUE(NVL(REPLACE(substr(cb.rfbn_id, 1, 2), '00', '99'), '99')) OVER(PARTITION BY dl.sicid ORDER BY pd.pay_date DESC)
       end rg,
       pd.CIPHER_ID_KNP,
       dl.sicid,
       dl.pay_sum
     FROM PMPD_PAY_DOC PD,
          pmdl_doc_list dl,
-         RFRR_ID_REGION REG
+         rfon_organization o,
+         cato_branch cb
     WHERE pd.mhmh_id = dl.mhmh_id
     and pd.tmst_id = 5
-    AND PD.P_RNN = REG.ID(+)
-    AND (
-    (reg.typ = 'I')
-    OR (reg.typ IS NULL) OR (reg.typ = 'R' AND reg.id = '000000000000')
-                       OR (reg.typ = 'R' AND reg.id IN (/*'600321400601', */'600710447305'/*19.03.2018*/, '450920007508', '391711955101'/*05.09.2018*/, '530310172802',
-                                                        '600320407405',/*18.12.2019*/ '580710302203',/*06.02.2020*/ '580710260600'))
-     )
+    AND PD.P_RNN = o.bin(+)
+    AND o.cato = cb.code(+)
     AND dl.rfem_id IS NULL
     AND PD.CIPHER_ID_KNP IN ('012', '017')
     AND PD.PAY_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND PD.PAY_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
