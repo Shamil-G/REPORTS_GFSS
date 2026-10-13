@@ -1,288 +1,110 @@
-from configparser import ConfigParser
-import xlsxwriter
-import datetime
+# -*- coding: utf-8 -*-
+"""3194 - Получатели СВ по беременности и родам.
 
-from xlsxwriter.utility import xl_col_to_name
+Перенос на общий рендерер (`util/xlsx_report.py`) в стиле группы 1000.
+Запрос и шапка - из прежней версии; формулы колонок повторялись по 5 раз
+вручную, теперь собираются циклом.
 
-from util.logger import log
-import oracledb
-import os.path
-from model.manage_reports import set_status_report
+Группы колонок (набор кодов `rfpm_id`, как в оригинале):
+  1. 07040101                         - по беременности и родам;
+  2. 07040102, 07040103..05           - в оригинале под заголовком «Доплата за
+                                        осложненные роды» (включая 07040102,
+                                        «на 2 и более детей»; заголовок сохранён);
+  3. 07040201                         - по беременности и родам (СИЯП);
+  4. 07040202..05                     - доплата (СИЯП);
+  5. 07040301                         - усыновление (удочерение).
 
-report_name = '3194 - По беременности и родам'
+Исправлено против прежней версии:
+  - «Средний размер». Было `сумма / получатели / месяцев_между + 1` - единица
+    прибавлялась к результату, а не к числу месяцев. Теперь
+    `сумма / получатели / (месяцев_между + 1)`, то есть деление на число
+    календарных месяцев периода включительно. Нулевое число получателей даёт
+    пустую ячейку (раньше - ORA-01476 на всём отчёте).
+  - Итоги: прежний код оставлял пустыми колонки сумм, а складывал средние
+    (сдвиг на одну колонку). Теперь суммируются получатели и суммы, средние
+    не суммируются.
+"""
+from db.connect import LOADER_PROFILE
+from util.branch_kind import branch_kind
+from util.xlsx_report import build_report, Col, Group
+
 report_code = '3194'
+report_name = ('Получатели социальных выплат по беременности и родам и '
+               'усыновлению (удочерению) за период с {period}')
 
-stmt_report = """
-SELECT
-  t.rfbn_id,
-  br.name,
-  COUNT(DISTINCT CASE WHEN RFPM_ID = '07040101' THEN PNCD_ID END) CNT01,
-  SUM(CASE WHEN RFPM_ID = '07040101' THEN sm END) SUM01,
-  ROUND(SUM(CASE WHEN RFPM_ID = '07040101' THEN sm END)/COUNT(DISTINCT CASE WHEN RFPM_ID = '07040101' THEN PNCD_ID END)/Months_Between(trunc(TO_DATE(:dt_to,'YYYY-MM-DD'), 'MM'), trunc(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')) + 1) avg01,
-  COUNT(DISTINCT CASE WHEN rfpm_id IN ('07040102', '07040103', '07040104', '07040105') THEN PNCD_ID END) CNT02,
-  SUM(CASE WHEN rfpm_id IN ('07040102', '07040103', '07040104', '07040105') THEN sm END) SUM02,
-  ROUND(SUM(CASE WHEN rfpm_id IN ('07040102', '07040103', '07040104', '07040105') THEN sm END)/COUNT(DISTINCT CASE WHEN rfpm_id IN ('07040102', '07040103', '07040104', '07040105') THEN PNCD_ID END)/Months_Between(trunc(TO_DATE(:dt_to,'YYYY-MM-DD'), 'MM'), trunc(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')) + 1) avg02,
-  COUNT(DISTINCT CASE WHEN RFPM_ID = '07040201' THEN PNCD_ID END) CNT03,
-  SUM(CASE WHEN RFPM_ID = '07040201' THEN sm END) SUM03,
-  ROUND(SUM(CASE WHEN RFPM_ID = '07040201' THEN sm END)/COUNT(DISTINCT CASE WHEN RFPM_ID = '07040201' THEN PNCD_ID END)/Months_Between(trunc(TO_DATE(:dt_to,'YYYY-MM-DD'), 'MM'), trunc(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')) + 1) avg03,
-  COUNT(DISTINCT CASE WHEN rfpm_id IN ('07040202', '07040203', '07040204', '07040205') THEN PNCD_ID END) CNT04,
-  SUM(CASE WHEN rfpm_id IN ('07040202', '07040203', '07040204', '07040205') THEN sm END) SUM04,
-  ROUND(SUM(CASE WHEN rfpm_id IN ('07040202', '07040203', '07040204', '07040205') THEN sm END)/COUNT(DISTINCT CASE WHEN rfpm_id IN ('07040202', '07040203', '07040204', '07040205') THEN PNCD_ID END)/Months_Between(trunc(TO_DATE(:dt_to,'YYYY-MM-DD'), 'MM'), trunc(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')) + 1) avg04,
-  COUNT(DISTINCT CASE WHEN RFPM_ID = '07040301' THEN PNCD_ID END) CNT05,
-  SUM(CASE WHEN RFPM_ID = '07040301' THEN sm END) SUM05,
-  ROUND(SUM(CASE WHEN RFPM_ID = '07040301' THEN sm END)/COUNT(DISTINCT CASE WHEN RFPM_ID = '07040301' THEN PNCD_ID END)/Months_Between(trunc(TO_DATE(:dt_to,'YYYY-MM-DD'), 'MM'), trunc(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')) + 1) avg05,
-  COUNT(DISTINCT PNCD_ID ) CNTA,
-  SUM(sm) SUMA,
-  ROUND(SUM(sm)/COUNT(DISTINCT PNCD_ID)/Months_Between(trunc(TO_DATE(:dt_to,'YYYY-MM-DD'), 'MM'), trunc(TO_DATE(:dt_from,'YYYY-MM-DD'), 'MM')) + 1) avga
-FROM(
-SELECT
-  d.pncd_id,
-  d.source_id,
-  substr(D.RFBN_ID, 1, 4) rfbn_id,
-  D.RFPM_ID,
-  d.pay_sum + d.sum_debt sm
-  FROM PNPD_DOCUMENT D
- WHERE D.PNCP_DATE >= TO_DATE(:dt_from,'YYYY-MM-DD') AND D.PNCP_DATE <= TO_DATE(:dt_to,'YYYY-MM-DD')
-   AND D.RFPM_ID LIKE '0704%'
-   AND D.RIDT_ID IN (4, 6, 7, 8)
-   AND D.STATUS IN (0, 1, 2, 3, 5, 7)
-   AND D.PNSP_ID > 0) t, rfbn_branch br
-WHERE t.rfbn_id = br.RFBN_ID
-GROUP BY t.rfbn_id, br.name
-ORDER BY t.rfbn_id
+# (ключ, заголовок, коды rfpm_id)
+_GROUPS = [
+    ('01', 'По беременности и родам', ('07040101',)),
+    ('02', 'Доплата за осложненные роды',
+     ('07040102', '07040103', '07040104', '07040105')),
+    ('03', 'По беременности и родам (СИЯП)', ('07040201',)),
+    ('04', 'Доплата за осложненные роды (СИЯП)',
+     ('07040202', '07040203', '07040204', '07040205')),
+    ('05', 'Усыновление (удочерение) ребенка', ('07040301',)),
+]
+
+
+def _block(key):
+    return [
+        Col('Количество, человек', f'cnt{key}', 'int', 13),
+        Col('Сумма, тенге', f'sum{key}', 'money', 20),
+        # средние не суммируются
+        Col('Средний размер, тенге', f'avg{key}', 'money', 17, total=False),
+    ]
+
+
+COLUMNS = [
+    Col('Код региона', 'rfbn', 'center', 10),
+    Col('Наименование региона', 'reg_name', 'text', 60),
+    Col('Город/село', 'kind', 'center', 14),
+    Group('Виды выплат (СВбр)', [Group(title, _block(key))
+                                 for key, title, _ in _GROUPS]),
+    Group('Всего', _block('a')),
+]
+
+# число календарных месяцев периода включительно; :d_to исключительная
+_MONTHS = "(months_between(trunc(:d_to - 1, 'MM'), trunc(:d_from, 'MM')) + 1)"
+
+
+def _agg(key, cond):
+    cnt = f"count(distinct {'case when ' + cond + ' then pncd_id end' if cond else 'pncd_id'})"
+    sm = f"sum({'case when ' + cond + ' then sm end' if cond else 'sm'})"
+    return (f"       {cnt} cnt{key},\n"
+            f"       {sm} sum{key},\n"
+            f"       round({sm} / nullif({cnt}, 0) / {_MONTHS}) avg{key}")
+
+
+_SELECT = ',\n'.join(
+    [_agg(key, 'rfpm_id in (' + ', '.join(f"'{c}'" for c in codes) + ')')
+     for key, _, codes in _GROUPS] + [_agg('a', None)])
+
+_KIND, _KIND_FROM, _KIND_WHERE, _KIND_GROUP = branch_kind()
+
+# :d_from / :d_to - границы периода по pncp_date, :d_to исключительная.
+STMT = f"""
+select t.rfbn_id rfbn,
+       br.name reg_name,
+       {_KIND} kind,
+{_SELECT}
+  from (select /*+ parallel(4) */
+               d.pncd_id,
+               substr(d.rfbn_id, 1, 4) rfbn_id,
+               d.rfpm_id,
+               d.pay_sum + d.sum_debt sm
+          from pnpd_document d
+         where d.pncp_date >= :d_from
+           and d.pncp_date <  :d_to
+           and d.rfpm_id like '0704%'
+           and d.ridt_id in (4, 6, 7, 8)
+           and d.status in (0, 1, 2, 3, 5, 7)
+           and d.pnsp_id > 0) t, rfbn_branch br, {_KIND_FROM}
+ where t.rfbn_id = br.rfbn_id
+   and {_KIND_WHERE}
+ group by t.rfbn_id, br.name, {_KIND_GROUP}
+ order by t.rfbn_id
 """
 
-
-def format_worksheet(worksheet, common_format):
-
-    worksheet.set_row(2, 30)
-    worksheet.set_row(3, 24)
-    worksheet.set_row(4, 42)
-
-    worksheet.set_column(0, 0, 8)
-    worksheet.set_column(1, 1, 30)
-    worksheet.set_column(1, 21, 15)
-
-    worksheet.merge_range(2, 0, 4, 0, 'Код региона', common_format)
-    worksheet.merge_range(2, 1, 4, 1, 'Наименование региона', common_format)
-
-    worksheet.merge_range(2, 2, 2, 16, 'Виды выплат (СВбр)', common_format)
-
-    worksheet.merge_range(3, 2, 3, 4, 'По беременности и родам', common_format)
-    worksheet.merge_range(3, 5, 3, 7, 'Доплата за осложненные роды', common_format)
-    worksheet.merge_range(3, 8, 3, 10, 'По беременности и родам (СИЯП)	', common_format)
-    worksheet.merge_range(3, 11, 3, 13, 'Доплата за осложненные роды (СИЯП)', common_format)
-    worksheet.merge_range(3, 14, 3, 16, 'Усыновление (удочерение) ребенка', common_format)
-    worksheet.merge_range(2, 17, 3, 19, 'Всего', common_format)
-
-    for start_col in [2, 5, 8, 11, 14, 17]:
-        worksheet.write(4, start_col,     'Количество,\nчеловек', common_format)
-        worksheet.write(4, start_col + 1, 'Сумма,\nтенге',        common_format)
-        worksheet.write(4, start_col + 2, 'Средний размер,\nтенге', common_format)
-
-
-def do_report(file_name: str, date_first: str, date_second: str):
-    if os.path.isfile(file_name):
-        log.info(f'Отчет уже существует {file_name}')
-        return file_name
-
-    s_date = datetime.datetime.now().strftime("%H:%M:%S")
-
-    log.info(f'DO REPORT. START {report_code}. DATE_FROM: {date_first}, FILE_PATH: {file_name}')
-
-    config = ConfigParser()
-    config.read('db_config.ini')
-
-    ora_config = config['rep_db_loader']
-    db_user = ora_config['db_user']
-    db_password = ora_config['db_password']
-    db_dsn = ora_config['db_dsn']
-    log.info(f'{report_code}. db_user: {db_user}, db_dsn: {db_dsn}')
-
-    with oracledb.connect(user=db_user, password=db_password, dsn=db_dsn) as connection:
-        with connection.cursor() as cursor:
-            workbook = xlsxwriter.Workbook(file_name)
-
-            title_format = workbook.add_format({'bg_color': '#D1FFFF', 'align': 'center', 'font_color': 'black'})
-            # title_format = workbook.add_format({'bg_color': '#C5FFFF', 'align': 'center', 'font_color': 'black'})
-            title_format.set_align('vcenter')
-            title_format.set_border(1)
-            title_format.set_text_wrap()
-            title_format.set_bold()
-
-            title_name_report = workbook.add_format({'align': 'left', 'font_color': 'black', 'font_size': '14'})
-            title_name_report.set_align('vcenter')
-            title_name_report.set_bold()
-
-            title_format_it = workbook.add_format({'align': 'right'})
-            title_format_it.set_align('vcenter')
-            title_format_it.set_italic()
-
-            title_report_code = workbook.add_format({'align': 'right', 'font_size': '14'})
-            title_report_code.set_align('vcenter')
-            title_report_code.set_bold()
-
-            common_format = workbook.add_format({'align': 'center', 'font_color': 'black'})
-            common_format.set_align('vcenter')
-            common_format.set_border(1)
-
-            region_name_format = workbook.add_format({'align': 'left', 'font_color': 'black'})
-            region_name_format.set_align('vcenter')
-            region_name_format.set_border(1)
-
-            sum_pay_format = workbook.add_format(
-                {'num_format': '#,###,##0.00', 'font_color': 'black', 'align': 'vcenter'})
-            sum_pay_format.set_border(1)
-
-            date_format = workbook.add_format({'num_format': 'dd.mm.yyyy', 'align': 'center'})
-            date_format.set_border(1)
-            date_format.set_align('vcenter')
-
-            digital_format = workbook.add_format({'num_format': '#0', 'align': 'center'})
-            digital_format.set_border(1)
-            digital_format.set_align('vcenter')
-
-            total_digital_format = workbook.add_format({'num_format': '#0', 'align': 'center'})
-            total_digital_format.set_border(1)
-            total_digital_format.set_align('vcenter')
-            total_digital_format.set_bold()
-
-            money_format = workbook.add_format({'num_format': '# ### ### ##0.00', 'align': 'right'})
-            money_format.set_border(1)
-            money_format.set_align('vcenter')
-
-            total_money_format = workbook.add_format({'num_format': '# ### ### ##0.00', 'align': 'right'})
-            total_money_format.set_border(1)
-            total_money_format.set_align('vcenter')
-            total_money_format.set_bold()
-
-            now = datetime.datetime.now()
-            log.info(f'Начало формирования {file_name}: {now.strftime("%d-%m-%Y %H:%M:%S")}')
-            page_num = 1
-            worksheet = []
-            worksheet.append(workbook.add_worksheet(f'Список {page_num}'))
-            sql_sheet = workbook.add_worksheet('SQL')
-            merge_format = workbook.add_format({
-                'bold': False,
-                'border': 6,
-                'align': 'left',
-                'valign': 'vcenter',
-                'fg_color': '#FAFAD7',
-                'text_wrap': True
-            })
-            sql_sheet.merge_range(f'A1:I{len(stmt_report.splitlines())}', f'{stmt_report}', merge_format)
-
-            worksheet[page_num - 1].activate()
-            format_worksheet(worksheet=worksheet[page_num - 1], common_format=title_format)
-
-            worksheet[page_num - 1].write(0, 0, report_name, title_name_report)
-            worksheet[page_num - 1].write(1, 0, f'За период: {date_first} - {date_second}', title_name_report)
-
-            log.info(f'REPORT {report_code}. CREATING REPORT')
-
-            try:
-                cursor.execute(stmt_report, dt_from=date_first, dt_to=date_second)
-            except oracledb.DatabaseError as e:
-                error, = e.args
-                log.error(f"ERROR. REPORT {report_code}. error_code: {error.code}, error: {error.message}")
-                log.info(f'\n---------\n{stmt_report}\n---------')
-                set_status_report(file_name, 3)
-                return None
-            finally:
-                log.info(f'REPORT: {report_code}. Выборка из курсора завершена')
-
-            log.info(f'REPORT: {report_code}. Формируем выходную EXCEL таблицу')
-
-            rows = cursor.fetchall()
-
-            if not rows:
-                log.warning(f'REPORT {report_code}. Данные отсутствуют')
-                workbook.close()
-                set_status_report(file_name, 2)
-                return None
-
-            all_cnt = len(rows)
-
-            first_row = 6
-            row_num = first_row - 1
-
-            for record in rows:
-                worksheet[0].write(row_num, 0, record[0], digital_format)
-                worksheet[0].write(row_num, 1, record[1], region_name_format)
-
-                worksheet[0].write(row_num, 2, record[2], digital_format)
-                worksheet[0].write(row_num, 3, record[3], money_format)
-                worksheet[0].write(row_num, 4, record[4], money_format)
-
-                worksheet[0].write(row_num, 5, record[5], digital_format)
-                worksheet[0].write(row_num, 6, record[6], money_format)
-                worksheet[0].write(row_num, 7, record[7], money_format)
-
-                worksheet[0].write(row_num, 8, record[8], digital_format)
-                worksheet[0].write(row_num, 9, record[9], money_format)
-                worksheet[0].write(row_num, 10, record[10], money_format)
-
-                worksheet[0].write(row_num, 11, record[11], digital_format)
-                worksheet[0].write(row_num, 12, record[12], money_format)
-                worksheet[0].write(row_num, 13, record[13], money_format)
-
-                worksheet[0].write(row_num, 14, record[14], digital_format)
-                worksheet[0].write(row_num, 15, record[15], money_format)
-                worksheet[0].write(row_num, 16, record[16], money_format)
-
-                worksheet[0].write(row_num, 17, record[17], digital_format)
-                worksheet[0].write(row_num, 18, record[18], money_format)
-                worksheet[0].write(row_num, 19, record[19], money_format)
-
-                row_num += 1
-
-            # строка итогов
-            worksheet[0].merge_range(row_num, 0, row_num, 1, 'ИТОГО', title_format)
-
-            for col in range(1, 20):
-                col_letter = xl_col_to_name(col)
-
-                fmt = total_digital_format if col in (2, 5, 8, 11, 14, 17) else total_money_format
-
-                if col in [3, 6, 9, 12, 15, 18]:
-                    worksheet[0].write(row_num, col, '', fmt)
-                    continue
-
-                worksheet[0].write_formula(
-                    row_num,
-                    col,
-                    f'=SUM({col_letter}{first_row}:{col_letter}{row_num})',
-                    fmt
-                )
-
-            worksheet[0].freeze_panes(3, 0)
-            worksheet[0].freeze_panes(4, 0)
-            worksheet[0].freeze_panes(5, 0)
-
-            now = datetime.datetime.now()
-            stop_time = now.strftime("%H:%M:%S")
-
-            for i in range(page_num):
-                # Шифр отчета
-                worksheet[i].write(0, 5, report_code, title_report_code)
-                worksheet[i].write(1, 5, f'Дата формирования: {now.strftime("%d.%m.%Y ")}({s_date} - {stop_time})',
-                                   title_format_it)
-
-            workbook.close()
-            set_status_report(file_name, 2)
-
-            log.info(
-                f'REPORT: {report_code}. Формирование отчета {file_name} завершено ({s_date} - {stop_time}). Загружено {all_cnt} записей')
-
-
-def thread_report(file_name: str, date_first: str, date_second: str):
-    import threading
-    log.info(f'THREAD REPORT. {datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S")} -> {file_name}')
-    log.info(f'THREAD REPORT. PARAMS: date_from: {date_first}')
-    threading.Thread(target=do_report, args=(file_name, date_first, date_second), daemon=True).start()
-    return {"status": 1, "file_path": file_name}
-
-
-if __name__ == "__main__":
-    log.info(f'Отчет {report_code} запускается.')
-    do_report('minSO_01.xlsx', '01.10.2022', '31.10.2022')
+do_report, thread_report = build_report(
+    code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
+    profile=LOADER_PROFILE, date_range=True, totals=True,
+)

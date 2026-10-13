@@ -2720,7 +2720,7 @@ dict_reports = {
             "reports":
             {
                 "01": {
-                    "name": "3191 - Утрата трудоспособности",
+                    "name": "3191 - Потеря кормильца, утрата трудоспособности, потеря работы",
                     "proc": "rep_dia_3191",
                     "data_approve": "14.03.2025",
                     "author": "Туржанова Ж.Е.",
@@ -2738,44 +2738,8 @@ dict_reports = {
                             }
                         }
                 },
-                "02": {
-                    "name": "3192 - Потеря кормильца",
-                    "proc": "rep_dia_3192",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
-                "03": {
-                    "name": "3193 - Потеря работы",
-                    "proc": "rep_dia_3193",
-                    "data_approve": "14.03.2025",
-                    "author": "Туржанова Ж.Е.",
-                    "meta_params":
-                        {
-                            "date_first": {
-                                "display_name": "C",
-                                "type": "date",
-                                "required": True
-                            },
-                            "date_second": {
-                                "display_name": "по",
-                                "type": "date",
-                                "required": True
-                            }
-                        }
-                },
+                # 3192 (потеря кормильца) и 3193 (потеря работы) влились в 3191:
+                # ключи 02 и 03 не переиспользуются, чтобы старые файлы не путались
                 "04": {
                     "name": "3194 - По беременности и родам",
                     "proc": "rep_dia_3194",
