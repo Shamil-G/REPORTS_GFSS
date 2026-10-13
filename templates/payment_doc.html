@@ -2,9 +2,8 @@
    Раскладка областей - как в форме «Списочная часть» старого приложения. #}
 {% macro money(value) %}{{ '{:,.2f}'.format(value or 0)|replace(',', ' ')|replace('.', ',') }}{% endmacro %}
 {% macro field(label, value, cls='') %}<span class="ps-l">{{ label }}</span><span class="ps-v {{ cls }}" title="{{ value }}">{{ value }}</span>{% endmacro %}
-<form class="ps-doc-actions" action="{{ url_for('view_payment_doc_excel', mhmh_id=doc.mhmh_id) }}" method="get" target="_blank">
-    <button type="submit" class="ps-find">Выгрузить в Excel</button>
-</form>
+<div class="ps-doc-head">
+<div class="ps-doc-areas">
 <fieldset class="ps-area">
     <legend>Данные платежа</legend>
     <div class="ps-area-pay">
@@ -23,19 +22,26 @@
 </fieldset>
 <fieldset class="ps-area">
     <legend>Плательщик</legend>
-    <div class="ps-fields ps-fields-6">
-        {{ field('Наименование', doc.p_name, 'ps-span3') }}{{ field('БИН', doc.p_rnn) }}
-        {{ field('МФО', doc.rfbk_mfo_pbank) }}{{ field('Счет', doc.p_account) }}{{ field('Банк', doc.p_bank) }}
-        {{ field('Руководитель', doc.p_chief) }}{{ field('Бухгалтер', doc.p_mainbk, 'ps-span3') }}
+    <div class="ps-fields ps-fields-4">
+        {{ field('Наименование', doc.p_name, 'ps-name') }}{{ field('БИН', doc.p_rnn) }}
+        {{ field('МФО', doc.rfbk_mfo_pbank) }}{{ field('Счет', doc.p_account) }}
+        {{ field('Банк', doc.p_bank, 'ps-bank') }}
+        {{ field('Руководитель', doc.p_chief) }}{{ field('Бухгалтер', doc.p_mainbk) }}
     </div>
 </fieldset>
 <fieldset class="ps-area">
     <legend>Получатель</legend>
-    <div class="ps-fields ps-fields-6">
-        {{ field('Наименование', doc.r_name, 'ps-span3') }}{{ field('БИН', doc.r_rnn) }}
-        {{ field('МФО', doc.rfbk_mfo_rbank) }}{{ field('Счет', doc.r_account) }}{{ field('Банк', doc.r_bank) }}
+    <div class="ps-fields ps-fields-4">
+        {{ field('Наименование', doc.r_name, 'ps-name') }}{{ field('БИН', doc.r_rnn) }}
+        {{ field('МФО', doc.rfbk_mfo_rbank) }}{{ field('Счет', doc.r_account) }}
+        {{ field('Банк', doc.r_bank, 'ps-bank') }}
     </div>
 </fieldset>
+</div>
+<form class="ps-doc-actions" action="{{ url_for('view_payment_doc_excel', mhmh_id=doc.mhmh_id) }}" method="get" target="_blank">
+    <button type="submit" class="ps-find">Выгрузить в Excel</button>
+</form>
+</div>
 <fieldset class="ps-area ps-area-list">
     <legend>Списочная часть</legend>
     {% if doc.rows %}
