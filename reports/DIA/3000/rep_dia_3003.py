@@ -74,7 +74,8 @@ _PIVOT = ',\n'.join(
 # fill_f4 в начале следующего.
 STMT = f"""
 with base as (
-    select substr(d.rfpm_id, 1, 4) rfpm,
+    select /*+ parallel(4) */
+           substr(d.rfpm_id, 1, 4) rfpm,
            extract(month from d.pncp_date) mon,
            d.pncd_id,
            d.pay_sum + d.sum_debt sum_pay,
