@@ -36,7 +36,7 @@ AIS 5001 «Свод по областям»). Группа «5000 - Социал
 «Г.АЛМАТЫ» алфавит перемешал бы области и города.
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import base_for, BANDS, OBL_JOIN, OBL_NAME, band_columns, band_sql, check_params
+from util.social_tension import base_for, BANDS, OBL_JOIN, OBL_NAME, band_columns, band_sql, check_params, normalize_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5001'

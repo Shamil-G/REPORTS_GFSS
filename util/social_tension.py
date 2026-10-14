@@ -136,16 +136,36 @@ def period_on(on):
     return datetime.date(fy, fm, 1), last
 
 
-def check_params(params):
-    """Период берётся из даты «на дату» (пусто - сегодня), вводить его не нужно.
-
-    Заполняет date_first / date_second, которые ждёт build_report(date_range).
-    """
+def _date_on(params):
     on = params.get('date_on')
-    on = parse_date(on) if on else datetime.date.today()
+    return parse_date(on) if on else datetime.date.today()
+
+
+def normalize_params(params):
+    """Период и признак половины месяца вместо введённой даты.
+
+    Пользователь вводит только «На дату» (или ничего). Здесь же период
+    расчёта и признак half ('1' - до 14-го числа, источник si_member_2;
+    '2' - с 14-го, документы pmpd_pay_doc_s / pmdl_doc_list_s) становятся
+    обычными параметрами: журнал отчётов и список выполняющихся показывают
+    даты «с» и «по», а имя файла содержит период и половину - расчёт за
+    один период и одну половину месяца не пересчитывается заново.
+    """
+    on = _date_on(params)
     first, last = period_on(on)
-    params['date_first'] = f'{first:%d.%m.%Y}'
-    params['date_second'] = f'{last:%d.%m.%Y}'
+    params = {k: v for k, v in params.items() if k != 'date_on'}
+    params['date_first'] = f'{first:%Y-%m-%d}'
+    params['date_second'] = f'{last:%Y-%m-%d}'
+    params['half'] = '2' if on.day >= SECOND_HALF_DAY else '1'
+    return params
+
+
+def check_params(params):
+    """Запуск без normalize_params (напрямую): период берётся из date_on."""
+    if not params.get('date_first') or not params.get('date_second'):
+        n = normalize_params(params)
+        params['date_first'] = n['date_first']
+        params['date_second'] = n['date_second']
 
 
 def band_columns():
@@ -215,10 +235,11 @@ _SRC_SECOND = """from (select pd.p_rnn,
 
 
 def second_half(params):
-    """Вторая половина месяца: день даты «на дату» (пусто - сегодня) >= 14."""
-    on = params.get('date_on')
-    on = parse_date(on) if on else datetime.date.today()
-    return on.day >= SECOND_HALF_DAY
+    """Вторая половина месяца: признак half = '2', а без него (запуск напрямую)
+    день даты «на дату» (пусто - сегодня) >= 14."""
+    if params.get('half'):
+        return str(params['half']) == '2'
+    return _date_on(params).day >= SECOND_HALF_DAY
 
 
 def base_for(params, with_sect):

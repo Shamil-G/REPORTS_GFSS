@@ -23,7 +23,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import base_for, BANDS, UNKNOWN_NAME, UNKNOWN_RC, band_columns, band_sql, check_params
+from util.social_tension import base_for, BANDS, UNKNOWN_NAME, UNKNOWN_RC, band_columns, band_sql, check_params, normalize_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5002'
