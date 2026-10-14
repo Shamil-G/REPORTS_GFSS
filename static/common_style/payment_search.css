@@ -89,6 +89,7 @@ body:has(.payment-search) article { display: flex; flex-direction: column; }
 .payment-search .ps-doc-head { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 16px; }
 .payment-search .ps-doc-areas { display: flex; flex-direction: column; max-width: 100%; }
 .payment-search .ps-doc-actions { margin: 8px 0 0; padding: 0; border: 0; }
+.payment-search .ps-doc-actions { display: grid; width: max-content; }
 .payment-search .ps-doc-actions .ps-find { display: block; }
 .payment-search .ps-doc-actions .ps-find + .ps-find { margin-top: 6px; }
 /* Правого отступа у области нет - его роль играет промежуток после последней колонки */
