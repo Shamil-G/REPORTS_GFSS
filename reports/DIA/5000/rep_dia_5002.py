@@ -55,15 +55,14 @@ agg as (
       from calc c
      group by c.obl, c.rc
 )
-select ob.name_ru obl_name,
+select ob.name obl_name,
        a.rc || nvl2(br.short_name, ' - ' || trim(br.short_name), '') reg,
        a.cnt_all, a.cnt_dis,
        {', '.join(f'a.b{i}' for i in range(len(BANDS)))},
        a.cnt50,
        round(a.cnt50 / a.cnt_all * 100, 2) dolya
-  from agg a, cato_branch ob, branch br
- where substr(ob.rfbn_id, 1, 2) = a.obl
-   and substr(ob.rfbn_id, 3, 2) = '00'
+  from agg a, branch ob, branch br
+ where ob.rfbn_id = a.obl || '00'
    and br.rfbn_id(+) = a.rc
  order by a.obl, a.rc
 """

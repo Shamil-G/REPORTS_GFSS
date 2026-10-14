@@ -77,11 +77,11 @@ agg as (
      where c.perc >= 50
      group by c.obl
 )
-select b.name_ru reg,
+select b.name reg,
        a.a_cnt, a.a_04, a.a_05, a.a_d,
        a.m_cnt, a.m_04, a.m_05, a.m_d,
        a.l_cnt, a.l_04, a.l_05, a.l_d
-  from agg a, cato_branch b
+  from agg a, branch b
  where {OBL_JOIN}
  order by a.obl
 """

@@ -72,9 +72,9 @@ agg as (
      where c.perc >= 50
      group by c.obl
 )
-select b.name_ru reg, a.cnt_all, a.sum_all, a.avg_all,
+select b.name reg, a.cnt_all, a.sum_all, a.avg_all,
        {', '.join(f'a.cnt_{s.lower()}, a.sum_{s.lower()}, a.avg_{s.lower()}' for s, _ in SECTIONS)}
-  from agg a, cato_branch b
+  from agg a, branch b
  where {OBL_JOIN}
  order by a.obl
 """

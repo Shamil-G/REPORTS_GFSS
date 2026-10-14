@@ -226,6 +226,7 @@ BASE = _base(True)
 BASE_NO_SECT = _base(False)
 
 # Название области: запись КАТО XX00 с теми же первыми двумя знаками.
-# Присоединяется к агрегату с колонкой obl: `from agg a, cato_branch b where {OBL_JOIN}`.
-OBL_JOIN = ("substr(b.rfbn_id, 1, 2) = a.obl\n"
-            "   and substr(b.rfbn_id, 3, 2) = '00'")
+# Присоединяется к агрегату с колонкой obl: `from agg a, branch b where {OBL_JOIN}`;
+# название - `b.name` (в `cato_branch.name_ru` у новых областей казахские формы с
+# утраченными буквами: «ОБЛАСТЬ ?ЛЫТАУ»).
+OBL_JOIN = "b.rfbn_id = a.obl || '00'"

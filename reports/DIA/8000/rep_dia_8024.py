@@ -84,11 +84,10 @@ agg as (
 )
 select reg, cnt_all, cnt05, cnt_dis, sum_dis, cnt50, sum50, bold
   from (
-    select b.name_ru reg, a.cnt_all, a.cnt05, a.cnt_dis, a.sum_dis,
+    select b.name reg, a.cnt_all, a.cnt05, a.cnt_dis, a.sum_dis,
            a.cnt50, a.sum50, 0 bold, 0 grp
-      from agg a, cato_branch b
-     where substr(b.rfbn_id, 1, 2) = a.obl
-       and substr(b.rfbn_id, 3, 2) = '00'
+      from agg a, branch b
+     where b.rfbn_id = a.obl || '00'
     union all
     select null, sum(cnt_all), sum(cnt05), sum(cnt_dis), sum(sum_dis),
            sum(cnt50), sum(sum50), 1, 1

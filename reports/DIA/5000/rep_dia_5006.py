@@ -56,16 +56,15 @@ COLUMNS = [
 
 STMT = f"""
 with {BASE.lstrip()}
-select ob.name_ru obl_name,
+select ob.name obl_name,
        c.rc || nvl2(br.short_name, ' - ' || trim(br.short_name), '') reg,
        c.p_rnn, c.nm,
        c.cnt04, c.zp04, c.sm04,
        c.cnt05, c.zp05, c.sm05,
        c.razn, c.perc, c.sect,
        nvl(trim(regexp_replace(so.name, '\\s+', ' ')), 'Без секции') name_sect
-  from calc c, cato_branch ob, branch br, s_oked_sect so
- where substr(ob.rfbn_id, 1, 2) = c.obl
-   and substr(ob.rfbn_id, 3, 2) = '00'
+  from calc c, branch ob, branch br, s_oked_sect so
+ where ob.rfbn_id = c.obl || '00'
    and br.rfbn_id(+) = c.rc
    and so.sect(+) = c.sect
  order by c.obl, c.rc, c.p_rnn
