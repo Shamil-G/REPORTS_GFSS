@@ -19,7 +19,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE, MSB_LIMIT, check_params
+from util.social_tension import base_for, MSB_LIMIT, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5004'
@@ -59,8 +59,10 @@ def _cls(p, cond):
 
 
 # Наименование секции - из s_oked_sect; пробелы схлопнуты (у D двойной, у N хвост CRLF).
-STMT = f"""
-with {BASE.lstrip()},
+def STMT(params):
+    base = base_for(params, with_sect=True)
+    return f"""
+with {base.lstrip()},
 agg as (
     select c.sect,
            count(*) a_cnt,

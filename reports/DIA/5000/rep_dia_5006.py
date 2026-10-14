@@ -26,7 +26,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE, UNKNOWN_NAME, UNKNOWN_RC, check_params
+from util.social_tension import base_for, UNKNOWN_NAME, UNKNOWN_RC, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5006'
@@ -54,8 +54,10 @@ COLUMNS = [
     Col('Вид экономической деятельности', 'name_sect', 'text', 50),
 ]
 
-STMT = f"""
-with {BASE.lstrip()}
+def STMT(params):
+    base = base_for(params, with_sect=True)
+    return f"""
+with {base.lstrip()}
 select nvl(ob.name, '{UNKNOWN_NAME}') obl_name,
        case when c.rc = '{UNKNOWN_RC}' then '{UNKNOWN_NAME}'
             else c.rc || nvl2(br.short_name, ' - ' || trim(br.short_name), '') end reg,

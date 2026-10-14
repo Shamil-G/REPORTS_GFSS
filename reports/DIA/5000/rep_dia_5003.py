@@ -21,7 +21,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE_NO_SECT as BASE, MSB_LIMIT, OBL_JOIN, OBL_NAME, check_params
+from util.social_tension import base_for, MSB_LIMIT, OBL_JOIN, OBL_NAME, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5003'
@@ -63,8 +63,10 @@ def _cls(p, cond):
             f" - sum(case when {cond} then c.cnt05 end) {p}_d")
 
 
-STMT = f"""
-with {BASE.lstrip()},
+def STMT(params):
+    base = base_for(params, with_sect=False)
+    return f"""
+with {base.lstrip()},
 agg as (
     select c.obl,
            count(*)                    a_cnt,

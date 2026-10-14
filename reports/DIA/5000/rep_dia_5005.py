@@ -25,7 +25,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE, OBL_JOIN, OBL_NAME, SECTIONS, check_params
+from util.social_tension import base_for, OBL_JOIN, OBL_NAME, SECTIONS, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5005'
@@ -60,8 +60,10 @@ def _sect_sql(s):
 
 _SECT_SQL = ',\n           '.join(_sect_sql(s) for s, _ in SECTIONS)
 
-STMT = f"""
-with {BASE.lstrip()},
+def STMT(params):
+    base = base_for(params, with_sect=True)
+    return f"""
+with {base.lstrip()},
 agg as (
     select c.obl,
            count(*)     cnt_all,

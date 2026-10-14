@@ -23,7 +23,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE_NO_SECT as BASE, BANDS, UNKNOWN_NAME, UNKNOWN_RC, band_columns, band_sql, check_params
+from util.social_tension import base_for, BANDS, UNKNOWN_NAME, UNKNOWN_RC, band_columns, band_sql, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5002'
@@ -44,8 +44,10 @@ COLUMNS = [
         'money', 20, total=False),
 ]
 
-STMT = f"""
-with {BASE.lstrip()},
+def STMT(params):
+    base = base_for(params, with_sect=False)
+    return f"""
+with {base.lstrip()},
 agg as (
     select c.obl, c.rc,
            count(*) cnt_all,

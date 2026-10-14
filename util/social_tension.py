@@ -182,9 +182,56 @@ UNKNOWN_RC = '9999'
 UNKNOWN_NAME = 'Неизвестный регион'
 
 
-def _base(with_sect):
+# Источник платежей (оригинал: `fill`, extract(day from sysdate) < 14):
+# - до 14-го числа - `si_member_2`, таблица, которую раз в месяц считают заранее
+#   (prepare_first); zp - cnt_mzp * mzp;
+# - с 14-го числа - документы `pmpd_pay_doc_s` + `pmdl_doc_list_s`, на которых
+#   строится `si_member_2` следующего месяца (prepare_second): КНП 012 и 017
+#   (017 - пеня: месяц первого платежа плательщика, min_mes, учитывает и её),
+#   месяц платежа - период документа (при пустом - месяц до даты платежа),
+#   zp - сумма платежа / процент `min_perc(pay_month)`.
+SECOND_HALF_DAY = 14
+
+_SRC_FIRST = """from si_member_2 s
+             where s.pay_month >= trunc(:d_from, 'mm')
+               and s.pay_month <  :d_to
+               and s.pay_date  >  add_months(trunc(:d_from, 'mm'), -7)"""
+
+_SRC_SECOND = """from (select pd.p_rnn,
+                   tlsd.to_date_def(nvl(dl.period, pd.period), 'mmyyyy',
+                                    add_months(trunc(pd.pay_date, 'month'), -1)) pay_month,
+                   dl.sicid,
+                   dl.pay_sum         sum_pay,
+                   pd.cipher_id_knp   knp
+              from pmpd_pay_doc_s pd, pmdl_doc_list_s dl
+             where pd.cipher_id_knp in ('012', '017')
+               and dl.rfem_id is null
+               and pd.tmst_id = 5
+               and pd.mhmh_id = dl.mhmh_id
+               and pd.pay_date = dl.pay_date
+               and pd.pay_date > add_months(trunc(:d_from, 'mm'), -7)) s
+             where s.pay_month >= trunc(:d_from, 'mm')
+               and s.pay_month <  :d_to"""
+
+
+def second_half(params):
+    """Вторая половина месяца: день даты «на дату» (пусто - сегодня) >= 14."""
+    on = params.get('date_on')
+    on = parse_date(on) if on else datetime.date.today()
+    return on.day >= SECOND_HALF_DAY
+
+
+def base_for(params, with_sect):
+    """Общая часть запроса; источник платежей - по дню месяца (см. выше)."""
+    return _base(with_sect, second_half(params))
+
+
+def _base(with_sect, second=False):
     sect_col = (f"           {_SECT_CASE}                                         sect,\n"
                 if with_sect else '')
+    src = _SRC_SECOND if second else _SRC_FIRST
+    zp = ('s.sum_pay * 100 / min_perc(s.pay_month)' if second
+          else 's.cnt_mzp * s.mzp')
     return f"""
 ppl as (
     select p_rnn, m, knp, cnt_pers, sm, zp,
@@ -193,11 +240,8 @@ ppl as (
                    s.p_rnn, s.pay_month m, s.knp,
                    count(distinct s.sicid) cnt_pers,
                    sum(s.sum_pay)          sm,
-                   avg(s.cnt_mzp * s.mzp)  zp
-              from si_member_2 s
-             where s.pay_month >= trunc(:d_from, 'mm')
-               and s.pay_month <  :d_to
-               and s.pay_date  >  add_months(trunc(:d_from, 'mm'), -7)
+                   avg({zp})  zp
+              {src}
              group by s.knp, s.p_rnn, s.pay_month)
 ),
 pay as (
