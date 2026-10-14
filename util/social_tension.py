@@ -37,6 +37,8 @@ cato_branch.code`; область - первые два знака `cato_branch.
 `si_member_2`; ветка второй половины месяца через `pmpd_pay_doc_s` /
 `pmdl_doc_list_s` не переносилась).
 """
+import datetime
+
 from util.xlsx_report import Col, parse_date
 
 # Штатная численность, с которой плательщик попадает в расчёт (prepare_50).
@@ -116,13 +118,32 @@ _SECT_CASE = 'case ' + ' '.join(
     _sect_when(s, lo, hi) for s, lo, hi in _OKED_SECTIONS) + " else 'ZZ' end"
 
 
+def period_on(on):
+    """Период расчёта на дату `on`: (первый день, последний день).
+
+    Как в оригинале (`set_date`): последний месяц - предпоследний к месяцу даты
+    (до 28-го числа предыдущего месяца платят за позапрошлый), первый - на
+    месяц раньше. Дата 14.10.2026 -> 01.07.2026 - 31.08.2026.
+    """
+    y, m = on.year, on.month - 2
+    if m < 1:
+        y, m = y - 1, m + 12
+    last = (datetime.date(y + m // 12, m % 12 + 1, 1)
+            - datetime.timedelta(days=1))
+    fy, fm = (y, m - 1) if m > 1 else (y - 1, 12)
+    return datetime.date(fy, fm, 1), last
+
+
 def check_params(params):
-    """Месяц даты «по» должен быть позже месяца даты «с»."""
-    first = parse_date(params['date_first'])
-    second = parse_date(params['date_second'])
-    if (first.year, first.month) >= (second.year, second.month):
-        raise ValueError('Месяц даты «по» должен быть позже месяца даты «с»: '
-                         'сравниваются первый и последний месяцы периода')
+    """Период берётся из даты «на дату» (пусто - сегодня), вводить его не нужно.
+
+    Заполняет date_first / date_second, которые ждёт build_report(date_range).
+    """
+    on = params.get('date_on')
+    on = parse_date(on) if on else datetime.date.today()
+    first, last = period_on(on)
+    params['date_first'] = f'{first:%d.%m.%Y}'
+    params['date_second'] = f'{last:%d.%m.%Y}'
 
 
 def band_columns():
@@ -152,7 +173,12 @@ def band_sql(alias='c'):
 #
 # calc: cnt05, zp05, sm05 - 0, если в последнем месяце платежей нет;
 # razn = cnt05 - cnt04 (отрицательная - снижение); sect - 'ZZ' без ОКЭД.
-BASE = f"""
+# Секция ОКЭД считается только для отчётов, где она есть в разрезе или в
+# колонках (5004, 5005, 5006): BASE; BASE_NO_SECT - для 5001-5003.
+def _base(with_sect):
+    sect_col = (f"           {_SECT_CASE}                                         sect,\n"
+                if with_sect else '')
+    return f"""
 ppl as (
     select p_rnn, m, knp, cnt_pers, sm, zp,
            min(m) over (partition by p_rnn) min_mes
@@ -188,13 +214,16 @@ calc as (
            p.cnt05, round(p.zp05, 2) zp05, p.sm05,
            p.cnt05 - p.cnt04                                    razn,
            round(100 - p.cnt05 / p.cnt04 * 100, 2)              perc,
-           {_SECT_CASE}                                         sect,
-           substr(cb.rfbn_id, 1, 2)                             obl,
+{sect_col}           substr(cb.rfbn_id, 1, 2)                             obl,
            cb.rfbn_id                                           rc
       from pay p, rfon_organization o, cato_branch cb
      where p.p_rnn = o.bin
        and o.cato = cb.code
 )"""
+
+
+BASE = _base(True)
+BASE_NO_SECT = _base(False)
 
 # Название области: запись КАТО XX00 с теми же первыми двумя знаками.
 # Присоединяется к агрегату с колонкой obl: `from agg a, cato_branch b where {OBL_JOIN}`.

@@ -90,6 +90,7 @@ class Col:
     # эталоном, поэтому по умолчанию воспроизводим оригинал.
     # С avg_of=(колонка суммы, колонка количества) итог считается верно -
     # sum(числитель)/sum(знаменатель); включать только после согласования с ДАУС.
+    # Работает и для kind='pct' (доля): итог - доля сумм, а не сумма долей.
     avg_of: tuple = None
     # Вид значения по строкам: имя колонки SQL, где у каждой строки лежит свой
     # kind ('int' / 'money'). Нужен отчётам-карточкам, где в одной колонке
@@ -161,6 +162,9 @@ _FORMATS = {
     'total_money': {
         'bold': True, 'align': 'right', 'valign': 'vcenter', 'border': 1,
         'bg_color': '#E0F7FF', 'num_format': '### ### ### ##0.00'},
+    'total_pct': {
+        'bold': True, 'align': 'right', 'valign': 'vcenter', 'border': 1,
+        'bg_color': '#E0F7FF', 'num_format': '0.0%'},
     'footnote': {
         'align': 'left', 'valign': 'top', 'font_size': 9,
         'italic': True, 'text_wrap': True},
@@ -174,7 +178,7 @@ _CELL_FORMAT = {'text': 'text', 'center': 'center', 'int': 'int',
                 'money': 'money', 'avg': 'money', 'date': 'date',
                 'pct': 'pct'}
 _TOTAL_FORMAT = {'int': 'total_int', 'money': 'total_money',
-                 'avg': 'total_money'}
+                 'avg': 'total_money', 'pct': 'total_pct'}
 _NUMERIC = ('int', 'money', 'avg', 'pct')
 
 
@@ -449,13 +453,14 @@ def build_report(*, code, name, columns, stmt,
         for i, c in enumerate(leaves, start=1):
             if i <= last_label_col:
                 continue
-            if c.kind == 'avg' and c.avg_of:
+            if c.kind in ('avg', 'pct') and c.avg_of:
                 # арифметически верный итог: сумма числителей / сумма знаменателей
                 num = sum(float(r.get(c.avg_of[0]) or 0) for r in records)
                 den = sum(float(r.get(c.avg_of[1]) or 0) for r in records)
                 value = num / den if den else 0
                 ws.write_number(row, i, value,
-                                fmt.get(('total', i)) or fmt['total_money'])
+                                fmt.get(('total', i))
+                                or fmt[_TOTAL_FORMAT[c.kind]])
             elif c.kind in ('int', 'money', 'avg') and c.total:
                 # 'avg' без avg_of складывается как есть - так делал
                 # Rep.SetColSumTotal; см. комментарий к Col.avg_of

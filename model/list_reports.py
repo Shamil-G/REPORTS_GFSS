@@ -37,6 +37,13 @@ DATE_FROM = {
     "required": True,
     "length": None
 }
+# Необязательная дата: пусто - сегодня. Отчёты 5001-5006 считают период сами.
+DATE_ON = {
+    "display_name": "На дату (пусто - сегодня)",
+    "type": "date",
+    "required": False,
+    "length": None
+}
 DATE_TO = {
     "display_name": "по",
     "type": "date",
@@ -2854,42 +2861,42 @@ dict_reports = {
                     "proc": "rep_dia_5001",
                     "data_approve": "13.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                    "meta_params": {"date_on": DATE_ON},
                 },
                 "02": {
                     "name": "5002 - Свод по районам",
                     "proc": "rep_dia_5002",
                     "data_approve": "13.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                    "meta_params": {"date_on": DATE_ON},
                 },
                 "03": {
                     "name": "5003 - По регионам - предприятия со снижением числа работников более 2 раз",
                     "proc": "rep_dia_5003",
                     "data_approve": "13.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                    "meta_params": {"date_on": DATE_ON},
                 },
                 "04": {
                     "name": "5004 - По секторам - предприятия со снижением числа работников более 2 раз",
                     "proc": "rep_dia_5004",
                     "data_approve": "13.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                    "meta_params": {"date_on": DATE_ON},
                 },
                 "05": {
                     "name": "5005 - По регионам и ВЭД - предприятия со снижением числа работников более 2 раз",
                     "proc": "rep_dia_5005",
                     "data_approve": "13.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                    "meta_params": {"date_on": DATE_ON},
                 },
                 "06": {
                     "name": "5006 - Список предприятий",
                     "proc": "rep_dia_5006",
                     "data_approve": "13.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                    "meta_params": {"date_on": DATE_ON},
                 },
             }
         },

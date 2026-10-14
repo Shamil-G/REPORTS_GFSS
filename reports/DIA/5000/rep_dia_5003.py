@@ -21,7 +21,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE, MSB_LIMIT, OBL_JOIN, check_params
+from util.social_tension import BASE_NO_SECT as BASE, MSB_LIMIT, OBL_JOIN, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5003'
