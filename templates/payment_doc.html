@@ -37,6 +37,7 @@
 </div>
 <form class="ps-doc-actions" action="{{ url_for('view_payment_doc_excel', mhmh_id=doc.mhmh_id) }}" method="get" target="_blank">
     <button type="submit" class="ps-find">Выгрузить в Excel</button>
+    <button type="submit" class="ps-find" formaction="{{ url_for('view_payment_print_excel', mhmh_id=doc.mhmh_id) }}">Печать платежа</button>
 </form>
 </div>
 <fieldset class="ps-area ps-area-list">

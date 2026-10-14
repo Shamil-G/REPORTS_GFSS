@@ -12,7 +12,7 @@ stmt_doc = """
 select p.mhmh_id, p.refer, p.pay_date, p.doc_nmb, p.doc_date, p.pay_sum, p.period,
        p.cipher_id_knp, p.tmst_id, p.msmt_code, p.doc_assign, p.doc_note, p.doc_err,
        p.rfem_id, e.name err_name,
-       p.p_name, p.p_rnn, p.rfbk_mfo_pbank, p.p_account, p.p_chief, p.p_mainbk,
+       p.p_name, p.p_rnn, p.p_irs, p.r_irs, p.rfse_code_p, p.rfse_code_r, p.rfbk_mfo_pbank, p.p_account, p.p_chief, p.p_mainbk,
        pb.name p_bank,
        p.r_name, p.r_rnn, p.rfbk_mfo_rbank, p.r_account, rb.name r_bank
 from pmpd_pay_doc p, loader.s_error e, loader.rfbk_bank pb, loader.rfbk_bank rb
@@ -86,8 +86,9 @@ SHEET_WIDTHS = [2, 10, 14, 10, 10, 40, 18, 18, 18, 18, 18, 18, 12, 20, 20, 2]
 def make_payment_doc_excel(doc):
     # Вид - как таб платежа на экране: области в рамках на зелёном фоне, подписи
     # прижаты к полю, значения в жёлтых рамках. Последние колонки областей
-    # прижаты к правому краю (колонка O), как и на экране. Ширины колонок листа
-    # задаёт таблица лиц, поля шапки собраны из объединённых ячеек.
+    # идут вплотную друг к другу. Ширины колонок листа задаёт таблица лиц, поэтому
+    # поля шапки собраны из объединённых ячеек так, чтобы между блоками не оставалось
+    # пустых колонок.
     output = BytesIO()
     with xlsxwriter.Workbook(output, {
         'in_memory': True, 'strings_to_formulas': False, 'strings_to_urls': False,
@@ -141,7 +142,8 @@ def make_payment_doc_excel(doc):
 
         # Данные платежа: две колонки полей рядом, назначение и ошибки - справа
         frame(2, 8, 'Данные платежа')
-        c1, c2, c3 = ((1, 2), (3, 4)), ((5, 5), (6, 6)), ((8, 10), (11, 14))
+        # Блоки идут вплотную (B..C+D..E, F..G+H, I..J+K..O) - без пустых колонок между ними
+        c1, c2, c3 = ((1, 2), (3, 4)), ((5, 6), (7, 7)), ((8, 9), (10, 14))
         pair(3, *c1, 'Дата валют.', doc['pay_date'])
         pair(3, *c2, '№ док-та', doc['doc_nmb'])
         pair(4, *c1, 'Референс', doc['refer'])
@@ -150,27 +152,28 @@ def make_payment_doc_excel(doc):
         pair(5, *c2, 'Сумма', float(doc['pay_sum'] or 0), value_money)
         pair(6, *c1, 'Период', doc['period'])
         pair(6, *c2, 'КНП', doc['cipher_id_knp'])
-        pair(7, (1, 2), (3, 6), 'Примечание', doc['doc_note'])
+        pair(7, (1, 2), (3, 7), 'Примечание', doc['doc_note'])
         pair(3, *c3, 'Назначение платежа', doc['doc_assign'], value_wrap, rows=2)
         errors = (f"{doc['rfem_id']} {doc['err_name']} " if doc['rfem_id'] else '') + doc['doc_err']
         pair(5, *c3, 'Ошибки', errors.strip(), value_error, rows=3)
 
-        # Плательщик / Получатель: вторая колонка прижата к правому краю
-        n1, n2 = ((1, 2), (3, 5)), ((12, 12), (13, 14))
+        # Плательщик / Получатель: вторая колонка - вплотную к первой; МФО - D..E, БИН - I, Счет - I..J
+        n1, n2 = ((1, 2), (3, 6)), ((7, 7), (8, 10))
+        mfo, bin_, acc = ((3, 4)), ((8, 8)), ((8, 9))
         frame(10, 15, 'Плательщик')
         pair(11, *n1, 'Наименование', doc['p_name'])
-        pair(11, *n2, 'БИН', doc['p_rnn'])
-        pair(12, *n1, 'МФО', doc['rfbk_mfo_pbank'])
-        pair(12, *n2, 'Счет', doc['p_account'])
+        pair(11, n2[0], bin_, 'БИН', doc['p_rnn'])
+        pair(12, n1[0], mfo, 'МФО', doc['rfbk_mfo_pbank'])
+        pair(12, n2[0], acc, 'Счет', doc['p_account'])
         pair(13, *n1, 'Банк', doc['p_bank'])
         pair(14, *n1, 'Руководитель', doc['p_chief'])
         pair(14, *n2, 'Бухгалтер', doc['p_mainbk'])
 
         frame(17, 21, 'Получатель')
         pair(18, *n1, 'Наименование', doc['r_name'])
-        pair(18, *n2, 'БИН', doc['r_rnn'])
-        pair(19, *n1, 'МФО', doc['rfbk_mfo_rbank'])
-        pair(19, *n2, 'Счет', doc['r_account'])
+        pair(18, n2[0], bin_, 'БИН', doc['r_rnn'])
+        pair(19, n1[0], mfo, 'МФО', doc['rfbk_mfo_rbank'])
+        pair(19, n2[0], acc, 'Счет', doc['r_account'])
         pair(20, *n1, 'Банк', doc['r_bank'])
 
         # Списочная часть: рамка вокруг таблицы, таблица - в колонках B..O
