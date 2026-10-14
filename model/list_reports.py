@@ -2915,8 +2915,128 @@ dict_reports = {
                 },
             }
         },
-        "6020": 
-        { 
+        "8000 - Паспорт СОСС":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.8000",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "8001 - Сведения о получателях и суммах социальных выплат из АО ГФСС",
+                    "proc": "rep_dia_8001",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "02": {
+                    "name": "8002 - Назначение социальных выплат из АО ГФСС",
+                    "proc": "rep_dia_8002",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "03": {
+                    "name": "8005 - Доля социальных выплат по отношению к сумме поступивших социальных отчислений",
+                    "proc": "rep_dia_8005",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "04": {
+                    "name": "8006 - Доля суммы социальных выплат к сумме социальных отчислений (с учетом пени) в разрезе регионов",
+                    "proc": "rep_dia_8006",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "05": {
+                    "name": "8007 - Ежемесячные сведения о социальных выплатах",
+                    "proc": "rep_dia_8007",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "06": {
+                    "name": "8008 - Количество назначенных социальных выплат за все годы в разрезе рисков",
+                    "proc": "rep_dia_8008",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "07": {
+                    "name": "8009 - Динамика численности участников СОСС и сумм социальных отчислений",
+                    "proc": "rep_dia_8009",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "08": {
+                    "name": "8010 - Динамика поступлений сумм СО и пени за два года",
+                    "proc": "rep_dia_8010",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "09": {
+                    "name": "8011 - Сведения по Единому платежу по полу и возрасту",
+                    "proc": "rep_dia_8011",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "10": {
+                    "name": "8012 - Участники и социальные отчисления Единого платежа в разрезе регионов",
+                    "proc": "rep_dia_8012",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "11": {
+                    "name": "8013 - Плательщики СО и работники, за которых СО рассчитаны от дохода менее 1 МЗП",
+                    "proc": "rep_dia_8013",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+                "12": {
+                    "name": "8014 - Динамика численности получателей и сумм социальных выплат в разрезе рисков",
+                    "proc": "rep_dia_8014",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "13": {
+                    "name": "8015 - Сведения о средних размерах социальных выплат",
+                    "proc": "rep_dia_8015",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "14": {
+                    "name": "8017 - Получатели социальных выплат",
+                    "proc": "rep_dia_8017",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
+                "15": {
+                    "name": "8024 - Плательщики, допустившие снижение количества участников СОСС",
+                    "proc": "rep_dia_8024",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "16": {
+                    "name": "8028 - Плательщики со снижением количества участников СОСС на 50% и более",
+                    "proc": "rep_dia_8028",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+            }
+        },
+        "6020":
+        {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6020",
             "live_time":  0,
             "reports": 
