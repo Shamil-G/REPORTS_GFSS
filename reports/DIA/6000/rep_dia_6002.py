@@ -23,7 +23,10 @@ AIS_GFSS, группа «ДИА - квартальные отчеты», отч�
 
 Наименование работодателя - `rfon_organization.nm_ru` по БИН, место - по его
 КАТО (`cato_branch.code`): район - сама запись КАТО, область - запись `XX00` с
-теми же первыми двумя знаками. Условие на область в оригинале без `(+)`,
+теми же первыми двумя знаками. Коды берутся из `cato_branch`, названия - из
+`branch`: область - `branch.name` записи `XX00`, район - `branch.short_name`
+отделения с кодом КАТО (как в 5002); `cato_branch.name_ru` у новых областей
+содержит казахские формы с утраченными буквами («ОБЛАСТЬ ?ЛЫТАУ»). Условие на область в оригинале без `(+)`,
 поэтому работодатели, которых нет в `rfon_organization` или чей КАТО не найден,
 в отчёт не попадают - сохранено.
 
@@ -93,18 +96,21 @@ select m7.obc, m7.obn, m7.rc, m7.rn, m7.p_rnn, m7.nm,
        m7.c c1, m8.c c2, m9.c c3
   from (select m.p_rnn,
                cb2.rfbn_id obc,
-               cb2.name_ru obn,
+               ob.name obn,
                cb1.rfbn_id rc,
-               cb1.name_ru rn,
+               trim(br.short_name) rn,
                o.nm_ru nm,
                count(distinct m.sicid) c
-          from aq m, rfon_organization o, cato_branch cb1, cato_branch cb2
+          from aq m, rfon_organization o, cato_branch cb1, cato_branch cb2,
+               branch ob, branch br
          where m.p_rnn = o.bin(+)
            and o.cato = cb1.code(+)
            and substr(cb1.rfbn_id, 1, 2) = substr(cb2.rfbn_id(+), 1, 2)
            and substr(cb2.rfbn_id, 3, 2) = '00'
+           and ob.rfbn_id(+) = cb2.rfbn_id
+           and br.rfbn_id(+) = cb1.rfbn_id
            and m.pd = :d_from
-         group by m.p_rnn, o.nm_ru, cb1.rfbn_id, cb1.name_ru, cb2.rfbn_id, cb2.name_ru) m7,
+         group by m.p_rnn, o.nm_ru, cb1.rfbn_id, br.short_name, cb2.rfbn_id, ob.name) m7,
        (select p_rnn, count(distinct sicid) c
           from aq
          where pd = add_months(:d_from, 1)
