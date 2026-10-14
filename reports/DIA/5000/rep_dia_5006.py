@@ -26,7 +26,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE, check_params
+from util.social_tension import BASE, UNKNOWN_NAME, UNKNOWN_RC, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5006'
@@ -56,15 +56,16 @@ COLUMNS = [
 
 STMT = f"""
 with {BASE.lstrip()}
-select ob.name obl_name,
-       c.rc || nvl2(br.short_name, ' - ' || trim(br.short_name), '') reg,
+select nvl(ob.name, '{UNKNOWN_NAME}') obl_name,
+       case when c.rc = '{UNKNOWN_RC}' then '{UNKNOWN_NAME}'
+            else c.rc || nvl2(br.short_name, ' - ' || trim(br.short_name), '') end reg,
        c.p_rnn, c.nm,
        c.cnt04, c.zp04, c.sm04,
        c.cnt05, c.zp05, c.sm05,
        c.razn, c.perc, c.sect,
        nvl(trim(regexp_replace(so.name, '\\s+', ' ')), 'Без секции') name_sect
   from calc c, branch ob, branch br, s_oked_sect so
- where ob.rfbn_id = c.obl || '00'
+ where ob.rfbn_id(+) = c.obl || '00'
    and br.rfbn_id(+) = c.rc
    and so.sect(+) = c.sect
  order by c.obl, c.rc, c.p_rnn

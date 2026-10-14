@@ -21,7 +21,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE_NO_SECT as BASE, MSB_LIMIT, OBL_JOIN, check_params
+from util.social_tension import BASE_NO_SECT as BASE, MSB_LIMIT, OBL_JOIN, OBL_NAME, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5003'
@@ -77,7 +77,7 @@ agg as (
      where c.perc >= 50
      group by c.obl
 )
-select b.name reg,
+select {OBL_NAME} reg,
        a.a_cnt, a.a_04, a.a_05, a.a_d,
        a.m_cnt, a.m_04, a.m_05, a.m_d,
        a.l_cnt, a.l_04, a.l_05, a.l_d

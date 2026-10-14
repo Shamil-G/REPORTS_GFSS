@@ -19,9 +19,11 @@ cnt05/cnt04*100, 2)` - снижение в процентах.
 cato_branch.code`; область - первые два знака `cato_branch.rfbn_id`, район -
 весь `rfbn_id` (код отделения). Оригинал брал отделение из `rfrr_id_region` и
 делил старые 14, 05, 03, 08 на новые области вручную; в `cato_branch` у
-организаций уже стоят все 20 текущих областей. Плательщик без КАТО или с КАТО,
-которого нет в `cato_branch`, в расчёт не попадает - как плательщик без записи
-в `rfrr_id_region` в оригинале.
+организаций уже стоят все 20 текущих областей. Плательщик без КАТО, с КАТО,
+которого нет в `cato_branch`, или вовсе без записи в `rfon_organization`
+(иностранные организации, напр. РЖД) не теряется: он идёт в «Неизвестный
+регион» (область `99`, район `9999`), наименование - «Неизвестная организация».
+В оригинале такой плательщик попадал в отчёт 5006 (список из `nk_minfin_iin`).
 
 Секция ОКЭД (A..U) - по первым двум знакам `rfon_organization.oked` (разделы
 ОКЭД, диапазоны те же, что в `OKED1510544.sect_oked`); нет ОКЭД - `ZZ` «Без
@@ -175,6 +177,11 @@ def band_sql(alias='c'):
 # razn = cnt05 - cnt04 (отрицательная - снижение); sect - 'ZZ' без ОКЭД.
 # Секция ОКЭД считается только для отчётов, где она есть в разрезе или в
 # колонках (5004, 5005, 5006): BASE; BASE_NO_SECT - для 5001-5003.
+UNKNOWN_OBL = '99'
+UNKNOWN_RC = '9999'
+UNKNOWN_NAME = 'Неизвестный регион'
+
+
 def _base(with_sect):
     sect_col = (f"           {_SECT_CASE}                                         sect,\n"
                 if with_sect else '')
@@ -209,16 +216,16 @@ pay as (
 ),
 calc as (
     select p.p_rnn,
-           o.nm_ru                                              nm,
+           nvl(o.nm_ru, 'Неизвестная организация')              nm,
            p.cnt04, round(p.zp04, 2) zp04, p.sm04,
            p.cnt05, round(p.zp05, 2) zp05, p.sm05,
            p.cnt05 - p.cnt04                                    razn,
            round(100 - p.cnt05 / p.cnt04 * 100, 2)              perc,
-{sect_col}           substr(cb.rfbn_id, 1, 2)                             obl,
-           cb.rfbn_id                                           rc
+{sect_col}           nvl(substr(cb.rfbn_id, 1, 2), '{UNKNOWN_OBL}')       obl,
+           nvl(cb.rfbn_id, '{UNKNOWN_RC}')                      rc
       from pay p, rfon_organization o, cato_branch cb
-     where p.p_rnn = o.bin
-       and o.cato = cb.code
+     where o.bin(+) = p.p_rnn
+       and cb.code(+) = o.cato
 )"""
 
 
@@ -229,4 +236,5 @@ BASE_NO_SECT = _base(False)
 # Присоединяется к агрегату с колонкой obl: `from agg a, branch b where {OBL_JOIN}`;
 # название - `b.name` (в `cato_branch.name_ru` у новых областей казахские формы с
 # утраченными буквами: «ОБЛАСТЬ ?ЛЫТАУ»).
-OBL_JOIN = "b.rfbn_id = a.obl || '00'"
+OBL_JOIN = "b.rfbn_id(+) = a.obl || '00'"
+OBL_NAME = f"nvl(b.name, '{UNKNOWN_NAME}')"

@@ -36,7 +36,7 @@ AIS 5001 «Свод по областям»). Группа «5000 - Социал
 «Г.АЛМАТЫ» алфавит перемешал бы области и города.
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE_NO_SECT as BASE, BANDS, OBL_JOIN, band_columns, band_sql, check_params
+from util.social_tension import BASE_NO_SECT as BASE, BANDS, OBL_JOIN, OBL_NAME, band_columns, band_sql, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5001'
@@ -67,7 +67,7 @@ agg as (
       from calc c
      group by c.obl
 )
-select b.name reg,
+select {OBL_NAME} reg,
        a.cnt_all, a.cnt_dis,
        {', '.join(f'a.b{i}' for i in range(len(BANDS)))},
        a.cnt50,

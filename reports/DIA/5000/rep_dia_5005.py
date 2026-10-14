@@ -25,7 +25,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE, OBL_JOIN, SECTIONS, check_params
+from util.social_tension import BASE, OBL_JOIN, OBL_NAME, SECTIONS, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5005'
@@ -72,7 +72,7 @@ agg as (
      where c.perc >= 50
      group by c.obl
 )
-select b.name reg, a.cnt_all, a.sum_all, a.avg_all,
+select {OBL_NAME} reg, a.cnt_all, a.sum_all, a.avg_all,
        {', '.join(f'a.cnt_{s.lower()}, a.sum_{s.lower()}, a.avg_{s.lower()}' for s, _ in SECTIONS)}
   from agg a, branch b
  where {OBL_JOIN}

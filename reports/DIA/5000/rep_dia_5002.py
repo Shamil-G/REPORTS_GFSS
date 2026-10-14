@@ -23,7 +23,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import BASE_NO_SECT as BASE, BANDS, band_columns, band_sql, check_params
+from util.social_tension import BASE_NO_SECT as BASE, BANDS, UNKNOWN_NAME, UNKNOWN_RC, band_columns, band_sql, check_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5002'
@@ -55,14 +55,15 @@ agg as (
       from calc c
      group by c.obl, c.rc
 )
-select ob.name obl_name,
-       a.rc || nvl2(br.short_name, ' - ' || trim(br.short_name), '') reg,
+select nvl(ob.name, '{UNKNOWN_NAME}') obl_name,
+       case when a.rc = '{UNKNOWN_RC}' then '{UNKNOWN_NAME}'
+            else a.rc || nvl2(br.short_name, ' - ' || trim(br.short_name), '') end reg,
        a.cnt_all, a.cnt_dis,
        {', '.join(f'a.b{i}' for i in range(len(BANDS)))},
        a.cnt50,
        round(a.cnt50 / a.cnt_all * 100, 2) dolya
   from agg a, branch ob, branch br
- where ob.rfbn_id = a.obl || '00'
+ where ob.rfbn_id(+) = a.obl || '00'
    and br.rfbn_id(+) = a.rc
  order by a.obl, a.rc
 """
