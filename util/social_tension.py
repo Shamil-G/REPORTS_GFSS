@@ -102,9 +102,18 @@ _OKED_SECTIONS = [
     ('U', '99', '99'),
 ]
 
+
+
+def _sect_when(s, lo, hi):
+    """Раздел ОКЭД [lo, hi] двумя операторами: >= lo and < следующий раздел."""
+    cond = f"substr(o.oked, 1, 2) >= '{lo}'"
+    if hi != '99':      # '99' - последний раздел, верхней границы нет
+        cond += f" and substr(o.oked, 1, 2) < '{int(hi) + 1:02d}'"
+    return f"when {cond} then '{s}'"
+
+
 _SECT_CASE = 'case ' + ' '.join(
-    f"when substr(o.oked, 1, 2) between '{lo}' and '{hi}' then '{s}'"
-    for s, lo, hi in _OKED_SECTIONS) + " else 'ZZ' end"
+    _sect_when(s, lo, hi) for s, lo, hi in _OKED_SECTIONS) + " else 'ZZ' end"
 
 
 def check_params(params):

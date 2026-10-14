@@ -25,6 +25,7 @@ from db.connect import select_2, DEFAULT_PROFILE
 from model.manage_reports import set_status_report
 from util.logger import log
 from util.period import (period_bounds, period_word, split_period, year_start,
+                         last_day,
                          period_label as _default_period_label)
 
 STATUS_DONE = 2
@@ -62,6 +63,16 @@ _BIND_RE = re.compile(r':([A-Za-z_]\w*)')
 # всегда читался "в отчетном месяце", потому что других периодов не было.
 PERIOD_SLOT = '{period}'            # в name: подставляется "Август месяц 2026 года"
 PERIOD_WORD_SLOT = '{period_word}'  # в заголовке колонки: "месяце", "квартале"
+# В заголовках колонок можно ставить и {date_from}, {date_to} (последний день
+# периода включительно) - даты периода "с 01.01.2026 по 30.09.2026 года", а у
+# периодических отчётов ещё {year} и {prev_year} - год периода и предыдущий.
+
+
+def _fill(title, slots):
+    """Подставляет в заголовок колонки слоты периода (см. _bind_values)."""
+    for key, value in slots.items():
+        title = title.replace(key, value)
+    return title
 
 
 @dataclass
@@ -69,7 +80,7 @@ class Col:
     """Колонка отчёта. key - алиас колонки в SQL."""
     title: str
     key: str
-    kind: str = 'text'        # text | center | int | money | avg | date
+    kind: str = 'text'        # text | center | int | money | avg | pct | date
     width: int = 14
     # Выравнивание значений: left | center | right. None - по kind (текст влево,
     # числа вправо). Меняет только вид: число остаётся числом и суммируется.
@@ -137,6 +148,10 @@ _FORMATS = {
     'date': {
         'align': 'center', 'valign': 'vcenter', 'border': 1,
         'bg_color': '#f2f2f2', 'num_format': 'dd.mm.yyyy'},
+    # доля (0.125 -> 12,5%): в ячейке число-доля, процент рисует формат
+    'pct': {
+        'align': 'right', 'valign': 'vcenter', 'border': 1,
+        'bg_color': '#f2f2f2', 'num_format': '0.0%'},
     'total_text': {
         'bold': True, 'align': 'right', 'valign': 'vcenter',
         'border': 1, 'bg_color': '#E0F7FF'},
@@ -156,10 +171,11 @@ _FORMATS = {
 
 # 'avg' печатается как деньги; отдельный формат не нужен
 _CELL_FORMAT = {'text': 'text', 'center': 'center', 'int': 'int',
-                'money': 'money', 'avg': 'money', 'date': 'date'}
+                'money': 'money', 'avg': 'money', 'date': 'date',
+                'pct': 'pct'}
 _TOTAL_FORMAT = {'int': 'total_int', 'money': 'total_money',
                  'avg': 'total_money'}
-_NUMERIC = ('int', 'money', 'avg')
+_NUMERIC = ('int', 'money', 'avg', 'pct')
 
 
 def _build_formats(workbook, leaves):
@@ -169,11 +185,15 @@ def _build_formats(workbook, leaves):
     ('cell', номер колонки) и ('total', номер колонки) для строки итогов.
     """
     fmt = {k: workbook.add_format(v) for k, v in _FORMATS.items()}
+    for k in ('text', 'center', 'int', 'money', 'pct'):
+        fmt['bold_' + k] = workbook.add_format({**_FORMATS[k], 'bold': True})
     for i, c in enumerate(leaves, start=1):
         if not c.align:
             continue
         fmt['cell', i] = workbook.add_format(
             {**_FORMATS[_CELL_FORMAT[c.kind]], 'align': c.align})
+        fmt['bcell', i] = workbook.add_format(
+            {**_FORMATS[_CELL_FORMAT[c.kind]], 'align': c.align, 'bold': True})
         if c.kind in _TOTAL_FORMAT:
             fmt['total', i] = workbook.add_format(
                 {**_FORMATS[_TOTAL_FORMAT[c.kind]], 'align': c.align})
@@ -224,7 +244,7 @@ def _text_height(text, width_px, font_size=11):
             * _LINE_PT * font_size / 11 + _ROW_PAD_PT)
 
 
-def _header_heights(columns, depth, widths, word):
+def _header_heights(columns, depth, widths, slots):
     """Высоты строк шапки. widths - ширины листовых колонок по порядку.
 
     Заголовок группы занимает одну строку - она должна вместить его целиком.
@@ -236,7 +256,7 @@ def _header_heights(columns, depth, widths, word):
 
     def walk(cols, row, col):
         for c in cols:
-            title = c.title.replace(PERIOD_WORD_SLOT, word)
+            title = _fill(c.title, slots)
             if isinstance(c, Group):
                 span = len(_leaves(c.cols))
                 px = sum(_col_px(w) for w in widths[col:col + span])
@@ -268,17 +288,17 @@ def _merge(ws, r1, c1, r2, c2, text, fmt):
         ws.merge_range(r1, c1, r2, c2, text, fmt)
 
 
-def _draw_header_tree(ws, fmt, cols, row, col, rows_left, word=''):
+def _draw_header_tree(ws, fmt, cols, row, col, rows_left, slots=None):
     """Рекурсивно рисует дерево заголовков. Возвращает занятое число колонок."""
     used = 0
     for c in cols:
-        title = c.title.replace(PERIOD_WORD_SLOT, word)
+        title = _fill(c.title, slots or {})
         if isinstance(c, Group):
             span = len(_leaves(c.cols))
             _merge(ws, row, col + used, row, col + used + span - 1,
                    title, fmt['header'])
             _draw_header_tree(ws, fmt, c.cols, row + 1, col + used,
-                              rows_left - 1, word)
+                              rows_left - 1, slots)
             used += span
         else:
             # лист тянется вниз до конца шапки
@@ -310,6 +330,8 @@ def build_report(*, code, name, columns, stmt,
                  totals=False,
                  footnote=None,
                  blank_zero=False,
+                 num_key=None,        # колонка SQL с номером строки ("1", "1.1") вместо сквозного №
+                 bold_key=None,       # колонка SQL: строка с непустым нулём/единицей печатается жирным
                  period_label=None,   # см. make_period_label() в util/period.py
                  text_params=None,    # {ключ_параметра: {значение: фраза}}
                  title_height=None,
@@ -342,6 +364,11 @@ def build_report(*, code, name, columns, stmt,
 
     stmt - текст запроса либо функция(params) -> текст запроса.
 
+    num_key - у отчётов-форм, где номера строк иерархические ("1", "1.1", "2")
+    и приходят из запроса: в первой колонке вместо сквозного номера печатается
+    значение этой колонки, заголовок колонки - "№ п/п". bold_key - колонка
+    запроса, по которой строка выделяется жирным (итоги и заголовки разделов).
+
     title_sql - запрос (те же :бинды формы), одна строка которого даёт реквизиты
     для названия: каждая колонка подставляется в name как '{колонка}' (ФИО и СИК
     получателя в справке). Нет строки - ValueError с текстом title_not_found.
@@ -371,11 +398,11 @@ def build_report(*, code, name, columns, stmt,
     widths = [c.width for c in leaves]
     table_px = _col_px(6) + sum(_col_px(w) for w in widths)
 
-    def _make_header(ws, title, subtitle, word):
+    def _make_header(ws, title, subtitle, slots):
         ws.set_row(TITLE_ROW, title_height or _text_height(title, table_px, 14))
         ws.set_row(CODE_ROW, 18)
         ws.set_row(COLNUM_ROW, 14)
-        auto = _header_heights(columns, header_depth, widths, word)
+        auto = _header_heights(columns, header_depth, widths, slots)
         manual = header_heights or [None] * header_depth
         for i, (a, m) in enumerate(zip(auto, manual)):
             ws.set_row(HEADER_ROW + i, m or a)
@@ -395,14 +422,16 @@ def build_report(*, code, name, columns, stmt,
         for i in range(total_cols):
             ws.write(COLNUM_ROW, i, str(i + 1), fmt['colnum'])
 
-        _merge(ws, HEADER_ROW, 0, data_row0 - 1, 0, '№', fmt['header'])
-        _draw_header_tree(ws, fmt, columns, HEADER_ROW, 1, header_depth, word)
+        _merge(ws, HEADER_ROW, 0, data_row0 - 1, 0,
+               '№ п/п' if num_key else '№', fmt['header'])
+        _draw_header_tree(ws, fmt, columns, HEADER_ROW, 1, header_depth, slots)
 
         ws.freeze_panes(data_row0, 0)
         ws.repeat_rows(HEADER_ROW, data_row0 - 1)
 
-    def _write_cell(ws, row, col, value, kind):
-        f = fmt.get(('cell', col)) or fmt[_CELL_FORMAT[kind]]
+    def _write_cell(ws, row, col, value, kind, bold=False):
+        f = (fmt.get(('bcell' if bold else 'cell', col))
+             or fmt[('bold_' if bold else '') + _CELL_FORMAT[kind]])
         if value is None or (blank_zero and kind in _NUMERIC and not value):
             ws.write_blank(row, col, None, f)
         elif kind in _NUMERIC:
@@ -462,7 +491,7 @@ def build_report(*, code, name, columns, stmt,
             check_params(params)
         candidates = {k: (v if v != '' else None)
                       for k, v in params.items() if k != 'file_name'}
-        title, subtitle, word = name, '', ''
+        title, subtitle, slots = name, '', {}
         for key, mapping in (text_params or {}).items():
             title = title.replace('{' + key + '}', mapping.get(params.get(key), ''))
         if date_range:
@@ -476,6 +505,8 @@ def build_report(*, code, name, columns, stmt,
                               d_to=second + datetime.timedelta(days=1),
                               y_from=datetime.date(first.year, 1, 1))
             phrase = f'{first:%d.%m.%Y} по {second:%d.%m.%Y}'
+            slots.update({'{date_from}': f'{first:%d.%m.%Y}',
+                          '{date_to}': f'{second:%d.%m.%Y}'})
             title = (title.replace('{date_from}', f'{first:%d.%m.%Y}')
                           .replace('{date_to}', f'{second:%d.%m.%Y}')
                           .replace('{date_to_eom}', f'{_eom(second):%d.%m.%Y}')
@@ -495,7 +526,13 @@ def build_report(*, code, name, columns, stmt,
             candidates.update(d_from=d_from, d_to=d_to,
                               y_from=year_start(rep_year))
             phrase = label_of(rep_year, date_type, date_start)
-            word = period_word(date_type)
+            slots.update({PERIOD_WORD_SLOT: period_word(date_type),
+                          '{date_from}': f'{d_from:%d.%m.%Y}',
+                          '{date_to}': f'{last_day(d_to):%d.%m.%Y}',
+                          '{year}': str(int(rep_year)),
+                          '{prev_year}': str(int(rep_year) - 1)})
+            title = (title.replace('{date_from}', slots['{date_from}'])
+                          .replace('{date_to}', slots['{date_to}']))
             # период либо встроен в название (как было в PL/SQL), либо
             # выводится отдельной подписью справа
             if PERIOD_SLOT in name:
@@ -514,7 +551,7 @@ def build_report(*, code, name, columns, stmt,
                 raise ValueError(title_not_found)
             for key, value in rows[0].items():
                 title = title.replace('{' + key + '}', str(value or ''))
-        return _used_binds(sql, candidates), title, subtitle, word
+        return _used_binds(sql, candidates), title, subtitle, slots
 
     fmt = None          # заполняется внутри do_report, живёт в замыкании
 
@@ -532,7 +569,7 @@ def build_report(*, code, name, columns, stmt,
             # stmt - текст запроса или функция(params) -> текст: у отчётов, где
             # разрез зависит от формы (область / республика), запросы разные
             sql = stmt(params) if callable(stmt) else stmt
-            binds, title, subtitle, word = _bind_values(params, sql)
+            binds, title, subtitle, slots = _bind_values(params, sql)
             log.info(f'REPORT: {code}. BINDS: {binds}')
 
             # raise_on_error=True: пустой результат не должен маскировать ошибку
@@ -549,18 +586,23 @@ def build_report(*, code, name, columns, stmt,
                     if n % max_rows == 0:
                         suffix = f' {len(sheets) + 1}' if len(records) > max_rows else ''
                         sheet = workbook.add_worksheet(f'{sheet_name}{suffix}')
-                        _make_header(sheet, title, subtitle, word)
+                        _make_header(sheet, title, subtitle, slots)
                         sheets.append(sheet)
                         row = data_row0
-                    sheet.write_number(row, 0, n + 1, fmt['center'])
+                    bold = bool(bold_key and record.get(bold_key))
+                    if num_key:
+                        sheet.write_string(row, 0, str(record.get(num_key) or ''),
+                                           fmt['bold_center' if bold else 'center'])
+                    else:
+                        sheet.write_number(row, 0, n + 1, fmt['center'])
                     for i, c in enumerate(leaves, start=1):
                         kind = (c.kind_of and record.get(c.kind_of)) or c.kind
-                        _write_cell(sheet, row, i, record.get(c.key), kind)
+                        _write_cell(sheet, row, i, record.get(c.key), kind, bold)
                     row += 1
 
                 if not sheets:
                     sheet = workbook.add_worksheet(sheet_name)
-                    _make_header(sheet, title, subtitle, word)
+                    _make_header(sheet, title, subtitle, slots)
                     sheet.write(data_row0, 0, 'Нет данных для отображения')
                     sheets.append(sheet)
                     row = data_row0 + 1
