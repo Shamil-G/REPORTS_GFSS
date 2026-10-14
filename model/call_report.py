@@ -153,7 +153,8 @@ def _journal_name_limit() -> int:
     return _name_limit_bytes
 
 
-def journal_name(dep_name: str, group_name: str, report_name: str, num_rep: str) -> str:
+def journal_name(dep_name: str, group_name: str, report_name: str, num_rep: str,
+                 label: str = '') -> str:
     """Имя отчёта в журнале запусков (/running-reports).
 
     Отдел.Группа.Название отчёта (ключ), например:
@@ -161,8 +162,11 @@ def journal_name(dep_name: str, group_name: str, report_name: str, num_rep: str)
     Раньше туда писались только шифры («1501.01.3016»), по ним нельзя было понять,
     что за отчёт. Если строка не помещается в колонку, сокращается название отчёта
     (с многоточием), а отдел, группа и ключ остаются.
+    label - пометка запуска (например, «2-я половина»): запуски с одним периодом,
+    но разным расчётом в журнале иначе не отличить. Идёт в тех же скобках после
+    ключа: «5001 - Свод по областям (01, 2-я половина)»; при сокращении не теряется.
     """
-    suffix = f' ({num_rep})'
+    suffix = f' ({num_rep}, {label})' if label else f' ({num_rep})'
     head = f'{dep_name}.{group_name}.'
     name = ' '.join(str(report_name or '').split())
     limit = _journal_name_limit()
@@ -223,6 +227,10 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
         date_second = last_day(d_to).strftime("%Y-%m-%d")
         naming["period"] = period_name(d_type, d_start)
 
+    # Отчёт может дать пометку запуска для журнала: journal_label(params) -> str
+    journal_label = getattr(loaded_module, "journal_label", None)
+    label = journal_label(params) if journal_label else ""
+
     target_path = f'{REPORT_PATH}/{get_year(date_first) if date_first else str(date.today().year)}'
     check_dir(target_path)
 
@@ -266,7 +274,7 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
 
     # Если запись об отчете в БД отсутствует, то ее надо сделать
     if status in (0,10):
-        status = init_report(journal_name(dep_name, group_name, report.get("name"), num_rep), date_first, date_second, rfpm_id, rfbn_id, live_time, file_name)
+        status = init_report(journal_name(dep_name, group_name, report.get("name"), num_rep, label), date_first, date_second, rfpm_id, rfbn_id, live_time, file_name)
         log.debug(f'CALL REPORT. Status: {status}')
         if status == 1:
             log.info(f'CALL REPORT. REPORT PREPARING. Status: {status}, file_name: {file_name}')

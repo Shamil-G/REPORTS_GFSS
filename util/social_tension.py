@@ -160,6 +160,12 @@ def normalize_params(params):
     return params
 
 
+def journal_label(params):
+    """Пометка в журнале запусков (/running-reports): период один, а расчёт по
+    половинам месяца разный, без неё строки не отличить."""
+    return f"{'2-я' if second_half(params) else '1-я'} половина"
+
+
 def check_params(params):
     """Запуск без normalize_params (напрямую): период берётся из date_on."""
     if not params.get('date_first') or not params.get('date_second'):
