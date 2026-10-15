@@ -39,6 +39,12 @@ NOWHERE = User(post='Главный специалист', ou_name='DAUS', rfbn_
     # значения внутри признака - ИЛИ
     ({'rfbn_id': ['0100', '1500']}, AKMOLA, True),
     ({'rfbn_id': ['0200', '1500']}, AKMOLA, False),
+    # область - первые два знака: в access можно писать и "0100", и "01"
+    ({'rfbn_id': '01'}, AKMOLA, True),
+    ({'rfbn_id': '00'}, CENTER, True),
+    ({'rfbn_id': '00'}, AKMOLA, False),
+    ({'rfbn_id': ['01', '15']}, AKMOLA, True),
+    ({'rfbn_id': '0199'}, AKMOLA, True),
     # коды - без учёта регистра
     ({'ou_name': 'ditito'}, CENTER, True),
     # пустой access - всем
@@ -95,5 +101,5 @@ def test_effective_access():
 
 
 def test_is_central():
-    assert is_central('0000') and is_central(' 0000 ')
+    assert is_central('0000') and is_central(' 0000 ') and is_central('00')
     assert not is_central('0100') and not is_central('')

@@ -21,10 +21,15 @@
 филиала, - но область ему подставляет сервер (`forced_rfbn`), а не выбирает он
 сам в форме. Область пользователя при этом обязана быть известна.
 
-Признак `rfbn_id` у пользователя четырёхзначный ("0000" - центр, "0100" -
-Акмола, см. `regions.py`), а одноимённый параметр отчёта - двузначный
-("01", см. `LIST_REGION` в `model/list_reports.py`), и пустой параметр значит
-"вся республика". Перевод одного в другое - в `forced_rfbn`, больше нигде.
+Код области в признаке `rfbn_id` четырёхзначный ("0000" - центр, "0100" -
+Акмола), и **область - это первые два знака**: так его отдаёт SSO, так устроен
+`regions.py`. В реестре отчётов те же области двузначные ("01", см.
+`LIST_REGION` в `model/list_reports.py`). Поэтому обе стороны сравнения
+приводятся к первым двум знакам, и в `access` можно писать и `"0100"`, и
+`"01"` - разницы нет.
+
+У параметра отчёта `rfbn_id` пустое значение значит "вся республика", поэтому
+центральному аппарату `forced_rfbn` отдаёт пусто.
 
 Пустой `rfbn_id` у пользователя - это не центр, а "неизвестно": такой
 пользователь не проходит ни один фильтр по области.
@@ -37,19 +42,24 @@ FEATURES = ('roles', 'post', 'ou_name', 'rfbn_id')
 
 ANY = '*'
 OWN = 'own'
-CENTRAL_RFBN = '0000'
+CENTRAL_REGION = '00'
 
 # Группы без ключа `access`: только центральный аппарат (см. ACCESS-PLAN.md).
-DEFAULT_ACCESS = {'rfbn_id': CENTRAL_RFBN}
+DEFAULT_ACCESS = {'rfbn_id': '0000'}
 
-# Коды сравниваем без учёта регистра, должность и роль - как пришли.
-_NOCASE = ('ou_name', 'rfbn_id')
+# Имя подразделения сравниваем без учёта регистра, должность и роль - как пришли.
+_NOCASE = ('ou_name',)
 
 
 def _values(raw) -> list:
     """Значение признака - строка или список; пустые отбрасываем."""
     items = raw if isinstance(raw, (list, tuple, set)) else [raw]
     return [str(v).strip() for v in items if str(v).strip()]
+
+
+def _region(value) -> str:
+    """Код области - первые два знака кода отделения ("0100" -> "01")."""
+    return str(value or '').strip()[:2]
 
 
 def _user_values(user, feature: str) -> list:
@@ -81,10 +91,17 @@ def allowed(user, access: dict) -> bool:
         wanted = _values(access[feature])
         if not wanted or ANY in wanted:
             continue
-        if feature == 'rfbn_id' and OWN in wanted:
-            # own - разрез данных, а не фильтр видимости; но область должна
-            # быть известна, иначе подставлять в отчёт нечего.
-            if not _user_values(user, 'rfbn_id'):
+        if feature == 'rfbn_id':
+            mine = _user_values(user, 'rfbn_id')
+            if OWN in wanted:
+                # own - разрез данных, а не фильтр видимости; но область должна
+                # быть известна, иначе подставлять в отчёт нечего.
+                if not mine:
+                    return False
+                continue
+            # Область - первые два знака с обеих сторон: в access можно писать
+            # и "0100", и "01".
+            if not mine or _region(mine[0]) not in {_region(v) for v in wanted}:
                 return False
             continue
         mine = _user_values(user, feature)
@@ -97,7 +114,7 @@ def allowed(user, access: dict) -> bool:
 
 
 def is_central(rfbn_id) -> bool:
-    return str(rfbn_id or '').strip() == CENTRAL_RFBN
+    return _region(rfbn_id) == CENTRAL_REGION
 
 
 def forced_rfbn(user, access: dict):
@@ -112,4 +129,4 @@ def forced_rfbn(user, access: dict):
     mine = _user_values(user, 'rfbn_id')
     if not mine:
         return None
-    return '' if is_central(mine[0]) else mine[0][:2]
+    return '' if is_central(mine[0]) else _region(mine[0])
