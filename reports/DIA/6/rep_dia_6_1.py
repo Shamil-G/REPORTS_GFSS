@@ -22,28 +22,26 @@ AIS_GFSS, группа «Обороты и назначения», отчёт 6,
 первого назначения, оригинал печатал «Назначения отсутствуют» вместо таблицы;
 здесь то же условие в запросе, лист получается «Нет данных для отображения».
 
-Доступ. Оригинал отказывал в отчёте по людям из таблицы `notobor` («Доступ
-запрещен!»); здесь такой человек приравнен к ненайденному (ошибка «Участник
-не найден или доступ запрещён!»). Запись в журнал обращений (`sic_log`,
-автономная транзакция) не переносится: отчёты приложения читают БД только на
-чтение, обращения фиксирует журнал запусков.
+Доступ и журнал. Отчёт содержит персональные данные и помечен в
+`list_reports.py` признаком `audit`: каждое обращение (запрос с ИИН, выдача,
+отказ, ошибка) пишется в `log_reports` процедурой `util.log_reports`
+(`util/access_audit.py`), файл формируется на каждый запрос заново с уникальным
+именем и удаляется сразу после отправки. Проверка людей из `notobor` («Доступ
+запрещен!»), как в оригинале, - `util/person_access.py`. Это заменило запись
+оригинала в `sic_log` (автономная транзакция).
 
 Суммы в оригинале выводились строкой в жирном; здесь числа. Таблицы reports_test
 не все видит (часть в SSWH): проверено запуском на данных боевой БД (только
 чтение).
 """
 from db.connect import LOADER_PROFILE
+from util.person_access import check_person_access
 from util.xlsx_report import build_report, Col
 
 report_code = '6-1'
 report_name = ('Информация по назначениям социальных выплат\n'
                'ФИО: {fio}\n'
                'ИИН: {iin}')
-
-
-def _check(params):
-    if len(str(params.get('iin') or '').strip()) != 12:
-        raise ValueError('Неверно указан ИИН!')
 
 
 COLUMNS = [
@@ -67,7 +65,6 @@ TITLE_SQL = """
 select initcap(p.lastname || ' ' || p.firstname || ' ' || p.middlename) fio
   from person p
  where p.iin = trim(:iin)
-   and not exists (select 1 from notobor n where n.sicid = p.sicid)
 """
 
 # :iin - ИИН человека.
@@ -101,6 +98,6 @@ select rp.rfpm_id || ' - ' || rp.shortname shortname,
 
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
-    profile=LOADER_PROFILE, check_params=_check, title_params=('iin',),
-    title_sql=TITLE_SQL, title_not_found='Участник не найден или доступ запрещён!',
+    profile=LOADER_PROFILE, check_params=check_person_access, title_params=('iin',),
+    title_sql=TITLE_SQL, title_not_found='Участник не найден!',
 )

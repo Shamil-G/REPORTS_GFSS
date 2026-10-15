@@ -36,6 +36,7 @@ AIS_GFSS, группа «Обороты и назначения», отчёт 6,
 данных боевой БД (только чтение).
 """
 from db.connect import LOADER_PROFILE
+from util.person_access import check_person_access
 from util.xlsx_report import build_report, Col
 
 report_code = '6-2'
@@ -43,11 +44,6 @@ report_name = ('Информация участнику системы обяз�
                'страхования о состоянии и движении социальных отчислений\n'
                'ФИО: {fio}\n'
                'ИИН: {iin}')
-
-
-def _check(params):
-    if len(str(params.get('iin') or '').strip()) != 12:
-        raise ValueError('Неверно указан ИИН!')
 
 
 COLUMNS = [
@@ -70,7 +66,6 @@ TITLE_SQL = """
 select initcap(p.lastname || ' ' || p.firstname || ' ' || p.middlename) fio
   from person p
  where p.iin = trim(:iin)
-   and not exists (select 1 from notobor n where n.sicid = p.sicid)
 """
 
 # :iin - ИИН человека.
@@ -130,7 +125,7 @@ select in_date, out_date, doc_nmb, doc_date, knp, company, rnn,
 
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
-    profile=LOADER_PROFILE, check_params=_check, title_params=('iin',),
+    profile=LOADER_PROFILE, check_params=check_person_access, title_params=('iin',),
     title_sql=TITLE_SQL, totals=True,
-    title_not_found='Участник не найден или доступ запрещён!',
+    title_not_found='Участник не найден!',
 )

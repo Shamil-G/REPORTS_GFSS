@@ -10,6 +10,7 @@ from   model.list_reports import dict_reports
 # (DSR, DMN) импортирует её из model.call_report.
 from   model.manage_reports import remove_report, set_status_report
 from   util.trunc_date import get_year
+from   util import access_audit
 from   util.period import split_period, period_bounds, period_name, last_day
 from   datetime import date
 
@@ -182,6 +183,67 @@ def journal_name(dep_name: str, group_name: str, report_name: str, num_rep: str,
     return f'{head}{cut}…{suffix}'
 
 
+def _audit_page(message: str) -> dict:
+    """Ответ пользователю при отказе по отчёту с журналом доступа."""
+    import html
+    return {"at_once_report":
+            '<html><head><meta charset="utf-8"></head><body style="font-family:sans-serif;'
+            'margin:2em"><h3>Отчёт не сформирован</h3><p>' + html.escape(message) +
+            '</p><p><a href="javascript:history.back()">Назад</a></p></body></html>'}
+
+
+def _call_audited(dep_name, group_name, num_rep, report, loaded_module, params, target_path):
+    """Отчёты с персональными данными (признак "audit" в list_reports).
+
+    Каждое обращение пишется в журнал доступа (util/access_audit.py): ЗАПРОС до
+    любых проверок, затем ВЫДАН / ОТКАЗ / ОШИБКА. Без записи в журнал отчёт не
+    формируется. Файл строится заново на каждый запрос, под уникальным именем без
+    ИИН, и удаляется после отправки (routes.py, delete_after_send); журнал
+    запусков не используется, повторной выдачи готового файла нет.
+    """
+    import uuid
+    code = f'{dep_name}.{group_name}.{num_rep}'
+    user, ip = access_audit.current_user(), access_audit.current_ip()
+    shown = {k: v for k, v in params.items() if k != 'file_name'}
+    try:
+        access_audit.write('ЗАПРОС', code, f'отчёт="{report.get("name")}"; параметры={shown}', user, ip)
+    except access_audit.AuditError:
+        return _audit_page('Журнал доступа недоступен, отчёт не формируется. Обратитесь к администратору.')
+
+    rep_code = getattr(loaded_module, "report_code", "")
+    file_name = f'{target_path}/{dep_name}.{group_name}.{num_rep}.{rep_code}.{uuid.uuid4().hex}.xlsx'
+    run_params = dict(params)
+    run_params["file_name"] = file_name
+    try:
+        loaded_module.do_report(**run_params)
+    except Exception as e:
+        event = 'ОТКАЗ' if isinstance(e, ValueError) else 'ОШИБКА'
+        log.exception(f'CALL REPORT. AUDIT. {event} {code}')
+        try:
+            access_audit.write(event, code, f'сообщение="{e}"; параметры={shown}', user, ip)
+        except access_audit.AuditError:
+            pass
+        if path.isfile(file_name):
+            remove_report_file(file_name)
+        if isinstance(e, ValueError):
+            return _audit_page(str(e))
+        return _audit_page('Ошибка формирования отчёта. Обращение записано в журнал.')
+    try:
+        access_audit.write('ВЫДАН', code, f'файл выдан пользователю; параметры={shown}', user, ip)
+    except access_audit.AuditError:
+        remove_report_file(file_name)
+        return _audit_page('Журнал доступа недоступен, отчёт не выдан.')
+    return {"status": 2, "file_path": file_name, "delete_after_send": True}
+
+
+def remove_report_file(file_name: str):
+    import os
+    try:
+        os.remove(file_name)
+    except OSError:
+        log.exception(f'Не удалось удалить файл отчёта {file_name}')
+
+
 def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
     log.info(f'\nCALL REPORT. DEP: {dep_name}, group: {group_name}, code: {num_rep}, input_params: {params}')
 
@@ -233,6 +295,10 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
 
     target_path = f'{REPORT_PATH}/{get_year(date_first) if date_first else str(date.today().year)}'
     check_dir(target_path)
+
+    # Отчёты с персональными данными: журнал доступа, файл на один запрос
+    if report.get("audit"):
+        return _call_audited(dep_name, group_name, num_rep, report, loaded_module, params, target_path)
 
     suffix = ".".join(
         str(naming[k]) for k in naming

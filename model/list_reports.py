@@ -3006,6 +3006,7 @@ dict_reports = {
                 "01": {
                     "name": "6-1 - Обороты и назначения: назначения",
                     "proc": "rep_dia_6_1",
+                    "audit": True,
                     "data_approve": "15.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"iin": {"display_name": "ИИН участника", "type": "string", "length": 12, "required": True}},
@@ -3013,6 +3014,7 @@ dict_reports = {
                 "02": {
                     "name": "6-2 - Обороты и назначения: обороты по социальным отчислениям",
                     "proc": "rep_dia_6_2",
+                    "audit": True,
                     "data_approve": "15.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"iin": {"display_name": "ИИН участника", "type": "string", "length": 12, "required": True}},

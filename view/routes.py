@@ -8,7 +8,7 @@ from app_config import REPORT_PATH, LOG_PATH, styles
 from main_app import app, log
 from model.reports_info import get_owner_reports, get_list_groups, get_list_reports
 from model.auxiliary_task import load_minso_dia
-from model.call_report import call_report, check_report
+from model.call_report import call_report, check_report, remove_report_file
 from model.reports import list_reports_by_day, list_reports_global, GLOBAL_YEARS, GLOBAL_LIMIT
 from model.manage_reports import remove_report
 from datetime import date
@@ -162,7 +162,12 @@ def view_set_params():
                                 file_path = str(head_tail[0])
                                 file_name = str(head_tail[1])
                                 log.info(f"EDIT_PARAMS. SEND REPORT. FILE_PATH: {file_path}, FILE_NAME: {file_name}")
-                                return send_from_directory(file_path, file_name)
+                                response = send_from_directory(file_path, file_name)
+                                if result.get('delete_after_send'):
+                                    # отчёт с персональными данными: файл живёт только на время отправки
+                                    full_name = path.join(file_path, file_name)
+                                    response.call_on_close(lambda f=full_name: remove_report_file(f))
+                                return response
             return redirect(url_for('view_set_grp_name', grp=session['grp_name']))
     return render_template("edit_params.html", params=list_params)
 
