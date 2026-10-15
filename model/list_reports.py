@@ -3868,49 +3868,6 @@ dict_reports = {
     ,
     "ВОЗВРАТЫ":
     {
-        "400":
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.VOZVRATY.400",
-            "live_time": 0,
-            "reports":
-            {
-                "01": {
-                    "name": "408 - Отчёт по возвращённым суммам",
-                    "proc": "rep_dia_408",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "02": {
-                    "name": "409 - Отчет по аннулированным",
-                    "proc": "rep_dia_409",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "03": {
-                    "name": "412 - Отчёт по возвращённым суммам (Для реестра)",
-                    "proc": "rep_dia_412",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "04": {
-                    "name": "413 - Отчет о возвратах (сравнение периодов) по предприятиям (3 и более раз)",
-                    "proc": "rep_dia_413",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": {"display_name": "Период 1: с", "type": "date", "required": True, "length": None}, "date_second": {"display_name": "Период 1: по", "type": "date", "required": True, "length": None}, "date_third": {"display_name": "Период 2: с", "type": "date", "required": True, "length": None}, "date_fourth": {"display_name": "Период 2: по", "type": "date", "required": True, "length": None}},
-                },
-                "05": {
-                    "name": "418 - Распоряжение на возврат",
-                    "proc": "rep_dia_418",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {},
-                },
-            }
-        },
         "3200":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.VOZVRATY.3200",
