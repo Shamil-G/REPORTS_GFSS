@@ -341,6 +341,7 @@ def build_report(*, code, name, columns, stmt,
                  title_height=None,
                  header_heights=None,
                  sheet_name='Отчёт',
+                 records_fn=None,     # функция(params) -> список строк-словарей: расчёт в Python вместо SQL
                  max_rows=500_000):
     """Собирает отчёт из описания. Возвращает (do_report, thread_report).
 
@@ -367,6 +368,10 @@ def build_report(*, code, name, columns, stmt,
     до запроса; текст ValueError попадает в журнал.
 
     stmt - текст запроса либо функция(params) -> текст запроса.
+
+    records_fn - расчётные отчёты, которые SQL не выразить (актуарные провизии с
+    циклами по годам): функция(params) возвращает список словарей по ключам
+    колонок вместо запроса. stmt тогда служит только описанием на листе SQL.
 
     num_key - у отчётов-форм, где номера строк иерархические ("1", "1.1", "2")
     и приходят из запроса: в первой колонке вместо сквозного номера печатается
@@ -579,7 +584,10 @@ def build_report(*, code, name, columns, stmt,
 
             # raise_on_error=True: пустой результат не должен маскировать ошибку
             # запроса, иначе отчёт тихо запишется пустым и получит статус "готов"
-            records = select_2(sql, binds, profile=profile, raise_on_error=True)
+            if records_fn:
+                records = records_fn(params)
+            else:
+                records = select_2(sql, binds, profile=profile, raise_on_error=True)
 
             with xlsxwriter.Workbook(file_name) as workbook:
                 fmt = _build_formats(workbook, leaves)

@@ -2997,6 +2997,28 @@ dict_reports = {
                 },
             }
         },
+        "6 - Обороты и назначения":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.6",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "6-1 - Обороты и назначения: назначения",
+                    "proc": "rep_dia_6_1",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН участника", "type": "string", "length": 12, "required": True}},
+                },
+                "02": {
+                    "name": "6-2 - Обороты и назначения: обороты по социальным отчислениям",
+                    "proc": "rep_dia_6_2",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН участника", "type": "string", "length": 12, "required": True}},
+                },
+            }
+        },
         "9000 - Список плательщиков без подтверждения трудовых отношений с получателями СВбр, СВур":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.9000",
@@ -3528,6 +3550,13 @@ dict_reports = {
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "10": {
+                    "name": "7013 - Провизии по ИИН как в 701",
+                    "proc": "rep_dia_7013",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"prov_date": {"display_name": "Дата провизии (пусто - текущий месяц)", "type": "date", "required": False, "length": None}, "iin": {"display_name": "ИИН участника", "type": "string", "length": 12, "required": True}},
                 },
             }
         },
