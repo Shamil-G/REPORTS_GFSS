@@ -86,30 +86,53 @@ def find_report(file_path: str):
     return None, None, None
 
 
-def allowed_file(file_path: str, owner: str = '') -> bool:
-    """Можно ли выдать пользователю готовый файл отчёта.
+def report_rule(file_path: str):
+    """Какой `access` действует на отчёт, которому принадлежит готовый файл.
 
-    Кто отчёт создал, тот его и скачивает: владелец берётся из журнала
-    запусков (`report_owner`). Администратор скачивает любой файл - он же
-    чистит журнал. Чужой файл, файл без владельца (строка старше колонки
-    `login_name`) и файл, которого нет в журнале, не выдаются.
+    Возвращает (правило, опознан ли отчёт). Не опознан - правило
+    `DEFAULT_ACCESS`: неизвестное считаем закрытым.
+    """
+    dep_name, group, report = find_report(file_path)
+    if group is None:
+        log.info(f'REPORT_RULE. Отчёт не опознан в реестре: {path.basename(file_path)}')
+        return access.DEFAULT_ACCESS, False
+    return access.effective_access(group, report, dict_access.get(dep_name)), True
 
-    Владельцу файл выдаётся, только если права на сам отчёт у него остались:
-    человека могли перевести в другое подразделение, и старые файлы вместе с
-    доступом к отчёту тоже закрываются. Отчёт ищется в реестре по имени файла
-    (`find_report`); не опознан - не выдаём.
+
+def visible_row(file_path: str, owner_ou: str) -> bool:
+    """Видна ли пользователю строка журнала запусков.
+
+    Отчёт принадлежит департаменту: запуск видит то подразделение, которое его
+    сделало. Администратор видит все. Если на отчёте ограничений нет вовсе
+    (`access` пустой), запуск видят все - скрывать нечего.
     """
     if access.is_admin():
         return True
-    if not access.own_report(owner):
+    rule, _ = report_rule(file_path)
+    if not rule:
+        return True
+    return access.own_department(owner_ou)
+
+
+def allowed_file(file_path: str, owner_ou: str = '') -> bool:
+    """Можно ли выдать пользователю готовый файл отчёта.
+
+    Файл принадлежит департаменту, который отчёт запустил: подразделение
+    берётся из журнала (`report_ou`). Администратор скачивает любой файл - он
+    же чистит журнал. Чужой файл, файл без подразделения (строка старше
+    колонки `ou_name`) и файл, которого нет в журнале, не выдаются.
+
+    Вдобавок проверяются права на сам отчёт: раздел могли закрыть, а файл
+    остался с прежних времён.
+    """
+    if access.is_admin():
+        return True
+    rule, found = report_rule(file_path)
+    if not found:
         return False
-    dep_name, group, report = find_report(file_path)
-    if group is None:
-        log.info(f'ALLOWED_FILE. Отчёт не опознан в реестре: {path.basename(file_path)}')
+    if rule and not access.own_department(owner_ou):
         return False
-    return access.allowed(access.current_user(),
-                          access.effective_access(group, report,
-                                                  dict_access.get(dep_name)))
+    return access.allowed(access.current_user(), rule)
 
 
 def get_owner_reports():

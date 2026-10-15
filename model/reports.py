@@ -3,7 +3,7 @@ from db.connect import get_connection
 from datetime import datetime
 from model.manage_reports import set_status_report, remove_report
 from util.trunc_date import first_day, last_day
-from util import access
+from model.reports_info import visible_row
 import os
 
 stmt_list_reports_month = """
@@ -19,7 +19,7 @@ stmt_list_reports_month = """
                      0
                 else live_time 
             end,
-            st.login_name
+            st.ou_name
     from load_report_status st
     where trunc(st.date_execute,'MM') = trunc(to_date(:i_date,'YYYY-MM-DD'), 'MM')
     order by st.num
@@ -38,7 +38,7 @@ stmt_list_reports = """
                      0
                 else live_time 
             end,
-            st.login_name
+            st.ou_name
     from load_report_status st
     where trunc(st.date_execute,'DD') = to_date(:i_date,'YYYY-MM-DD')
     order by st.num
@@ -80,7 +80,7 @@ stmt_list_reports_global = f"""
                          0
                     else live_time
                 end remain_time,
-                st.login_name
+                st.ou_name
         from load_report_status st
         where st.date_execute >= add_months(trunc(sysdate), -12 * {GLOBAL_YEARS})
           and upper(st.name) like upper(:i_name) escape '{LIKE_ESCAPE}'
@@ -110,8 +110,8 @@ def list_reports_global(name_filter):
             status = 2
         if row[10] <= 0 or (status == 2 and not file_exist) or (status == 1 and row[0] != current_day):
             continue
-        # В журнале каждый видит свои запуски, администратор - все
-        if not access.own_report(row[11]):
+        # Запуск видит подразделение, которое его сделало, администратор - все
+        if not visible_row(row[9], row[11]):
             continue
         results.append({"date_event": row[0], "num": row[1], "date_first": row[2], "date_second": row[3],
                         "rfpm_id": row[4], "rfbn_id": row[5], "name": row[6], "live_time": row[7],
@@ -156,8 +156,8 @@ def list_reports_by_day(request_day, name_filter=''):
                     elif status == 1 and current_day != date_execute:
                         log.info(f"CHECK_REPORT. REMOVE. STATUS: {status}, date_execute: {date_execute}, current_day: {current_day}, file: {row[9]}")
                         remove_report(row[0], row[1])
-                    elif access.own_report(row[11]):
-                        # Чистка выше общая для всех строк, а видит каждый свои
+                    elif visible_row(row[9], row[11]):
+                        # Чистка выше общая для всех строк, а видит их своё подразделение
                         info = { "date_event": row[0], "num": row[1], "date_first": row[2], "date_second": row[3], 
                                  "rfpm_id": row[4], "rfbn_id": row[5], 
                                  "name": row[6], "live_time": row[7], "status": status, "path": row[9]}

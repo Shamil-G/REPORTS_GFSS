@@ -9,7 +9,7 @@ from main_app import app, log
 from model.reports_info import (get_owner_reports, get_list_groups, get_list_reports,
                                 allowed_file)
 from model.auxiliary_task import load_minso_dia
-from model.call_report import call_report, check_report, remove_report_file, report_owner
+from model.call_report import call_report, check_report, remove_report_file, report_ou
 from model.reports import list_reports_by_day, list_reports_global, GLOBAL_YEARS, GLOBAL_LIMIT
 from model.manage_reports import remove_report
 from datetime import date
@@ -233,9 +233,9 @@ def uploaded_file(full_path):
     file_path, file_name = path.split(full_path)
     log.debug(f"UPLOADED_FILE. FULL_PATH: {full_path}\n\tFILE_PATH: {file_path}\n\tFLE_NAME: {file_name}")
     if full_path.startswith(REPORT_PATH):
-        # Готовый файл отдаём тому, кто его создал (и администратору): путь к
-        # файлу виден в журнале запусков (ACCESS-PLAN.md, § 6).
-        if not allowed_file(full_path, report_owner(full_path)):
+        # Готовый файл отдаём подразделению, которое его создало (и
+        # администратору): путь к файлу виден в журнале (ACCESS-PLAN.md, § 6).
+        if not allowed_file(full_path, report_ou(full_path)):
             log.info(f"UPLOADED_FILE. ОТКАЗ В ДОСТУПЕ. user: {session.get('username')}, "
                      f"file_name: {file_name}")
             return redirect(url_for('view_running_reports'))

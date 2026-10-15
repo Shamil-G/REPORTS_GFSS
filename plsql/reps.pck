@@ -9,7 +9,7 @@ create or replace package reps is
 
   function add_report(iname in varchar2, idate_first in varchar2, idate_second in varchar2, irfpm_id in varchar2, 
             irfbn_id in varchar2, ilive_time in number, ifile_path in varchar2,
-            ilogin_name in varchar2 default null) return pls_integer;
+            iou_name in varchar2 default null) return pls_integer;
 
 end reps;
 /
@@ -26,7 +26,7 @@ create or replace package body reps is
 
   function add_report(iname in varchar2, idate_first in varchar2, idate_second in varchar2, irfpm_id in varchar2, 
             irfbn_id in varchar2, ilive_time in number, ifile_path in varchar2,
-            ilogin_name in varchar2 default null) return pls_integer
+            iou_name in varchar2 default null) return pls_integer
   is
     v_count pls_integer default 1;
     v_num   pls_integer default 0;
@@ -40,8 +40,8 @@ create or replace package body reps is
       -- Если отчета нет - то занесем информацию о его создании
       if v_count = 0 then
          util.log('REPS', 'ADD REPORT. ADD REPORT', 'iname: '||iname||', live_time: '||ilive_time||', v_num: '||v_num||', v_count: '||v_count);
-        insert into LOAD_REPORT_STATUS(date_execute, num, name, date_first, DATE_SECOND, RFPM_ID, RFBN_ID, status, live_time, file_path, login_name)  
-               values(sysdate, v_num, iname, idate_first, iDATE_SECOND, iRFPM_ID, iRFBN_ID, 1, ilive_time, ifile_path, ilogin_name);
+        insert into LOAD_REPORT_STATUS(date_execute, num, name, date_first, DATE_SECOND, RFPM_ID, RFBN_ID, status, live_time, file_path, ou_name)  
+               values(sysdate, v_num, iname, idate_first, iDATE_SECOND, iRFPM_ID, iRFBN_ID, 1, ilive_time, ifile_path, iou_name);
         commit;
         return 0;
       end if;
@@ -54,8 +54,8 @@ create or replace package body reps is
          util.log('REPS', 'ADD REPORT. REMOVE INCOMPLETED REPORT', 'iname: '||iname||', live_time: '||ilive_time||', v_num: '||v_num||', v_count: '||v_count||', STATUS: '||v_rec.status);
          delete from LOAD_REPORT_STATUS st where st.file_path = ifile_path;
          util.log('REPS', 'ADD REPORT. ADD REPORT', 'iname: '||iname||', live_time: '||ilive_time||', v_num: '||v_num||', v_count: '||v_count||', STATUS: '||v_rec.status);
-         insert into LOAD_REPORT_STATUS(date_execute, num, name, date_first, DATE_SECOND, RFPM_ID, RFBN_ID, status, live_time, file_path, login_name)  
-                values(sysdate, v_num, iname, idate_first, iDATE_SECOND, iRFPM_ID, iRFBN_ID, 1, ilive_time, ifile_path, ilogin_name);
+         insert into LOAD_REPORT_STATUS(date_execute, num, name, date_first, DATE_SECOND, RFPM_ID, RFBN_ID, status, live_time, file_path, ou_name)  
+                values(sysdate, v_num, iname, idate_first, iDATE_SECOND, iRFPM_ID, iRFBN_ID, 1, ilive_time, ifile_path, iou_name);
          commit;
          return 0;
       end if;
