@@ -8,7 +8,7 @@ from util.access import (DEFAULT_ACCESS, allowed, effective_access,
 
 class User:
     """Признаки пользователя так, как их выставляет SSO_User.init_user."""
-    def __init__(self, roles=('Operator',), post='', ou_name='', rfbn_id=''):
+    def __init__(self, roles=('User',), post='', ou_name='', rfbn_id=''):
         self.roles = set(roles)
         self.post = post
         self.ou_name = ou_name

@@ -1,22 +1,27 @@
 from flask import session
 from util.ip_addr import ip_addr
 from util.logger import log, is_auto_refresh
-from app_config import admin_post, work_post, view_post
+from app_config import admin_post
+
+ROLE_ADMIN = 'Admin'
+ROLE_USER = 'User'
 
 
-def _roles_from_post(post: str, dep_name: str) -> set:
-    """Переходный вывод роли по должности и департаменту (таблицы app_config).
+def local_role(post: str, ou_name: str, dep_name: str) -> str:
+    """Роль заполняется локально: Admin или User.
 
-    SSO роль пока не отдаёт: в ответе есть post, dep_name, ou_name и rfbn_id,
-    поля roles нет. Как только оно появится, этот вывод и сами таблицы
-    должностей уходят (этап 4 в ACCESS-PLAN.md). Роль одна - первая
-    подошедшая, как было до перехода на множество.
+    SSO роль не отдаёт - у него другая функция, он отвечает за то, кто вошёл
+    (должность, подразделение, область). Admin - если должность и
+    подразделение есть в `admin_post` (app_config), иначе User.
+
+    Подразделение сравнивается и с коротким именем из AD (`ou_name`), и с
+    полным названием департамента (`dep_name`): в списке допустимо любое из
+    двух, чтобы короткие имена не приходилось угадывать.
     """
-    for role, table in (('Admin', admin_post), ('Operator', work_post), ('Guest', view_post)):
-        list_dep = table.get(post, [])
-        if '*' in list_dep or dep_name in list_dep:
-            return {role}
-    return set()
+    places = admin_post.get(post, [])
+    if '*' in places or ou_name in places or dep_name in places:
+        return ROLE_ADMIN
+    return ROLE_USER
 
 
 class SSO_User:
@@ -69,16 +74,8 @@ class SSO_User:
             # post
             self.post = info_user.get('post','')
             session['post']=self.post
-            # Роль: из ответа SSO, если он её отдаёт, иначе переходно по должности
-            roles = info_user.get('roles') or []
-            if isinstance(roles, str):
-                roles = [roles]
-            self.roles = {str(role).strip() for role in roles if str(role).strip()}
-            if not self.roles:
-                self.roles = _roles_from_post(self.post, self.dep_name)
-            if not self.roles:
-                log.info(f'SSO. Undefined ROLE for: {self.login_name}')
-                return None
+            # Роль заполняется локально, из списка в app_config
+            self.roles = {local_role(self.post, self.ou_name, self.dep_name)}
             # Множество в сессию не уходит: она сериализуется в JSON
             session['roles'] = sorted(self.roles)
 
