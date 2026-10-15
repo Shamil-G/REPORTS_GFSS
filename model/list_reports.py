@@ -2997,31 +2997,30 @@ dict_reports = {
                 },
             }
         },
-        # ВРЕМЕННО ОТКЛЮЧЕНО (15.10.2026, Шамиль): в отчёте 6 вместо проверки по таблице notobor будет вызов веб-сервиса контроля доступа; до этого не публиковать. Модули reports/DIA/6/rep_dia_6_1.py и rep_dia_6_2.py и журнал доступа (признак audit) оставлены.
-        # "6 - Обороты и назначения":
-        # {
-        #     "module_dir": f"{REPORT_MODULE_PATH}.DIA.6",
-        #     "live_time": 0,
-        #     "reports":
-        #     {
-        #         "01": {
-        #             "name": "6-1 - Обороты и назначения: назначения",
-        #             "proc": "rep_dia_6_1",
+        "6 - Обороты и назначения":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.6",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "6-1 - Обороты и назначения: назначения",
+                    "proc": "rep_dia_6_1",
                     "audit": True,
-        #             "data_approve": "15.10.2026",
-        #             "author": "Гусейнов Ш.",
-        #             "meta_params": {"iin": {"display_name": "ИИН участника", "type": "string", "length": 12, "required": True}},
-        #         },
-        #         "02": {
-        #             "name": "6-2 - Обороты и назначения: обороты по социальным отчислениям",
-        #             "proc": "rep_dia_6_2",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН участника", "type": "string", "length": 12, "required": True}},
+                },
+                "02": {
+                    "name": "6-2 - Обороты и назначения: обороты по социальным отчислениям",
+                    "proc": "rep_dia_6_2",
                     "audit": True,
-        #             "data_approve": "15.10.2026",
-        #             "author": "Гусейнов Ш.",
-        #             "meta_params": {"iin": {"display_name": "ИИН участника", "type": "string", "length": 12, "required": True}},
-        #         },
-        #     }
-        # },
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН участника", "type": "string", "length": 12, "required": True}},
+                },
+            }
+        },
         "9000 - Список плательщиков без подтверждения трудовых отношений с получателями СВбр, СВур":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.9000",
