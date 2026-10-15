@@ -652,7 +652,7 @@ dict_reports = {
                     "proc": "rep_dia_1366",
                     "data_approve": "15.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO, "rfpm": {"display_name": "Вид выплаты (первые 4 цифры, пусто - все)", "type": "string", "length": 4, "required": False}},
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO, "rfpm_id": {**LIST_RFPM, "required": False}},
                 },
             }
         },
@@ -1055,7 +1055,7 @@ dict_reports = {
                                 "type": "date",
                                 "required": True
                             },
-                            "rfpm": {"display_name": "Вид выплаты (первые 4 цифры)", "type": "string", "length": 4, "required": True}
+                            "rfpm_id": {**LIST_RFPM, "required": True}
                         }
                 },
                 "14": {

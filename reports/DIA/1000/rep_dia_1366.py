@@ -52,7 +52,7 @@ select sfa.rfbn_id, sfa.rfpm_id, p.iin,
   from v_sipr_maket_first_approve_dn sfa, person p
  where p.sicid = sfa.sicp_id
    and sfa.date_approve >= :d_from and sfa.date_approve < :d_to
-   and sfa.rfpm_id like :rfpm || '%'
+   and sfa.rfpm_id like :rfpm_id || '%'
  order by sfa.rfbn_id, fio
 """
 

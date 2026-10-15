@@ -4,8 +4,8 @@ AIS_GFSS, группа «Отчеты ДИА», отчёт 3027 (процеду�
 Список работ: rep_stat_extend/docs/TASKS_2026-10-02.md.
 ============================================================
 
-Список лиц, которым назначена социальная выплата одного вида (первые четыре
-знака кода, параметр «Вид выплаты») за период по дате утверждения, с учётом
+Список лиц, которым назначена социальная выплата одного вида (код из
+выпадающего списка видов выплат, параметр «Вид выплаты») за период по дате утверждения, с учётом
 ЕСП: ИИН, ФИО, пол, дата риска, СМД, КЗД, МЗП, число месяцев, назначенный
 размер, дата назначения и два признака по платежам за 24 месяца до
 назначения (`si_member_2`): «Есть СО» - были обычные социальные отчисления
@@ -38,7 +38,7 @@ from util.xlsx_report import build_report, Col
 report_code = '3027'
 report_name = ('Список лиц, которым назначена социальная выплата с учетом ЕСП '
                'с {date_from} по {date_to} года\n'
-               'Вид выплаты: {rfpm}')
+               'Вид выплаты: {rfpm_id}')
 
 COLUMNS = [
     Col('Код региона', 'rfbn_id', 'center', 10),
@@ -58,13 +58,18 @@ COLUMNS = [
 ]
 
 
-def _check(params):
-    if len(str(params.get('rfpm') or '').strip()) < 4:
-        raise ValueError('Не указан вид выплаты (4 знака)!')
+# Название вида выплаты в заголовке (код выбирается из списка LIST_RFPM).
+_RFPM_TEXT = {'rfpm_id': {
+    '0701': '0701 - потеря кормильца',
+    '0702': '0702 - утрата трудоспособности',
+    '0703': '0703 - потеря работы',
+    '0704': '0704 - беременность и роды',
+    '0705': '0705 - уход за ребенком до года/до полутора лет',
+}}
 
 
 # :d_from, :d_to - период по дате утверждения (d_to исключительная);
-# :rfpm - вид выплаты (первые 4 знака).
+# :rfpm_id - вид выплаты, код из списка (4 знака).
 STMT = """
 with t as (
     select s.rfbn_id, s.rfpm_id, p.iin, p.lastname, p.firstname, p.middlename,
@@ -72,7 +77,7 @@ with t as (
            s.count_donation, p.sicid, s.date_approve
       from sipr_maket_first_approve_2 s, person p
      where s.date_approve >= :d_from and s.date_approve < :d_to
-       and substr(s.rfpm_id, 1, 4) = substr(trim(:rfpm), 1, 4)
+       and substr(s.rfpm_id, 1, 4) = substr(trim(:rfpm_id), 1, 4)
        and p.sicid = s.sicp_id
 )
 select rfbn_id, rfpm_id, iin,
@@ -99,6 +104,5 @@ select rfbn_id, rfpm_id, iin,
 
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
-    profile=LOADER_PROFILE, date_range=True, check_params=_check,
-    title_params=('rfpm',),
+    profile=LOADER_PROFILE, date_range=True, text_params=_RFPM_TEXT,
 )
