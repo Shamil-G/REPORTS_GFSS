@@ -11,6 +11,7 @@ from   model.list_reports import dict_reports
 from   model.manage_reports import remove_report, set_status_report
 from   util.trunc_date import get_year
 from   util import access_audit
+from   util.access import allowed, current_user, effective_access, forced_rfbn
 from   util.period import split_period, period_bounds, period_name, last_day
 from   datetime import date
 
@@ -253,6 +254,15 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
     except KeyError:
         return {"status": 0, "file_path": "Mistake in parameters"}
 
+    # Доступ проверяется и здесь, а не только в меню: /extract-params/<номер>
+    # набирается руками, а параметры уходят обычным POST.
+    access_rule = effective_access(group, report)
+    user = current_user()
+    if not allowed(user, access_rule):
+        log.info(f'CALL REPORT. ОТКАЗ В ДОСТУПЕ. user: {access_audit.current_user()}, '
+                 f'отчёт: {dep_name}.{group_name}.{num_rep}, access: {access_rule}')
+        return _audit_page('Доступ к отчёту запрещен.')
+
     module_dir = group["module_dir"]
     live_time = group["live_time"]
     proc = report["proc"]
@@ -263,6 +273,17 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
     rep_code = getattr(loaded_module, "report_code", "")
 
     params = params.copy()
+
+    # Разрез данных филиала: область ставит сервер, присланное формой значение
+    # не в счёт. Подставляем только в отчёт, у которого область есть в
+    # параметрах: иначе лишний ключ ушёл бы в do_report и в имя файла. Отчёты
+    # без параметра области (6-1, 6-2) ограничиваются проверкой по человеку
+    # (см. ACCESS-PLAN.md, § 7).
+    forced = forced_rfbn(user, access_rule)
+    if forced is not None and "rfbn_id" in params:
+        if params["rfbn_id"] != forced:
+            log.info(f'CALL REPORT. Область филиала: {params["rfbn_id"]!r} -> {forced!r}')
+        params["rfbn_id"] = forced
 
     # Отчёт может привести введённые пользователем параметры к единому виду
     # (например, КНП "97, 92" -> "097,092") до того, как из них собрано имя файла

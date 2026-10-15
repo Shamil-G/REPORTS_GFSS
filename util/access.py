@@ -51,6 +51,15 @@ DEFAULT_ACCESS = {'rfbn_id': '0000'}
 _NOCASE = ('ou_name',)
 
 
+def current_user():
+    """Пользователь текущего запроса (`g.user`); вне запроса - None."""
+    try:
+        from flask import g
+        return getattr(g, 'user', None)
+    except Exception:
+        return None
+
+
 def _values(raw) -> list:
     """Значение признака - строка или список; пустые отбрасываем."""
     items = raw if isinstance(raw, (list, tuple, set)) else [raw]
@@ -118,15 +127,16 @@ def is_central(rfbn_id) -> bool:
 
 
 def forced_rfbn(user, access: dict):
-    """Значение параметра `rfbn_id` отчёта при `access` с `own`.
+    """Область, которую сервер обязан подставить в параметры отчёта при `own`.
 
-    Центральный аппарат получает пусто - "вся республика", как сейчас; филиал -
-    двузначный код своей области. `None` значит "подставлять нечего", параметры
-    отчёта не трогаем.
+    Филиал получает двузначный код своей области. `None` значит "подставлять
+    нечего, выбор за пользователем": так у центрального аппарата (он работает
+    по всей республике и область выбирает сам, как сейчас), у `access` без
+    `own` и у пользователя с неизвестной областью.
     """
     if OWN not in _values(access.get('rfbn_id', '')):
         return None
     mine = _user_values(user, 'rfbn_id')
-    if not mine:
+    if not mine or is_central(mine[0]):
         return None
-    return '' if is_central(mine[0]) else _region(mine[0])
+    return _region(mine[0])

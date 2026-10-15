@@ -1,6 +1,7 @@
 from flask import session,redirect, url_for
 from util.logger import log
-from model.list_reports import dict_reports, DYNAMIC_VALUES
+from util import access
+from model.list_reports import dict_reports, DYNAMIC_VALUES, regions_values
 
 
 def resolve_dynamic(meta_params: dict) -> dict:
@@ -22,10 +23,49 @@ def resolve_dynamic(meta_params: dict) -> dict:
     return resolved
 
 
+def visible_group(group: dict) -> bool:
+    """Показывать ли группу: доступна она сама или хотя бы один её отчёт.
+
+    Отчёт со своим ключом "access" может быть открыт шире группы - тогда
+    группу надо показать, иначе до отчёта не добраться.
+    """
+    user = access.current_user()
+    if access.allowed(user, access.effective_access(group)):
+        return True
+    return any(access.allowed(user, access.effective_access(group, rep))
+               for rep in group.get("reports", {}).values())
+
+
+def visible_report(group: dict, report: dict) -> bool:
+    return access.allowed(access.current_user(),
+                          access.effective_access(group, report))
+
+
+def own_region_param(meta_params: dict, group: dict, report: dict) -> dict:
+    """Область в форме при access с "own": филиалу - своя, без выбора.
+
+    Центральному аппарату список остаётся прежним (вся республика и любая
+    область). Подмена значения в форме ничего не даёт: call_report всё равно
+    ставит область сам, это только подпись для пользователя.
+    """
+    forced = access.forced_rfbn(access.current_user(),
+                                access.effective_access(group, report))
+    if not forced or "rfbn_id" not in meta_params:
+        return meta_params
+    region = dict(meta_params["rfbn_id"])
+    region["values"] = {forced: regions_values.get(forced, forced)}
+    region["default"] = forced
+    region["required"] = True
+    region.pop("empty_label", None)
+    return {**meta_params, "rfbn_id": region}
+
+
 def get_owner_reports():
-    # По умолчанию 
+    # По умолчанию
     # for dep_name in dict_reports == for dep_name in dict_reports.keys()
-    return [{"dep_name": dep_name} for dep_name in dict_reports]
+    # Отдел показывается, если в нём есть хоть одна доступная группа.
+    return [{"dep_name": dep_name} for dep_name, groups in dict_reports.items()
+            if any(visible_group(group) for group in groups.values())]
 
 
 def get_list_groups():
@@ -34,7 +74,7 @@ def get_list_groups():
         dep_reps = dict_reports.get(dep_name)
         log.debug(f'GET LIST GROUPS. dep_reps: {dep_reps}')
         if dep_reps:
-            list_grp = list(dep_reps.keys())
+            list_grp = [grp for grp, group in dep_reps.items() if visible_group(group)]
 
             log.debug(f'\n------> GET LIST REPORTS. List groups: {list_grp}')
             return list_grp
@@ -44,15 +84,17 @@ def get_list_groups():
 def get_list_reports():
     if 'dep_name' not in session or 'grp_name' not in session:
         return redirect(url_for('view_root'))
-        
+
     group = dict_reports[session['dep_name']][session['grp_name']]
-    
+
     return [
         {
             "num": num_rep,
             "name": rep["name"],
             "params": rep.get("params", {}),
-            "meta_params": resolve_dynamic(rep.get("meta_params", {}))
+            "meta_params": own_region_param(
+                resolve_dynamic(rep.get("meta_params", {})), group, rep)
         }
         for num_rep, rep in group["reports"].items()
+        if visible_report(group, rep)
     ]

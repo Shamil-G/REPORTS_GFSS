@@ -76,8 +76,9 @@ def test_own_does_not_limit_visibility():
 
 
 @pytest.mark.parametrize('who, expected', [
-    (CENTER, ''),      # центр - вся республика, поле как сейчас
+    (CENTER, None),    # центр работает по всей республике и выбирает сам
     (AKMOLA, '01'),    # филиалу 4 знака признака -> 2 знака параметра отчёта
+    (NOWHERE, None),   # область неизвестна - подставлять нечего
 ])
 def test_forced_rfbn(who, expected):
     assert forced_rfbn(who, {'rfbn_id': 'own'}) == expected
