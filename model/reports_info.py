@@ -86,32 +86,30 @@ def find_report(file_path: str):
     return None, None, None
 
 
-def allowed_file(file_path: str, journal_rfbn: str = '') -> bool:
+def allowed_file(file_path: str, owner: str = '') -> bool:
     """Можно ли выдать пользователю готовый файл отчёта.
 
-    Права те же, что на запуск: находим отчёт в реестре по имени файла и
-    проверяем его `access`. Для отчёта с разрезом по филиалу ("own") филиалу
-    отдаются только файлы его области - область берётся из журнала запусков
-    (`report_rfbn`), потому что из имени файла её не вытащить: там подряд идут
-    все параметры формы.
+    Кто отчёт создал, тот его и скачивает: владелец берётся из журнала
+    запусков (`report_owner`). Администратор скачивает любой файл - он же
+    чистит журнал. Чужой файл, файл без владельца (строка старше колонки
+    `login_name`) и файл, которого нет в журнале, не выдаются.
 
-    Файл, который в реестре не опознан (отчёт из реестра убрали), выдаётся
-    только администратору.
+    Владельцу файл выдаётся, только если права на сам отчёт у него остались:
+    человека могли перевести в другое подразделение, и старые файлы вместе с
+    доступом к отчёту тоже закрываются. Отчёт ищется в реестре по имени файла
+    (`find_report`); не опознан - не выдаём.
     """
-    user = access.current_user()
-    is_admin = access.ROLE_ADMIN in (getattr(user, 'roles', None) or set())
+    if access.is_admin():
+        return True
+    if not access.own_report(owner):
+        return False
     dep_name, group, report = find_report(file_path)
     if group is None:
         log.info(f'ALLOWED_FILE. Отчёт не опознан в реестре: {path.basename(file_path)}')
-        return is_admin
-    rule = access.effective_access(group, report, dict_access.get(dep_name))
-    if not access.allowed(user, rule):
         return False
-    # Отчёт с разрезом по филиалу: область файла должна быть областью филиала
-    forced = access.forced_rfbn(user, rule)
-    if forced is not None and access.region(journal_rfbn) != forced:
-        return False
-    return True
+    return access.allowed(access.current_user(),
+                          access.effective_access(group, report,
+                                                  dict_access.get(dep_name)))
 
 
 def get_owner_reports():

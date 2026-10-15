@@ -107,24 +107,25 @@ def check_report(file_path: str):
     return 10
 
 
-def report_rfbn(file_path: str) -> str:
-    """Область, с которой отчёт запускали, из журнала готовых отчётов.
+def report_owner(file_path: str) -> str:
+    """Кто запустил отчёт - из журнала готовых отчётов.
 
-    Пусто - вся республика (или отчёт без области вовсе). Нужна при выдаче
-    готового файла: филиалу отдаются только файлы его области.
+    Пусто - записи нет или строка создана до появления колонки `login_name`.
+    Нужно при выдаче файла: своё отдаём владельцу, чужое - никому, кроме
+    администратора.
     """
-    result = select_one('select st.rfbn_id from LOAD_REPORT_STATUS st '
+    result = select_one('select st.login_name from LOAD_REPORT_STATUS st '
                         'where st.file_path = :file_path', {'file_path': file_path})
-    if result and result.get('rfbn_id'):
-        return str(result['rfbn_id'])
-    return ''
+    return str((result or {}).get('login_name') or '')
 
 
-def init_report(name_report: str, date_first: str, date_second: str, rfpm_id: str, rfbn_id: str, live_time: str, file_path: str):
+def init_report(name_report: str, date_first: str, date_second: str, rfpm_id: str, rfbn_id: str, live_time: str, file_path: str,
+                login_name: str = ''):
     status = 0
     with get_connection() as conn:
         with conn.cursor() as cursor:
-            status =cursor.callfunc('reps.add_report', int, [name_report, date_first, date_second, rfpm_id, rfbn_id, live_time, file_path])
+            status =cursor.callfunc('reps.add_report', int, [name_report, date_first, date_second, rfpm_id, rfbn_id, live_time, file_path,
+                                                             login_name])
     # 0 - файл отсутствует
     # 1 - Файл готовится
     # 2 - Файл готов
@@ -374,7 +375,9 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
 
     # Если запись об отчете в БД отсутствует, то ее надо сделать
     if status in (0,10):
-        status = init_report(journal_name(dep_name, group_name, report.get("name"), num_rep, label), date_first, date_second, rfpm_id, rfbn_id, live_time, file_name)
+        # Владелец запуска: в журнале каждый видит и скачивает свои отчёты
+        status = init_report(journal_name(dep_name, group_name, report.get("name"), num_rep, label), date_first, date_second, rfpm_id, rfbn_id, live_time, file_name,
+                             access_audit.current_user())
         log.debug(f'CALL REPORT. Status: {status}')
         if status == 1:
             log.info(f'CALL REPORT. REPORT PREPARING. Status: {status}, file_name: {file_name}')

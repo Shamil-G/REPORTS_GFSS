@@ -68,6 +68,32 @@ def current_user():
         return None
 
 
+def current_login() -> str:
+    """Имя входа текущего пользователя (`session['username']`); вне запроса - ''."""
+    try:
+        from flask import session
+        return str(session.get('username') or '')
+    except Exception:
+        return ''
+
+
+def is_admin(user=None) -> bool:
+    user = current_user() if user is None else user
+    return ROLE_ADMIN in (getattr(user, 'roles', None) or set())
+
+
+def own_report(owner: str) -> bool:
+    """Запуск принадлежит текущему пользователю.
+
+    Администратору принадлежат все: он же чистит журнал. Пустой владелец -
+    строка создана до появления колонки `login_name` - не принадлежит никому.
+    """
+    if is_admin():
+        return True
+    me = current_login()
+    return bool(me) and bool(owner) and str(owner) == me
+
+
 def _values(raw) -> list:
     """Значение признака - строка или список; пустые отбрасываем."""
     items = raw if isinstance(raw, (list, tuple, set)) else [raw]
