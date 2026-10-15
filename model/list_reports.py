@@ -356,28 +356,134 @@ dict_reports = {
             "live_time": 0,
             "reports":
             {
-                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_601.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "01": {
-                #     "name": "601 - Справка о произведенных выплатах",
-                #     "proc": "rep_dia_601",
-                #     "data_approve": "02.10.2026",
-                #     "author": "Гусейнов Ш.",
-                #     "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
-                # },
-                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_602.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "02": {
-                #     "name": "602 - Справка о доходах за год",
-                #     "proc": "rep_dia_602",
-                #     "data_approve": "02.10.2026",
-                #     "author": "Гусейнов Ш.",
-                #     "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
-                # },
+                "01": {
+                    "name": "601 - Справка о произведенных выплатах",
+                    "proc": "rep_dia_601",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
+                },
+                "02": {
+                    "name": "602 - Справка о доходах за год",
+                    "proc": "rep_dia_602",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
                 "03": {
                     "name": "605 - Реестр беременных",
                     "proc": "rep_dia_605",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
+                },
+                "04": {
+                    "name": "603 - Протокол операций",
+                    "proc": "rep_dia_603",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True},
+                        "file_numb": {"display_name": "Номер дела", "type": "string", "length": 22, "required": True},
+                    },
+                },
+                "05": {
+                    "name": "608 - Сведения об уплате СО по БИН и периоду",
+                    "proc": "rep_dia_608",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "06": {
+                    "name": "609 - Справка о произведенных выплатах по ИИН",
+                    "proc": "rep_dia_609",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
+                },
+                "07": {
+                    "name": "610 - СО от дохода в сумме менее 1 МЗП",
+                    "proc": "rep_dia_610",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
+                },
+                "08": {
+                    "name": "611 - СВбр с отчислениями от ИП (3312)",
+                    "proc": "rep_dia_611",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "09": {
+                    "name": "612 - Макеты по ЕСП (список)",
+                    "proc": "rep_dia_612",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "10": {
+                    "name": "613 - Макеты по ЕСП",
+                    "proc": "rep_dia_613",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO, "status": {"display_name": "Статус", "type": "list", "required": True, "values": {"3": "Все", "1": "1 - статусы 7 и 20", "2": "2 - статус 12"}}},
+                },
+                "11": {
+                    "name": "614 - Список получателей СВпр, снятых с учета в качестве безработного",
+                    "proc": "rep_dia_614",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {},
+                },
+                "12": {
+                    "name": "615 - Взносы менее 1 МЗП",
+                    "proc": "rep_dia_615",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "13": {
+                    "name": "616 - Менее 1 МЗП",
+                    "proc": "rep_dia_616",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {},
+                },
+                "14": {
+                    "name": "621 - Проверка СВпк (0701) по БИН или ИИН ИП",
+                    "proc": "rep_dia_621",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "15": {
+                    "name": "622 - Проверка СВут (0702) по БИН или ИИН ИП",
+                    "proc": "rep_dia_622",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "16": {
+                    "name": "623 - Проверка СВпр (0703) по БИН или ИИН ИП",
+                    "proc": "rep_dia_623",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "17": {
+                    "name": "624 - Проверка СВбр (0704) по БИН или ИИН ИП",
+                    "proc": "rep_dia_624",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "18": {
+                    "name": "625 - Проверка СВур (0705) по БИН или ИИН ИП",
+                    "proc": "rep_dia_625",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
                 },
             }
         },
@@ -2833,14 +2939,13 @@ dict_reports = {
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
-                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3505.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "04": {
-                #     "name": "3505 - Участники системы социального страхования и одновременно уплачивающие ЕСП",
-                #     "proc": "rep_dia_3505",
-                #     "data_approve": "02.10.2026",
-                #     "author": "Гусейнов Ш.",
-                #     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                # },
+                "04": {
+                    "name": "3505 - Участники системы социального страхования и одновременно уплачивающие ЕСП",
+                    "proc": "rep_dia_3505",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
                 "05": {
                     "name": "3506 - Отчет о поступивших СО от плательщиков ЕСП по периоду",
                     "proc": "rep_dia_3506",
@@ -3699,22 +3804,20 @@ dict_reports = {
                     "author": "Гусейнов Ш.",
                     "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
                 },
-                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3325.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "05": {
-                #     "name": "3325 - Макет по СВчп (по БИН)",
-                #     "proc": "rep_dia_3325",
-                #     "data_approve": "02.10.2026",
-                #     "author": "Гусейнов Ш.",
-                #     "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
-                # },
-                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3326.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "06": {
-                #     "name": "3326 - Сведения по отказным выплатам 42500 в разрезе причин",
-                #     "proc": "rep_dia_3326",
-                #     "data_approve": "02.10.2026",
-                #     "author": "Гусейнов Ш.",
-                #     "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
-                # },
+                "05": {
+                    "name": "3325 - Макет по СВчп (по БИН)",
+                    "proc": "rep_dia_3325",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
+                },
+                "06": {
+                    "name": "3326 - Сведения по отказным выплатам 42500 в разрезе причин",
+                    "proc": "rep_dia_3326",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
                 "07": {
                     "name": "3327 - Количество отказанных дел по причинам, в разрезе областей",
                     "proc": "rep_dia_3327",
@@ -3722,22 +3825,20 @@ dict_reports = {
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
-                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3328.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "08": {
-                #     "name": "3328 - Сведения по выплатам 42500 в разрезе причин",
-                #     "proc": "rep_dia_3328",
-                #     "data_approve": "02.10.2026",
-                #     "author": "Гусейнов Ш.",
-                #     "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
-                # },
-                # НЕ ИСПОЛЬЗУЕТСЯ (02.10.2026): оригинал читает person.rn - колонки нет, значит отчёт не работает давно; модуль rep_dia_3329.py оставлен на случай, если отчёт понадобится (ИИН в нём - person.iin)
-                # "09": {
-                #     "name": "3329 - Получатель выплаты 42500 тенге (по ИИН)",
-                #     "proc": "rep_dia_3329",
-                #     "data_approve": "02.10.2026",
-                #     "author": "Гусейнов Ш.",
-                #     "meta_params": {"iin": {"display_name": "ИИН", "type": "string", "length": 12, "required": True}},
-                # },
+                "08": {
+                    "name": "3328 - Сведения по выплатам 42500 в разрезе причин",
+                    "proc": "rep_dia_3328",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "09": {
+                    "name": "3329 - Получатель выплаты 42500 тенге (по ИИН)",
+                    "proc": "rep_dia_3329",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН", "type": "string", "length": 12, "required": True}},
+                },
             }
         },
         "7000":
