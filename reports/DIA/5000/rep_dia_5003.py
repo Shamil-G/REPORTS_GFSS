@@ -21,7 +21,7 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import base_for, MSB_LIMIT, OBL_JOIN, OBL_NAME, check_params, journal_label, normalize_params
+from util.social_tension import base_for, MSB_LIMIT, OBL_JOIN, OBL_NAME, HALF_TEXT, check_params, journal_label, normalize_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5003'
@@ -29,7 +29,7 @@ report_name = ('Информация о плательщиках социаль�
                'численностью 50 и более человек), допустивших снижение '
                'количества работников в 2 и более раза с делением на '
                'предприятия малого, среднего и крупного бизнеса за период '
-               'с {date_from} по {date_to}')
+               'с {date_from} по {date_to} ({half})')
 
 
 def _block(p, count_title):
@@ -90,6 +90,6 @@ select {OBL_NAME} reg,
 
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
-    profile=LOADER_PROFILE, date_range=True, check_params=check_params,
+    profile=LOADER_PROFILE, date_range=True, check_params=check_params, text_params=HALF_TEXT,
     totals=True,
 )

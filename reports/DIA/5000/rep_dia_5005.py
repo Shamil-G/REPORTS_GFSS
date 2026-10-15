@@ -25,13 +25,13 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import base_for, OBL_JOIN, OBL_NAME, SECTIONS, check_params, journal_label, normalize_params
+from util.social_tension import base_for, OBL_JOIN, OBL_NAME, SECTIONS, HALF_TEXT, check_params, journal_label, normalize_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5005'
 report_name = ('Информация о количестве предприятий, допустивших снижение '
                'численности работников в 2 и более раза. III. В разрезе '
-               'регионов и ВЭД за период с {date_from} по {date_to}')
+               'регионов и ВЭД за период с {date_from} по {date_to} ({half})')
 
 
 def _cols(p):
@@ -83,5 +83,5 @@ select {OBL_NAME} reg, a.cnt_all, a.sum_all, a.avg_all,
 
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
-    profile=LOADER_PROFILE, date_range=True, check_params=check_params,
+    profile=LOADER_PROFILE, date_range=True, check_params=check_params, text_params=HALF_TEXT,
 )

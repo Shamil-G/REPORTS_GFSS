@@ -26,11 +26,11 @@
   - подписи под таблицей не переносятся (дата формирования - в шапке листа).
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import base_for, UNKNOWN_NAME, UNKNOWN_RC, check_params, journal_label, normalize_params
+from util.social_tension import base_for, UNKNOWN_NAME, UNKNOWN_RC, HALF_TEXT, check_params, journal_label, normalize_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5006'
-report_name = 'Списочная часть предприятий на период с {date_from} по {date_to}'
+report_name = 'Списочная часть предприятий на период с {date_from} по {date_to} ({half})'
 
 
 def _month(p):
@@ -75,5 +75,5 @@ select nvl(ob.name, '{UNKNOWN_NAME}') obl_name,
 
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
-    profile=LOADER_PROFILE, date_range=True, check_params=check_params,
+    profile=LOADER_PROFILE, date_range=True, check_params=check_params, text_params=HALF_TEXT,
 )

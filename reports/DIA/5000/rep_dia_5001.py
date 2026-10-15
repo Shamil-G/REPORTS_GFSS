@@ -36,11 +36,11 @@ AIS 5001 «Свод по областям»). Группа «5000 - Социал
 «Г.АЛМАТЫ» алфавит перемешал бы области и города.
 """
 from db.connect import LOADER_PROFILE
-from util.social_tension import base_for, BANDS, OBL_JOIN, OBL_NAME, band_columns, band_sql, check_params, journal_label, normalize_params
+from util.social_tension import base_for, BANDS, OBL_JOIN, OBL_NAME, band_columns, band_sql, HALF_TEXT, check_params, journal_label, normalize_params
 from util.xlsx_report import build_report, Col, Group
 
 report_code = '5001'
-report_name = 'Социальная напряженность, Области. На период с {date_from} по {date_to}'
+report_name = 'Социальная напряженность, Области. На период с {date_from} по {date_to} ({half})'
 
 COLUMNS = [
     Col('Обл', 'reg', 'text', 36),
@@ -81,6 +81,6 @@ select {OBL_NAME} reg,
 
 do_report, thread_report = build_report(
     code=report_code, name=report_name, columns=COLUMNS, stmt=STMT,
-    profile=LOADER_PROFILE, date_range=True, check_params=check_params,
+    profile=LOADER_PROFILE, date_range=True, check_params=check_params, text_params=HALF_TEXT,
     totals=True,
 )

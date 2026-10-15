@@ -160,6 +160,11 @@ def normalize_params(params):
     return params
 
 
+# Слот {half} в названии отчёта (build_report(text_params=HALF_TEXT)): какая
+# половина месяца, то есть какой источник платежей, дала цифры.
+HALF_TEXT = {'half': {'1': '1-я половина', '2': '2-я половина'}}
+
+
 def journal_label(params):
     """Пометка в журнале запусков (/running-reports): период один, а расчёт по
     половинам месяца разный, без неё строки не отличить."""
@@ -172,6 +177,7 @@ def check_params(params):
         n = normalize_params(params)
         params['date_first'] = n['date_first']
         params['date_second'] = n['date_second']
+    params.setdefault('half', '2' if second_half(params) else '1')
 
 
 def band_columns():
