@@ -3895,6 +3895,20 @@ dict_reports = {
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
+                "04": {
+                    "name": "413 - Отчет о возвратах (сравнение периодов) по предприятиям (3 и более раз)",
+                    "proc": "rep_dia_413",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": {"display_name": "Период 1: с", "type": "date", "required": True, "length": None}, "date_second": {"display_name": "Период 1: по", "type": "date", "required": True, "length": None}, "date_third": {"display_name": "Период 2: с", "type": "date", "required": True, "length": None}, "date_fourth": {"display_name": "Период 2: по", "type": "date", "required": True, "length": None}},
+                },
+                "05": {
+                    "name": "418 - Распоряжение на возврат",
+                    "proc": "rep_dia_418",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {},
+                },
             }
         },
         "3200":
