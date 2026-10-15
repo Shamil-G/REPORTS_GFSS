@@ -255,6 +255,13 @@ dict_reports = {
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
                 },
+                "12": {
+                    "name": "16 - Списки переплат по СВпр",
+                    "proc": "rep_dia_16",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rfbn_id": LIST_REGION},
+                },
             }
         },
         "300": 
@@ -640,6 +647,13 @@ dict_reports = {
                 #         "period": PERIOD,
                 #     }
                 # },
+                "26": {
+                    "name": "1366 - Список к сведениям",
+                    "proc": "rep_dia_1366",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO, "rfpm": {"display_name": "Вид выплаты (первые 4 цифры, пусто - все)", "type": "string", "length": 4, "required": False}},
+                },
             }
         },
         "1501" : 
@@ -1602,6 +1616,27 @@ dict_reports = {
                 #             }
                 #         }
                 # },
+                "40": {
+                    "name": "3015 - Сведения о числе получателей СВ, присвоенных статус оралмана",
+                    "proc": "rep_dia_3015",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "41": {
+                    "name": "3024 - Задержка по СВбр",
+                    "proc": "rep_dia_3024",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "42": {
+                    "name": "3116 - Список получателей, достигающих пенсионного возраста",
+                    "proc": "rep_dia_3116",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
             },
         },
         "3127 - Утрата трудоспособности": 
@@ -2960,6 +2995,28 @@ dict_reports = {
                 },
             }
         },
+        "9000 - Список плательщиков без подтверждения трудовых отношений с получателями СВбр, СВур":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.9000",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "9001 - Список лиц, не являющихся наемными работниками",
+                    "proc": "rep_dia_9001",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "02": {
+                    "name": "9002 - Список лиц, не указанных в заявлении",
+                    "proc": "rep_dia_9002",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+            }
+        },
         "6020":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6020",
@@ -3651,6 +3708,97 @@ dict_reports = {
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"iin": {"display_name": "ИИН", "type": "string", "length": 12, "required": True}},
+                },
+                "10": {
+                    "name": "3301 - СВбр несоответствие вида выплаты и количества дней нетрудоспособности",
+                    "proc": "rep_dia_3301",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "11": {
+                    "name": "3302 - Несоответствие вида СВут и КУТ",
+                    "proc": "rep_dia_3302",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "12": {
+                    "name": "3303 - Несоответствие вида СВпк и ККИ",
+                    "proc": "rep_dia_3303",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "13": {
+                    "name": "3304 - Несоответствие КУМ и КСУ",
+                    "proc": "rep_dia_3304",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "14": {
+                    "name": "3306 - Дата обращения больше даты риска на 12 месяцев",
+                    "proc": "rep_dia_3306",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "15": {
+                    "name": "3307 - Список получателей СВут с неверной датой окончания",
+                    "proc": "rep_dia_3307",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "16": {
+                    "name": "3308 - Список получателей СВпк с неверной датой окончания",
+                    "proc": "rep_dia_3308",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "17": {
+                    "name": "3309 - Список получателей СВпк до 3 лет",
+                    "proc": "rep_dia_3309",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "18": {
+                    "name": "3311 - Отчет по произведенным откатам",
+                    "proc": "rep_dia_3311",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "19": {
+                    "name": "3313 - Назначения после отказа",
+                    "proc": "rep_dia_3313",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "20": {
+                    "name": "3314 - Назначение иностранным гражданам",
+                    "proc": "rep_dia_3314",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "21": {
+                    "name": "3315 - Отчет по обращениям СВпр",
+                    "proc": "rep_dia_3315",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "22": {
+                    "name": "3319 - Список по движению",
+                    "proc": "rep_dia_3319",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
             }
         },
