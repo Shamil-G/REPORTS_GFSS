@@ -2,9 +2,7 @@ from flask import session
 from util.ip_addr import ip_addr
 from util.logger import log, is_auto_refresh
 from app_config import admin_post
-
-ROLE_ADMIN = 'Admin'
-ROLE_USER = 'User'
+from util.access import ROLE_ADMIN, ROLE_USER
 
 
 def local_role(post: str, ou_name: str, dep_name: str) -> str:

@@ -13,7 +13,11 @@
     "access": {"rfbn_id": "own"}                 # любой филиал, разрез - свой
 
 Правила: несколько признаков - И, значения внутри признака - ИЛИ, `"*"`
-равносилен отсутствию признака. Группа без ключа `access` получает
+равносилен отсутствию признака. Роль `Admin` проходит любой фильтр.
+
+Уровни наследования - отчёт, группа, раздел каталога (`dict_access` в
+`model/list_reports.py`), `DEFAULT_ACCESS`: действует ближайший заданный, и он
+заменяет дальний целиком. Группа без `access` в разделе без `access` получает
 `DEFAULT_ACCESS`, то есть остаётся там, где была до филиалов - в центральном
 аппарате: иначе в день первого входа филиала ему достался бы весь каталог.
 
@@ -43,6 +47,10 @@ FEATURES = ('roles', 'post', 'ou_name', 'rfbn_id')
 ANY = '*'
 OWN = 'own'
 CENTRAL_REGION = '00'
+
+# Ролей две: Admin проходит любой фильтр, остальные - User.
+ROLE_ADMIN = 'Admin'
+ROLE_USER = 'User'
 
 # Группы без ключа `access`: только центральный аппарат (см. ACCESS-PLAN.md).
 DEFAULT_ACCESS = {'rfbn_id': '0000'}
@@ -77,8 +85,13 @@ def _user_values(user, feature: str) -> list:
     return _values(getattr(user, feature, ''))
 
 
-def effective_access(group: dict, report: dict = None) -> dict:
-    """Какой `access` действует: у отчёта, иначе у группы, иначе по умолчанию.
+def effective_access(group: dict, report: dict = None, dep_rule: dict = None) -> dict:
+    """Какой `access` действует: у отчёта, иначе у группы, иначе у раздела,
+    иначе по умолчанию.
+
+    Ближайший уровень **заменяет** дальний целиком, а не дополняет его: группа
+    с собственным `access` не наследует признаки раздела. Так отчёт или группу
+    можно открыть шире раздела (`dict_access` в `model/list_reports.py`).
 
     Пустой словарь (`"access": {}`) - сознательное "всем", он не подменяется
     на DEFAULT_ACCESS.
@@ -87,13 +100,21 @@ def effective_access(group: dict, report: dict = None) -> dict:
         return report['access'] or {}
     if 'access' in group:
         return group['access'] or {}
+    if dep_rule is not None:
+        return dep_rule or {}
     return DEFAULT_ACCESS
 
 
 def allowed(user, access: dict) -> bool:
-    """Проходит ли пользователь фильтр `access`."""
+    """Проходит ли пользователь фильтр `access`.
+
+    Роль `Admin` проходит любой фильтр: администратор отчётности видит весь
+    каталог, и перечислять его подразделение в каждом `access` не нужно.
+    """
     if set(access) - set(FEATURES):
         return False
+    if ROLE_ADMIN in _user_values(user, 'roles'):
+        return True
     for feature in FEATURES:
         if feature not in access:
             continue

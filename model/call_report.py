@@ -5,7 +5,7 @@ from   db.connect import select_one, get_connection, plsql_execute
 from   util.logger import log
 from   app_config import REPORT_PATH
 from   gfss_parameter import platform, BASE
-from   model.list_reports import dict_reports
+from   model.list_reports import dict_reports, dict_access
 # set_status_report здесь не определяется, а реэкспортируется: часть отчётов
 # (DSR, DMN) импортирует её из model.call_report.
 from   model.manage_reports import remove_report, set_status_report
@@ -256,7 +256,7 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
 
     # Доступ проверяется и здесь, а не только в меню: /extract-params/<номер>
     # набирается руками, а параметры уходят обычным POST.
-    access_rule = effective_access(group, report)
+    access_rule = effective_access(group, report, dict_access.get(dep_name))
     user = current_user()
     if not allowed(user, access_rule):
         log.info(f'CALL REPORT. ОТКАЗ В ДОСТУПЕ. user: {access_audit.current_user()}, '

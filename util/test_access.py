@@ -15,9 +15,12 @@ class User:
         self.rfbn_id = rfbn_id
 
 
-# Ответ SSO на живой учётке (см. ACCESS-PLAN.md): центральный аппарат, ДИТиТО
-CENTER = User(roles=('Admin',), post='Главный разработчик',
-              ou_name='DITiTO', rfbn_id='0000')
+# Ответ SSO на живой учётке (см. ACCESS-PLAN.md): центральный аппарат, ДИТиТО.
+# Роль у него Admin, но сами фильтры проверяются на обычном пользователе:
+# Admin проходит любой из них.
+ADMIN = User(roles=('Admin',), post='Главный разработчик',
+             ou_name='DITiTO', rfbn_id='0000')
+CENTER = User(post='Главный разработчик', ou_name='DITiTO', rfbn_id='0000')
 # Сотрудник филиала по Акмолинской области
 AKMOLA = User(post='Главный специалист', ou_name='AKMOLA', rfbn_id='0100')
 # Пользователь, которому SSO не отдал область
@@ -35,7 +38,7 @@ NOWHERE = User(post='Главный специалист', ou_name='DAUS', rfbn_
     ({'post': ['*'], 'ou_name': 'DITiTO'}, CENTER, True),
     # несколько признаков - И
     ({'ou_name': 'DITiTO', 'post': 'Директор'}, CENTER, False),
-    ({'ou_name': 'DITiTO', 'roles': ['Admin']}, CENTER, True),
+    ({'ou_name': 'DITiTO', 'roles': ['User']}, CENTER, True),
     # значения внутри признака - ИЛИ
     ({'rfbn_id': ['0100', '1500']}, AKMOLA, True),
     ({'rfbn_id': ['0200', '1500']}, AKMOLA, False),
@@ -54,6 +57,28 @@ NOWHERE = User(post='Главный специалист', ou_name='DAUS', rfbn_
 ])
 def test_allowed(access, who, expected):
     assert allowed(who, access) is expected
+
+
+def test_admin_passes_any_filter():
+    """Администратор отчётности видит весь каталог."""
+    assert allowed(ADMIN, {'ou_name': 'DAUiS'}) is True
+    assert allowed(ADMIN, {'rfbn_id': '01'}) is True
+    assert allowed(ADMIN, {'post': 'Директор', 'ou_name': 'DpRsP'}) is True
+    # а вот опечатка в ключе закрывает группу и ему: иначе её никто не заметит
+    assert allowed(ADMIN, {'branch': '0000'}) is False
+
+
+def test_effective_access_dep_rule():
+    """Раздел каталога - третий уровень, между группой и значением по умолчанию."""
+    dep = {'ou_name': 'DAUiS'}
+    plain_group = {'live_time': 0}
+    assert effective_access(plain_group, None, dep) == dep
+    # группа со своим access раздел не наследует - её правило заменяет его целиком
+    assert effective_access({'access': {'rfbn_id': 'own'}}, None, dep) == {'rfbn_id': 'own'}
+    # отчёт важнее и группы, и раздела
+    assert effective_access(plain_group, {'access': {}}, dep) == {}
+    # раздела без access касается значение по умолчанию
+    assert effective_access(plain_group, None, None) == DEFAULT_ACCESS
 
 
 def test_default_access_leaves_reports_in_center():
