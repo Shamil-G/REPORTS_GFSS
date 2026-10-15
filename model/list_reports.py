@@ -1054,7 +1054,8 @@ dict_reports = {
                                 "display_name": "по",
                                 "type": "date",
                                 "required": True
-                            }
+                            },
+                            "rfpm": {"display_name": "Вид выплаты (первые 4 цифры)", "type": "string", "length": 4, "required": True}
                         }
                 },
                 "14": {
@@ -2285,7 +2286,8 @@ dict_reports = {
                                 "display_name": "по",
                                 "type": "date",
                                 "required": True
-                            }
+                            },
+                            "rfbn_id": LIST_REGION
                         }
                 },
                 "09": {
