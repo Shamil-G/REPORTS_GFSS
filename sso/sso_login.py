@@ -3,14 +3,32 @@ from util.ip_addr import ip_addr
 from util.logger import log, is_auto_refresh
 from app_config import admin_post, work_post, view_post
 
-     
+
+def _roles_from_post(post: str, dep_name: str) -> set:
+    """Переходный вывод роли по должности и департаменту (таблицы app_config).
+
+    SSO роль пока не отдаёт: в ответе есть post, dep_name, ou_name и rfbn_id,
+    поля roles нет. Как только оно появится, этот вывод и сами таблицы
+    должностей уходят (этап 4 в ACCESS-PLAN.md). Роль одна - первая
+    подошедшая, как было до перехода на множество.
+    """
+    for role, table in (('Admin', admin_post), ('Operator', work_post), ('Guest', view_post)):
+        list_dep = table.get(post, [])
+        if '*' in list_dep or dep_name in list_dep:
+            return {role}
+    return set()
+
+
 class SSO_User:
     def init_user(self, info_user):
         self.ip = ip_addr()
         self.post=''
         self.dep_name=''
-        self.roles=''
-        self.top_control=0
+        self.ou_name=''
+        self.rfbn_id=''
+        # Роли - множество: проверка 'Admin' in roles на строке сравнивает
+        # подстроку и при двух ролях соврёт.
+        self.roles=set()
 
         if 'password' in session:
             self.password = session['password']
@@ -51,46 +69,30 @@ class SSO_User:
             # post
             self.post = info_user.get('post','')
             session['post']=self.post
-            # check admin right!
-            list_admin_dep = admin_post.get(self.post,[])
-            if self.dep_name in list_admin_dep:
-                self.roles='Admin'
-                self.top_control=2
-
-            log.debug(f'SSO. list_admin_dep: {list_admin_dep}. top_control: {self.top_control}')
-            # check user right
-            if self.top_control==0:
-                list_work_dep = work_post.get(self.post,[])
-                if '*' in list_work_dep or self.dep_name in list_work_dep:
-                    self.roles='Operator'
-                    self.top_control=1
-
-            # check user right
-            if self.top_control==0:
-                list_view_dep = view_post.get(self.post,[])
-                if '*' in list_view_dep or self.dep_name in list_view_dep:
-                    self.roles='Guest'
-                else:
-                    log.info(f'SSO. Undefined ROLE for: {self.login_name}')
-                    return None
+            # Роль: из ответа SSO, если он её отдаёт, иначе переходно по должности
+            roles = info_user.get('roles') or []
+            if isinstance(roles, str):
+                roles = [roles]
+            self.roles = {str(role).strip() for role in roles if str(role).strip()}
+            if not self.roles:
+                self.roles = _roles_from_post(self.post, self.dep_name)
+            if not self.roles:
+                log.info(f'SSO. Undefined ROLE for: {self.login_name}')
+                return None
+            # Множество в сессию не уходит: она сериализуется в JSON
+            session['roles'] = sorted(self.roles)
 
             # FIO
             self.fio = info_user.get('fio','')
             session['fio'] = self.fio
             #
 
-            if 'roles' in info_user:
-                self.roles.append(info_user['roles'])
-                session['roles']=self.roles
-                
-            session['top_control']=self.top_control
-
             self.full_name = self.fio
             session['full_name'] = self.fio
 
             if not is_auto_refresh():
-                log.info(f"--->\n\tSSO SUCCESS\n\tTOP_CONTROL:\t{self.top_control}\tLOGIN_NAME:\t{self.login_name}\tFIO:\t  {self.fio}\n"
-                f"\tROLES:\t\t{self.roles}\tIP_ADDR:\t{self.ip}\tPOST:\t  {self.post}\n"
+                log.info(f"--->\n\tSSO SUCCESS\n\tLOGIN_NAME:\t{self.login_name}\tFIO:\t  {self.fio}\n"
+                f"\tROLES:\t\t{sorted(self.roles)}\tIP_ADDR:\t{self.ip}\tPOST:\t  {self.post}\n"
                 f"\tRFBN:\t\t{self.rfbn_id}\tOU_NAME:\t{self.ou_name}\t\tDEP_NAME: {self.dep_name}\n<---")
 
             return self
