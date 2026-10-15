@@ -350,143 +350,6 @@ dict_reports = {
                     }
                 }
         },
-        "600 - Справки":
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.600",
-            "live_time": 0,
-            "reports":
-            {
-                "01": {
-                    "name": "601 - Справка о произведенных выплатах",
-                    "proc": "rep_dia_601",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
-                },
-                "02": {
-                    "name": "602 - Справка о доходах за год",
-                    "proc": "rep_dia_602",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "03": {
-                    "name": "605 - Реестр беременных",
-                    "proc": "rep_dia_605",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
-                },
-                "04": {
-                    "name": "603 - Протокол операций",
-                    "proc": "rep_dia_603",
-                    "data_approve": "14.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {
-                        "iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True},
-                        "file_numb": {"display_name": "Номер дела", "type": "string", "length": 22, "required": True},
-                    },
-                },
-                "05": {
-                    "name": "608 - Сведения об уплате СО по БИН и периоду",
-                    "proc": "rep_dia_608",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "06": {
-                    "name": "609 - Справка о произведенных выплатах по ИИН",
-                    "proc": "rep_dia_609",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
-                },
-                "07": {
-                    "name": "610 - СО от дохода в сумме менее 1 МЗП",
-                    "proc": "rep_dia_610",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
-                },
-                "08": {
-                    "name": "611 - СВбр с отчислениями от ИП (3312)",
-                    "proc": "rep_dia_611",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
-                },
-                "09": {
-                    "name": "612 - Макеты по ЕСП (список)",
-                    "proc": "rep_dia_612",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "10": {
-                    "name": "613 - Макеты по ЕСП",
-                    "proc": "rep_dia_613",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO, "status": {"display_name": "Статус", "type": "list", "required": True, "values": {"3": "Все", "1": "1 - статусы 7 и 20", "2": "2 - статус 12"}}},
-                },
-                "11": {
-                    "name": "614 - Список получателей СВпр, снятых с учета в качестве безработного",
-                    "proc": "rep_dia_614",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {},
-                },
-                "12": {
-                    "name": "615 - Взносы менее 1 МЗП",
-                    "proc": "rep_dia_615",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
-                },
-                "13": {
-                    "name": "616 - Менее 1 МЗП",
-                    "proc": "rep_dia_616",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {},
-                },
-                "14": {
-                    "name": "621 - Проверка СВпк (0701) по БИН или ИИН ИП",
-                    "proc": "rep_dia_621",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
-                },
-                "15": {
-                    "name": "622 - Проверка СВут (0702) по БИН или ИИН ИП",
-                    "proc": "rep_dia_622",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
-                },
-                "16": {
-                    "name": "623 - Проверка СВпр (0703) по БИН или ИИН ИП",
-                    "proc": "rep_dia_623",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
-                },
-                "17": {
-                    "name": "624 - Проверка СВбр (0704) по БИН или ИИН ИП",
-                    "proc": "rep_dia_624",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
-                },
-                "18": {
-                    "name": "625 - Проверка СВур (0705) по БИН или ИИН ИП",
-                    "proc": "rep_dia_625",
-                    "data_approve": "15.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
-                },
-            }
-        },
         "1000 - Формы статотчётности в Мин. труд. 2014":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.1000",
@@ -2955,56 +2818,6 @@ dict_reports = {
                 },
             }
         },
-        "5000 - Социальная напряженность":
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.5000",
-            "live_time": 0,
-            "reports":
-            {
-                "01": {
-                    "name": "5001 - Свод по областям",
-                    "proc": "rep_dia_5001",
-                    "data_approve": "13.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_on": DATE_ON},
-                },
-                "02": {
-                    "name": "5002 - Свод по районам",
-                    "proc": "rep_dia_5002",
-                    "data_approve": "13.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_on": DATE_ON},
-                },
-                "03": {
-                    "name": "5003 - По регионам - предприятия со снижением числа работников более 2 раз",
-                    "proc": "rep_dia_5003",
-                    "data_approve": "13.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_on": DATE_ON},
-                },
-                "04": {
-                    "name": "5004 - По секторам - предприятия со снижением числа работников более 2 раз",
-                    "proc": "rep_dia_5004",
-                    "data_approve": "13.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_on": DATE_ON},
-                },
-                "05": {
-                    "name": "5005 - По регионам и ВЭД - предприятия со снижением числа работников более 2 раз",
-                    "proc": "rep_dia_5005",
-                    "data_approve": "13.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_on": DATE_ON},
-                },
-                "06": {
-                    "name": "5006 - Список предприятий",
-                    "proc": "rep_dia_5006",
-                    "data_approve": "13.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"date_on": DATE_ON},
-                },
-            }
-        },
         "6000 - Квартальные отчеты":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6000",
@@ -3901,6 +3714,193 @@ dict_reports = {
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rnn": {"display_name": "РНН", "type": "string", "length": 12, "required": False}, "bin_iin": {"display_name": "БИН/ИИН", "type": "string", "length": 12, "required": False}},
+                },
+            }
+        },
+        "600 - Справки":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.VOZVRATY.600",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "601 - Справка о произведенных выплатах",
+                    "proc": "rep_dia_601",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
+                },
+                "02": {
+                    "name": "602 - Справка о доходах за год",
+                    "proc": "rep_dia_602",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "03": {
+                    "name": "605 - Реестр беременных",
+                    "proc": "rep_dia_605",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
+                },
+                "04": {
+                    "name": "603 - Протокол операций",
+                    "proc": "rep_dia_603",
+                    "data_approve": "14.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {
+                        "iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True},
+                        "file_numb": {"display_name": "Номер дела", "type": "string", "length": 22, "required": True},
+                    },
+                },
+                "05": {
+                    "name": "608 - Сведения об уплате СО по БИН и периоду",
+                    "proc": "rep_dia_608",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "06": {
+                    "name": "609 - Справка о произведенных выплатах по ИИН",
+                    "proc": "rep_dia_609",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
+                },
+                "07": {
+                    "name": "610 - СО от дохода в сумме менее 1 МЗП",
+                    "proc": "rep_dia_610",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}},
+                },
+                "08": {
+                    "name": "611 - СВбр с отчислениями от ИП (3312)",
+                    "proc": "rep_dia_611",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "09": {
+                    "name": "612 - Макеты по ЕСП (список)",
+                    "proc": "rep_dia_612",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "10": {
+                    "name": "613 - Макеты по ЕСП",
+                    "proc": "rep_dia_613",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO, "status": {"display_name": "Статус", "type": "list", "required": True, "values": {"3": "Все", "1": "1 - статусы 7 и 20", "2": "2 - статус 12"}}},
+                },
+                "11": {
+                    "name": "614 - Список получателей СВпр, снятых с учета в качестве безработного",
+                    "proc": "rep_dia_614",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {},
+                },
+                "12": {
+                    "name": "615 - Взносы менее 1 МЗП",
+                    "proc": "rep_dia_615",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН", "type": "string", "length": 12, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "13": {
+                    "name": "616 - Менее 1 МЗП",
+                    "proc": "rep_dia_616",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {},
+                },
+                "14": {
+                    "name": "621 - Проверка СВпк (0701) по БИН или ИИН ИП",
+                    "proc": "rep_dia_621",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "15": {
+                    "name": "622 - Проверка СВут (0702) по БИН или ИИН ИП",
+                    "proc": "rep_dia_622",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "16": {
+                    "name": "623 - Проверка СВпр (0703) по БИН или ИИН ИП",
+                    "proc": "rep_dia_623",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "17": {
+                    "name": "624 - Проверка СВбр (0704) по БИН или ИИН ИП",
+                    "proc": "rep_dia_624",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "18": {
+                    "name": "625 - Проверка СВур (0705) по БИН или ИИН ИП",
+                    "proc": "rep_dia_625",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"bin": {"display_name": "БИН или ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+            }
+        },
+        "5000 - Социальная напряженность":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.VOZVRATY.5000",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "5001 - Свод по областям",
+                    "proc": "rep_dia_5001",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_on": DATE_ON},
+                },
+                "02": {
+                    "name": "5002 - Свод по районам",
+                    "proc": "rep_dia_5002",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_on": DATE_ON},
+                },
+                "03": {
+                    "name": "5003 - По регионам - предприятия со снижением числа работников более 2 раз",
+                    "proc": "rep_dia_5003",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_on": DATE_ON},
+                },
+                "04": {
+                    "name": "5004 - По секторам - предприятия со снижением числа работников более 2 раз",
+                    "proc": "rep_dia_5004",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_on": DATE_ON},
+                },
+                "05": {
+                    "name": "5005 - По регионам и ВЭД - предприятия со снижением числа работников более 2 раз",
+                    "proc": "rep_dia_5005",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_on": DATE_ON},
+                },
+                "06": {
+                    "name": "5006 - Список предприятий",
+                    "proc": "rep_dia_5006",
+                    "data_approve": "13.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"date_on": DATE_ON},
                 },
             }
         },
