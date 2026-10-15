@@ -74,7 +74,7 @@ def _values(raw) -> list:
     return [str(v).strip() for v in items if str(v).strip()]
 
 
-def _region(value) -> str:
+def region(value) -> str:
     """Код области - первые два знака кода отделения ("0100" -> "01")."""
     return str(value or '').strip()[:2]
 
@@ -131,7 +131,7 @@ def allowed(user, access: dict) -> bool:
                 continue
             # Область - первые два знака с обеих сторон: в access можно писать
             # и "0100", и "01".
-            if not mine or _region(mine[0]) not in {_region(v) for v in wanted}:
+            if not mine or region(mine[0]) not in {region(v) for v in wanted}:
                 return False
             continue
         mine = _user_values(user, feature)
@@ -144,7 +144,7 @@ def allowed(user, access: dict) -> bool:
 
 
 def is_central(rfbn_id) -> bool:
-    return _region(rfbn_id) == CENTRAL_REGION
+    return region(rfbn_id) == CENTRAL_REGION
 
 
 def forced_rfbn(user, access: dict):
@@ -160,4 +160,4 @@ def forced_rfbn(user, access: dict):
     mine = _user_values(user, 'rfbn_id')
     if not mine or is_central(mine[0]):
         return None
-    return _region(mine[0])
+    return region(mine[0])

@@ -6,9 +6,10 @@ from werkzeug.utils import secure_filename
 from gfss_parameter import platform
 from app_config import REPORT_PATH, LOG_PATH, styles
 from main_app import app, log
-from model.reports_info import get_owner_reports, get_list_groups, get_list_reports
+from model.reports_info import (get_owner_reports, get_list_groups, get_list_reports,
+                                allowed_file)
 from model.auxiliary_task import load_minso_dia
-from model.call_report import call_report, check_report, remove_report_file
+from model.call_report import call_report, check_report, remove_report_file, report_rfbn
 from model.reports import list_reports_by_day, list_reports_global, GLOBAL_YEARS, GLOBAL_LIMIT
 from model.manage_reports import remove_report
 from datetime import date
@@ -225,12 +226,19 @@ def view_running_reports():
 
 
 @app.route('/uploads/<path:full_path>')
+@login_required
 def uploaded_file(full_path):
     if platform == 'unix' and not full_path.startswith('/'):
         full_path = f'/{full_path}'
     file_path, file_name = path.split(full_path)
     log.debug(f"UPLOADED_FILE. FULL_PATH: {full_path}\n\tFILE_PATH: {file_path}\n\tFLE_NAME: {file_name}")
     if full_path.startswith(REPORT_PATH):
+        # Готовый файл - те же права, что и на запуск отчёта: ссылка из журнала
+        # запусков видна всем, а файл может быть чужой области (ACCESS-PLAN.md, § 6).
+        if not allowed_file(full_path, report_rfbn(full_path)):
+            log.info(f"UPLOADED_FILE. ОТКАЗ В ДОСТУПЕ. user: {session.get('username')}, "
+                     f"file_name: {file_name}")
+            return redirect(url_for('view_running_reports'))
         status = check_report(full_path)
         log.debug(f"UPLOADED_FILE. STATUS: {status} : {type(status)}, PATH: {file_path}, file_name: {file_name}, REPORT_PATH: {REPORT_PATH}")
         if status == 2:

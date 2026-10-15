@@ -107,6 +107,19 @@ def check_report(file_path: str):
     return 10
 
 
+def report_rfbn(file_path: str) -> str:
+    """Область, с которой отчёт запускали, из журнала готовых отчётов.
+
+    Пусто - вся республика (или отчёт без области вовсе). Нужна при выдаче
+    готового файла: филиалу отдаются только файлы его области.
+    """
+    result = select_one('select st.rfbn_id from LOAD_REPORT_STATUS st '
+                        'where st.file_path = :file_path', {'file_path': file_path})
+    if result and result.get('rfbn_id'):
+        return str(result['rfbn_id'])
+    return ''
+
+
 def init_report(name_report: str, date_first: str, date_second: str, rfpm_id: str, rfbn_id: str, live_time: str, file_path: str):
     status = 0
     with get_connection() as conn:

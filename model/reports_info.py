@@ -1,3 +1,5 @@
+from os import path
+
 from flask import session,redirect, url_for
 from util.logger import log
 from util import access
@@ -62,6 +64,54 @@ def own_region_param(meta_params: dict, group: dict, report: dict,
     region["required"] = True
     region.pop("empty_label", None)
     return {**meta_params, "rfbn_id": region}
+
+
+def find_report(file_path: str):
+    """Раздел, группа и отчёт по имени готового файла.
+
+    Имя собирает call_report: "<раздел>.<группа>.<номер>.<код>.<параметры>.xlsx".
+    Разбирать его по точкам нельзя - точки есть и в названиях групп
+    ("Пл.Занятость"), и в параметрах (даты), поэтому ищем совпадение префикса
+    "<раздел>.<группа>." по самому реестру. Не нашли - (None, None, None).
+    """
+    base = path.basename(file_path)
+    for dep_name, groups in dict_reports.items():
+        for grp_name, group in groups.items():
+            prefix = f'{dep_name}.{grp_name}.'
+            if base.startswith(prefix):
+                num_rep = base[len(prefix):].split('.')[0]
+                report = group.get("reports", {}).get(num_rep)
+                if report is not None:
+                    return dep_name, group, report
+    return None, None, None
+
+
+def allowed_file(file_path: str, journal_rfbn: str = '') -> bool:
+    """Можно ли выдать пользователю готовый файл отчёта.
+
+    Права те же, что на запуск: находим отчёт в реестре по имени файла и
+    проверяем его `access`. Для отчёта с разрезом по филиалу ("own") филиалу
+    отдаются только файлы его области - область берётся из журнала запусков
+    (`report_rfbn`), потому что из имени файла её не вытащить: там подряд идут
+    все параметры формы.
+
+    Файл, который в реестре не опознан (отчёт из реестра убрали), выдаётся
+    только администратору.
+    """
+    user = access.current_user()
+    is_admin = access.ROLE_ADMIN in (getattr(user, 'roles', None) or set())
+    dep_name, group, report = find_report(file_path)
+    if group is None:
+        log.info(f'ALLOWED_FILE. Отчёт не опознан в реестре: {path.basename(file_path)}')
+        return is_admin
+    rule = access.effective_access(group, report, dict_access.get(dep_name))
+    if not access.allowed(user, rule):
+        return False
+    # Отчёт с разрезом по филиалу: область файла должна быть областью филиала
+    forced = access.forced_rfbn(user, rule)
+    if forced is not None and access.region(journal_rfbn) != forced:
+        return False
+    return True
 
 
 def get_owner_reports():
