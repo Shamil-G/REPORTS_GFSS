@@ -15,6 +15,10 @@ AIS_GFSS, группа «Обороты и назначения», отчёт 6,
 (`person.iin`; в оригинале `iper.rn`, причина невалидности процедуры в боевой
 БД - `ORA-00904`, колонка переименована, решение Шамиля 15.10.2026).
 
+Первые назначения. Оригинал читает `sipr_maket_first_approve`, застывшую на
+28.02.2023 (последняя `date_approve`); для назначений позже оригинал печатает
+«Назначения отсутствуют». Здесь актуальная `sipr_maket_first_approve_2`.
+
 Отбор: все назначения человека - действующие (`sipr_payer` + `sifl_file`) и
 макеты (`sipr_payer_maket` + `sifl_file_maket`) - с названием вида
 (`rfpm_payments`) и инспектором (`s_emp`), по возрастанию даты первого
@@ -71,7 +75,7 @@ select initcap(p.lastname || ' ' || p.firstname || ' ' || p.middlename) fio
 STMT = """
 select rp.rfpm_id || ' - ' || rp.shortname shortname,
        d.risk_date, d.date_address, d.approve_date,
-       (select fa.date_approve from sipr_maket_first_approve fa
+       (select fa.date_approve from sipr_maket_first_approve_2 fa
          where fa.sipr_id = d.sipr_id) date_first_approve,
        d.stop_date, d.state, d.notes, d.sum_calc, d.sum_all, d.sum_dop,
        se.vcusername || ' - ' || se.name emp_name
@@ -91,7 +95,7 @@ select rp.rfpm_id || ' - ' || rp.shortname shortname,
        rfpm_payments rp, s_emp se
  where d.rfpm_id = rp.rfpm_id
    and d.emp_id = se.emp_id
-   and exists (select 1 from sipr_maket_first_approve fa, person pr
+   and exists (select 1 from sipr_maket_first_approve_2 fa, person pr
                 where fa.sicp_id = pr.sicid and pr.iin = trim(:iin))
  order by date_first_approve
 """

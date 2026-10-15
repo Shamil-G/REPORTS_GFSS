@@ -3833,6 +3833,20 @@ dict_reports = {
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
                 },
+                "23": {
+                    "name": "3322 - СВбр",
+                    "proc": "rep_dia_3322",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
+                "24": {
+                    "name": "3323 - СВур",
+                    "proc": "rep_dia_3323",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
+                },
             }
         },
         "7000":
