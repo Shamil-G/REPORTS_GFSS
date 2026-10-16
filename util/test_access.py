@@ -3,7 +3,7 @@
 import pytest
 
 from util.access import (DEFAULT_ACCESS, allowed, effective_access,
-                         forced_rfbn, is_central)
+                         forced_rfbn, is_central, payments_allowed)
 
 
 class User:
@@ -129,3 +129,13 @@ def test_effective_access():
 def test_is_central():
     assert is_central('0000') and is_central(' 0000 ') and is_central('00')
     assert not is_central('0100') and not is_central('')
+
+
+def test_payments_allowed():
+    dauis = User(post='Ведущий специалист', ou_name='DAUiS', rfbn_id='0000')
+    assert payments_allowed(ADMIN)
+    assert payments_allowed(dauis)
+    assert not payments_allowed(CENTER)      # ДИТиТО без роли Admin
+    assert not payments_allowed(AKMOLA)
+    assert not payments_allowed(User(ou_name='DAUiS', rfbn_id='0100'))
+    assert not payments_allowed(User(ou_name='DAUiS', rfbn_id=''))

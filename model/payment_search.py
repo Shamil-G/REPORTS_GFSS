@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 from db.connect import get_connection
+from util.access import is_admin
+from util.ad_check import iin_in_ad, AdUnavailable
 
 LIMIT = 3000
 COLUMNS = (
@@ -73,14 +75,26 @@ def build_query(filters):
         params['amount'] = Decimal(amount)
     bin_value = filters.get('bin', '').strip()
     if bin_value:
-        if not re.fullmatch(r'[0-9]{1,12}', bin_value):
-            raise ValueError('БИН должен содержать от 1 до 12 цифр.')
+        # Меньше 6 цифр - слишком широкая выборка: сортировка по дате читает
+        # почти всю таблицу и упирается в таймаут.
+        if not re.fullmatch(r'[0-9]{6,12}', bin_value):
+            raise ValueError('БИН должен содержать от 6 до 12 цифр.')
         if len(bin_value) == 12:
+            # 12 цифр - это может быть ИИН сотрудника: данные сотрудников не
+            # выдаются, кроме роли Admin. AD недоступен - поиск не выполняется.
+            if not is_admin():
+                try:
+                    if iin_in_ad(bin_value):
+                        raise ValueError('Доступ запрещен!')
+                except AdUnavailable:
+                    raise ValueError('Не удалось проверить данные в Active Directory. Попробуйте позже.') from None
             where.append('p.p_rnn = :bin')
             params['bin'] = bin_value
         else:
+            # По началу номера: шаблон без ведущего % может использовать индекс,
+            # с '%...%' запрос читает всю таблицу и упирается в таймаут.
             where.append('p.p_rnn LIKE :bin')
-            params['bin'] = '%' + bin_value + '%'
+            params['bin'] = bin_value + '%'
     # Направление пока не участвует в поиске. Лишняя строка определяет усечение.
     # Сортировка - во внутреннем запросе, до ROWNUM: при усечении остаются
     # самые свежие платежи, а не произвольные LIMIT + 1 строк.

@@ -55,6 +55,11 @@ ROLE_USER = 'User'
 # Группы без ключа `access`: только центральный аппарат (см. ACCESS-PLAN.md).
 DEFAULT_ACCESS = {'rfbn_id': '0000'}
 
+# Поиск платежей (/payment-search) - вне реестра отчётов: это персональные данные
+# плательщиков и получателей. Видят только ДАУиС и Admin (Admin проходит любой
+# фильтр), решение 16.10.2026.
+PAYMENT_ACCESS = {'ou_name': 'DAUiS', 'rfbn_id': '0000'}
+
 # Имя подразделения сравниваем без учёта регистра, должность и роль - как пришли.
 _NOCASE = ('ou_name',)
 
@@ -161,6 +166,12 @@ def allowed(user, access: dict) -> bool:
         if not set(wanted) & set(mine):
             return False
     return True
+
+
+def payments_allowed(user=None) -> bool:
+    """Можно ли пользователю работать с поиском платежей."""
+    user = current_user() if user is None else user
+    return allowed(user, PAYMENT_ACCESS) if user is not None else False
 
 
 def is_central(rfbn_id) -> bool:

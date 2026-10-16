@@ -14,6 +14,8 @@ from model.reports import list_reports_by_day, list_reports_global, GLOBAL_YEARS
 from model.manage_reports import remove_report
 from datetime import date
 from util.get_i18n import get_i18n_value
+from util.access import payments_allowed
+from functools import wraps
 from os import environ
 
 # from model.manage_user import change_passwd
@@ -42,7 +44,7 @@ def utility_processor():
         session['style']=styles[0]    
         log.debug(f'------- CP\n\tSET SESSION STYLE: {session['style']}\n------')
     log.debug(f"------ CP. \n\tSET SESSION STYLE: {session['style']}\n\t{get_i18n_value('APP_NAME')}")
-    return dict(res_value=get_i18n_value)
+    return dict(res_value=get_i18n_value, payments_allowed=payments_allowed)
 
 
 @app.route('/')
@@ -288,13 +290,29 @@ def view_load_minso_dia():
     return redirect(url_for('view_auxiliary_task_dia'))
 
 
+def payments_required(view):
+    """Поиск платежей - только ДАУиС и Admin (util.access.PAYMENT_ACCESS)."""
+    @wraps(view)
+    def wrapper(*args, **kwargs):
+        if not payments_allowed():
+            log.info(f"PAYMENT SEARCH. ОТКАЗ В ДОСТУПЕ. user: {session.get('username')}, "
+                     f"path: {request.path}")
+            if request.path.rstrip('/') == '/payment-search':
+                return redirect(url_for('view_root'))
+            return jsonify(error='Нет доступа к поиску платежей.'), 403
+        return view(*args, **kwargs)
+    return wrapper
+
+
 @app.route('/payment-search', methods=['GET'])
 @login_required
+@payments_required
 def view_payment_search():
     return render_template("payment_search.html")
 
 @app.route('/payment-search/data', methods=['GET'])
 @login_required
+@payments_required
 def view_payment_search_data():
     from model.payment_search import search_payments
     try:
@@ -307,6 +325,7 @@ def view_payment_search_data():
 
 @app.route('/payment-search/excel', methods=['POST'])
 @login_required
+@payments_required
 def view_payment_search_excel():
     from flask import send_file
     from model.payment_excel import make_payment_excel
@@ -331,6 +350,7 @@ def view_payment_search_excel():
 
 @app.route('/payment-search/doc/<int:mhmh_id>', methods=['GET'])
 @login_required
+@payments_required
 def view_payment_doc(mhmh_id):
     # Фрагмент для таба платежа на странице «Платежи»: шапка и списочная часть
     from model.payment_doc import get_payment_doc
@@ -345,6 +365,7 @@ def view_payment_doc(mhmh_id):
 
 @app.route('/payment-search/doc/<int:mhmh_id>/excel', methods=['GET'])
 @login_required
+@payments_required
 def view_payment_doc_excel(mhmh_id):
     from flask import send_file
     from model.payment_doc import get_payment_doc, make_payment_doc_excel
@@ -364,6 +385,7 @@ def view_payment_doc_excel(mhmh_id):
 
 @app.route('/payment-search/doc/<int:mhmh_id>/print', methods=['GET'])
 @login_required
+@payments_required
 def view_payment_print_excel(mhmh_id):
     from flask import send_file
     from model.payment_doc import get_payment_doc
