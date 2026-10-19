@@ -32,7 +32,7 @@ with t as
     'TEST_SIOR_ORDER_RET', 'UNEMPLOYED_CALC', 'VIRTUAL_DOC_LIST', 'V_LM_UNEMPLOY_SS_INFO',
     'WEB_GS_EMP')))
 select t.table_name,
-       ls.load_type ls_type, ls.group_num ls_group, ls.state ls_state,
+       ls.load_type ls_type, ls.group_name ls_group, ls.state ls_state,
        ls.last_success_date ls_success, ls.src_name,
        (select listagg(lt.period || decode(lt.is_remote, 'Y', ' (remote)'), ', ') within group(order by lt.period)
           from loader.load_table lt
@@ -71,7 +71,7 @@ with t as
     'S_STATE', 'TEST_GFSS_ORDER_RET_LIST', 'TEST_GFSS_PAY_DOC', 'TEST_MHMH_GFSS_GCVP',
     'TEST_SIOR_ORDER_RET', 'UNEMPLOYED_CALC', 'VIRTUAL_DOC_LIST', 'V_LM_UNEMPLOY_SS_INFO',
     'WEB_GS_EMP')))
-select ls.table_name, ls.load_type, ls.group_num, ls.state, ls.last_success_date
+select ls.table_name, ls.load_type, ls.group_name, ls.state, ls.last_success_date
   from load_tables_status ls
  where ls.table_name not in (select table_name from t)
  order by ls.table_name;
