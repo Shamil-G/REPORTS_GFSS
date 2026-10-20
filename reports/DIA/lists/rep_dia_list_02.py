@@ -49,7 +49,7 @@ Select /*+parallel(8)*/
 from (
     select /*+parallel(2)*/
            d.pncd_id sicid,
-           substr(d.rfpm_id, 1, 4) rfpm_id,
+           d.rfpm_id,
            d.pay_sum + d.sum_debt sum_pay,
            first_value(substr(d.rfbn_id, 1, 2)) over (Partition By d.pncd_id order by d.pncp_date desc) rfbn_id
     From pnpd_document d, pnpt_payment pp
