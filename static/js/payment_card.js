@@ -19,6 +19,8 @@
     const from = root.querySelector('#pc-from');
     const to = root.querySelector('#pc-to');
     let items = [];
+    let selected = -1;
+    const openBtn = root.querySelector('#pc-open-info');
 
     const td = (text, cls) => { const c = document.createElement('td'); c.textContent = text ?? ''; if (cls) c.className = cls; return c; };
     const money = v => v == null || v === '' ? '' : Number(v).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -63,6 +65,8 @@
         const p = items[i];
         [...body.rows].forEach((r, j) => r.setAttribute('aria-selected', j === i));
         if (!p) return;
+        selected = i;
+        if (openBtn) openBtn.disabled = !p.sicid;
         placeholder.hidden = true; data.hidden = false;
         data.querySelectorAll('[data-f]').forEach(el => { el.textContent = p[el.dataset.f] ?? ''; });
         // «Назначения» - в разработке: таблица появится в разметке позже
@@ -86,11 +90,14 @@
             tr.setAttribute('aria-selected', 'false');
             tr.append(td(i + 1), td(p.lastname), td(p.firstname), td(p.middlename), td(p.birthdate));
             tr.addEventListener('click', () => show(i));
+            tr.addEventListener('dblclick', () => { show(i); openInfo(); });
             tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(i); } });
             body.append(tr);
         });
         empty.hidden = list.length > 0;
         total.textContent = 'Всего: ' + list.length + (truncated ? ' (показаны первые ' + limit + ', уточните фильтры)' : '');
+        selected = -1;
+        if (openBtn) openBtn.disabled = true;
         data.hidden = true; placeholder.hidden = false;
         if (list.length === 1) show(0);
     }
@@ -141,5 +148,103 @@
         controller = null;
         button.disabled = false;
         setTimeout(() => { if (mode) mode.dispatchEvent(new Event('change')); render([], false, 0); showError(''); });
+    });
+
+    // ---- Таб «Информация участнику»: новая вкладка в полосе «Открытые документы» ----
+    const strip = document.getElementById('ps-doc-tabs');
+    const PREFIX = 'ps-pinfo-';
+
+    function activate(tab) {
+        strip.querySelectorAll('.ps-tab').forEach(t => {
+            const on = t === tab;
+            t.setAttribute('aria-selected', on);
+            const panel = document.getElementById(t.getAttribute('aria-controls'));
+            if (panel) panel.hidden = !on;
+        });
+    }
+
+    async function openInfo() {
+        const p = items[selected];
+        if (!p || !p.sicid || !strip) return;
+        // сначала переходим на раздел «Информация по отчислениям и назначениям»
+        const outer = document.querySelector('[role="tab"][aria-controls="ps-info"]');
+        if (outer && outer.getAttribute('aria-selected') !== 'true') outer.click();
+
+        const id = PREFIX + p.sicid;
+        const existing = strip.querySelector(`[aria-controls="${id}"]`);
+        if (existing) return activate(existing);
+
+        const wrap = document.createElement('span');
+        wrap.className = 'ps-tab-wrap';
+        const tab = document.createElement('button');
+        tab.type = 'button';
+        tab.className = 'ps-tab';
+        tab.setAttribute('role', 'tab');
+        tab.setAttribute('aria-controls', id);
+        tab.setAttribute('aria-selected', 'false');
+        tab.textContent = 'Информация: ' + (p.lastname || p.iin || p.sicid);
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'ps-tab-close';
+        close.setAttribute('aria-label', 'Закрыть вкладку');
+        close.textContent = '×';
+        wrap.append(tab, close);
+        strip.append(wrap);
+
+        const panel = document.createElement('div');
+        panel.id = id;
+        panel.className = 'ps-panel pc-info-panel';
+        panel.setAttribute('role', 'tabpanel');
+        panel.innerHTML = '<div class="ps-empty"><strong>Загрузка...</strong></div>';
+        strip.parentNode.append(panel);
+        activate(tab);
+
+        close.addEventListener('click', () => {
+            const wasActive = tab.getAttribute('aria-selected') === 'true';
+            const next = wrap.previousElementSibling?.querySelector('.ps-tab') || wrap.previousElementSibling || strip.querySelector('.ps-tab');
+            wrap.remove();
+            panel.remove();
+            if (wasActive && next) next.click();
+        });
+
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 45000);
+        try {
+            const r = await fetch(`${form.dataset.infoUrl}${p.sicid}/info`, { signal: ctrl.signal });
+            if (r.redirected) throw new Error('Сессия завершена. Обновите страницу и войдите снова.');
+            const type = r.headers.get('content-type') || '';
+            if (!r.ok) {
+                const j = type.includes('application/json') ? await r.json() : {};
+                throw new Error(j.error || 'Не удалось получить данные.');
+            }
+            if (!type.includes('text/html')) throw new Error('Сервер вернул некорректный ответ.');
+            panel.innerHTML = await r.text();   // фрагмент формирует сервер (Jinja экранирует значения)
+        } catch (exc) {
+            const msg = document.createElement('div');
+            msg.className = 'ps-empty';
+            const b = document.createElement('strong');
+            b.textContent = exc.name === 'AbortError' ? 'Превышено время ожидания.' : (exc.message || 'Не удалось связаться с сервером.');
+            msg.append(b);
+            panel.replaceChildren(msg);
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openInfo);
+
+    // Клик по любой другой вкладке этой полосы: свои панели скрываем (остальными управляет payment_tabs.js)
+    if (strip) strip.addEventListener('click', e => {
+        const t = e.target.closest('.ps-tab');
+        if (!t) return;
+        const mine = (t.getAttribute('aria-controls') || '').startsWith(PREFIX);
+        if (mine) return activate(t);
+        strip.querySelectorAll('.ps-tab').forEach(x => {
+            if ((x.getAttribute('aria-controls') || '').startsWith(PREFIX)) {
+                x.setAttribute('aria-selected', 'false');
+                const panel = document.getElementById(x.getAttribute('aria-controls'));
+                if (panel) panel.hidden = true;
+            }
+        });
     });
 })();

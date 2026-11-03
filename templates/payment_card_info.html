@@ -1,0 +1,58 @@
+{# templates/payment_card_info.html - фрагмент таба «Информация участнику» (как payment_doc.html) #}
+{% if info.truncated %}
+<p class="pc-info-note" role="status">Показаны первые {{ info.limit }} записей.</p>
+{% endif %}
+<div class="ps-table-wrap" tabindex="0" role="region" aria-label="Информация участнику. Таблица прокручивается по горизонтали.">
+    <table class="ps-table pc-info-table">
+        <caption class="ps-sr-only">Информация участнику системы обязательного социального страхования</caption>
+        <thead>
+            <tr class="ps-groups">
+                <th rowspan="2" scope="col">№ п/п</th>
+                <th colspan="12" scope="colgroup" class="pc-info-head">
+                    <span class="pc-info-title">Информация участнику системы обязательного социального страхования</span>
+                    <span>ФИО: {{ [info.person.lastname, info.person.firstname, info.person.middlename] | select | join(' ') }}</span>
+                    <span>ИИН: {{ info.person.iin }}</span>
+                </th>
+            </tr>
+            <tr>
+                <th scope="col">Дата поступления</th><th scope="col">Дата отправки</th>
+                <th scope="col">№</th><th scope="col">Дата документа</th>
+                <th scope="col">КНП</th><th scope="col">Отправитель</th>
+                <th scope="col">БИН</th><th scope="col">Получатель</th>
+                <th scope="col">Сумма платежа</th><th scope="col">Сумма</th>
+                <th scope="col">Статус</th><th scope="col">Период</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for r in info.rows %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ r.pay_date }}</td>
+                <td>{{ r.pay_date_gfss }}</td>
+                <td>{{ r.doc_nmb }}</td>
+                <td>{{ r.doc_date }}</td>
+                <td>{{ r.knp }}</td>
+                <td class="ps-long" title="{{ r.p_name }}">{{ r.p_name }}</td>
+                <td>{{ r.p_rnn }}</td>
+                <td>{{ r.receiver }}</td>
+                <td class="ps-money">{{ r.pay_sum }}</td>
+                <td class="ps-money">{{ r.sum_pay }}</td>
+                <td>{{ r.status }}</td>
+                <td>{{ r.period }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+        {% if info.rows %}
+        <tfoot>
+            <tr>
+                <td colspan="10">Итого</td>
+                <td class="ps-money">{{ info.total }}</td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+        {% endif %}
+    </table>
+    {% if not info.rows %}
+    <div class="ps-empty"><strong>Платежей не найдено</strong></div>
+    {% endif %}
+</div>

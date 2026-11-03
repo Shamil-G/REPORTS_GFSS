@@ -21,7 +21,8 @@
     <button type="button" class="ps-tab" role="tab" aria-selected="true" aria-controls="ps-info">Информация по отчислениям и назначениям</button>
 </div>
 <div id="ps-card" class="ps-panel pc" role="tabpanel" hidden>
-    <form id="pc-filters" class="pc-bar" data-url="{{ url_for('view_payment_card_data') }}">
+    <form id="pc-filters" class="pc-bar" data-url="{{ url_for('view_payment_card_data') }}"
+          data-info-url="{{ url_for('view_payment_search') }}/card/">
         <fieldset class="pc-grp pc-fio">
             <legend class="ps-sr-only">ФИО</legend>
             <label for="pc-last">Фамилия</label>
@@ -72,6 +73,9 @@
         </section>
 
         <section class="pc-detail">
+            <div class="pc-detail-bar">
+                <button type="button" id="pc-open-info" class="ps-find" disabled>Информация участнику</button>
+            </div>
             <div class="ps-tabs pc-tabs" role="tablist" aria-label="Сведения о получателе">
                 <button type="button" class="ps-tab" role="tab" aria-selected="true" aria-controls="pc-general">Общие сведения</button>
                 <button type="button" class="ps-tab" role="tab" aria-selected="false" aria-controls="pc-assign">Назначения</button>

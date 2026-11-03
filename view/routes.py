@@ -421,3 +421,24 @@ def view_payment_card_data():
     except Exception:
         log.exception('Ошибка поиска получателя в LOADER.PERSON')
         return jsonify(error='Не удалось получить данные из БД. Возможно, запрос превысил время ожидания. Уточните фильтры. Подробности записаны в журнал приложения.'), 500
+
+
+@app.route('/payment-search/card/<int:sicid>/info', methods=['GET'])
+@login_required
+@payments_required
+def view_payment_card_info(sicid):
+    # Фрагмент для таба «Информация участнику» на странице «Платежи»
+    from model.payment_card_search import get_card_info
+    log.info(f"CARD INFO. user: {session.get('username')}, sicid: {sicid}")
+    try:
+        info = get_card_info(sicid)
+    except PermissionError as exc:
+        return jsonify(error=str(exc)), 403
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    except Exception:
+        log.exception(f'Ошибка чтения информации участника SICID={sicid}')
+        return jsonify(error='Не удалось получить данные из БД. Подробности записаны в журнал приложения.'), 500
+    if info is None:
+        return jsonify(error='Участник не найден.'), 404
+    return render_template("payment_card_info.html", info=info)

@@ -63,3 +63,13 @@
     .payment-search .pc-kv-4 { grid-template-columns: minmax(0, 1fr); }
     .payment-search .pc-fio, .payment-search .pc-ident { width: auto; }
 }
+
+/* Таб «Информация участнику» (открывается в полосе вкладок «Информация по отчислениям и назначениям») */
+.payment-search .pc-detail-bar { display: flex; justify-content: flex-end; margin: 0 0 6px; }
+.payment-search .pc-info-table { min-width: 1500px; }
+.payment-search .pc-info-table thead th { text-align: center; vertical-align: middle; white-space: normal; }
+.payment-search .pc-info-table thead th.pc-info-head { text-align: left; }
+.payment-search .pc-info-head span { display: block; font-weight: normal; }
+.payment-search .pc-info-head .pc-info-title { font-weight: bold; margin-bottom: 4px; }
+.payment-search .pc-info-table tfoot td { white-space: nowrap; }
+.payment-search .pc-info-note { margin: 0 0 6px; font-size: 14px; color: var(--ps-muted); }
