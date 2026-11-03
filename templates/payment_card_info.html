@@ -1,4 +1,8 @@
 {# templates/payment_card_info.html - фрагмент таба «Информация участнику» (как payment_doc.html) #}
+<div class="pc-info-actions">
+    <button type="button" class="ps-find" data-excel-url="{{ url_for('view_payment_card_info_excel', sicid=info.person.sicid) }}"{% if not info.rows %} disabled{% endif %}>Выгрузить в Excel</button>
+    <p class="pc-info-error ps-error" role="alert" hidden></p>
+</div>
 {% if info.truncated %}
 <p class="pc-info-note" role="status">Показаны первые {{ info.limit }} записей.</p>
 {% endif %}

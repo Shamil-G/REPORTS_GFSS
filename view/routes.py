@@ -427,7 +427,6 @@ def view_payment_card_data():
 @login_required
 @payments_required
 def view_payment_card_info(sicid):
-    # Фрагмент для таба «Информация участнику» на странице «Платежи»
     from model.payment_card_search import get_card_info
     log.info(f"CARD INFO. user: {session.get('username')}, sicid: {sicid}")
     try:
@@ -442,3 +441,29 @@ def view_payment_card_info(sicid):
     if info is None:
         return jsonify(error='Участник не найден.'), 404
     return render_template("payment_card_info.html", info=info)
+
+
+@app.route('/payment-search/card/<int:sicid>/info/excel', methods=['GET'])
+@login_required
+@payments_required
+def view_payment_card_info_excel(sicid):
+    from flask import send_file
+    from model.payment_card_search import get_card_info, make_card_info_excel
+    log.info(f"CARD INFO EXCEL. user: {session.get('username')}, sicid: {sicid}")
+    try:
+        info = get_card_info(sicid)
+        if info is None:
+            return jsonify(error='Участник не найден.'), 404
+        return send_file(
+            make_card_info_excel(info),
+            as_attachment=True,
+            download_name=f'participant_info_{sicid}.xlsx',
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        )
+    except PermissionError as exc:
+        return jsonify(error=str(exc)), 403
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    except Exception:
+        log.exception(f'Ошибка выгрузки информации участника SICID={sicid} в Excel')
+        return jsonify(error='Не удалось сформировать Excel.'), 500

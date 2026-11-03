@@ -1,5 +1,6 @@
 """model/payment_card.py - поиск получателя в LOADER.PERSON (вкладка «Карточка»)."""
 import re
+from io import BytesIO
 from datetime import datetime, timedelta
 from decimal import Decimal
 
@@ -216,12 +217,101 @@ def get_card_info(sicid):
             'doc_nmb': _text(doc_nmb), 'doc_date': _date(doc_date), 'knp': _text(knp),
             'p_name': _text(p_name), 'p_rnn': _text(p_rnn), 'receiver': RECEIVER,
             'pay_sum': _money(pay_sum), 'sum_pay': _money(sum_pay),
+            'pay_sum_num': None if pay_sum is None else float(pay_sum),   # числа - для Excel
+            'sum_pay_num': None if sum_pay is None else float(sum_pay),
             'status': '' if tmst_id is None else TMST_STATUSES.get(int(tmst_id), str(tmst_id)),
             'period': _text(period),
         })
     return {
         'person': {'sicid': sicid, 'iin': iin, 'lastname': _text(person[1]),
                    'firstname': _text(person[2]), 'middlename': _text(person[3])},
-        'rows': result, 'total': _money(total),
+        'rows': result, 'total': _money(total), 'total_num': float(total),
         'truncated': len(rows) > INFO_LIMIT, 'limit': INFO_LIMIT,
     }
+
+
+def make_card_info_excel(info):
+    """Excel «Информация участнику» в том же виде, что и таб: шапка с ФИО и ИИН, колонки, строки, итого."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+    from openpyxl.utils import get_column_letter
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = 'Информация участнику'
+
+    thin = Side(style='thin', color='FF9AAF97')
+    border = Border(left=thin, right=thin, top=thin, bottom=thin)
+    head_fill = PatternFill('solid', fgColor='FFDFEDDA')
+    group_fill = PatternFill('solid', fgColor='FFE9F4E5')
+    center = Alignment(horizontal='center', vertical='center', wrap_text=True)
+    left = Alignment(horizontal='left', vertical='center', wrap_text=True)
+    money_fmt = '#,##0.00'
+
+    headers = ['Дата поступления', 'Дата отправки', '№', 'Дата документа', 'КНП', 'Отправитель',
+               'БИН', 'Получатель', 'Сумма платежа', 'Сумма', 'Статус', 'Период']
+    last_col = len(headers) + 1  # + «№ п/п»
+
+    person = info['person']
+    fio = ' '.join(x for x in (person['lastname'], person['firstname'], person['middlename']) if x)
+
+    # строки 1-2: «№ п/п» на две строки, справа - заголовок с ФИО и ИИН, ниже - названия колонок
+    ws.merge_cells(start_row=1, start_column=1, end_row=2, end_column=1)
+    ws.cell(1, 1, '№ п/п')
+    ws.merge_cells(start_row=1, start_column=2, end_row=1, end_column=last_col)
+    ws.cell(1, 2, 'Информация участнику системы обязательного социального страхования\n'
+                  f'ФИО: {fio}\nИИН: {person["iin"]}')
+    ws.row_dimensions[1].height = 62
+    for col, title in enumerate(headers, start=2):
+        ws.cell(2, col, title)
+    ws.row_dimensions[2].height = 32
+    for row in (1, 2):
+        for col in range(1, last_col + 1):
+            c = ws.cell(row, col)
+            c.font = Font(bold=True)
+            c.fill = group_fill if row == 1 else head_fill
+            c.border = border
+            c.alignment = center
+    ws.cell(1, 2).alignment = left
+
+    r = 3
+    for n, row in enumerate(info['rows'], start=1):
+        values = [n, row['pay_date'], row['pay_date_gfss'], row['doc_nmb'], row['doc_date'], row['knp'],
+                  row['p_name'], row['p_rnn'], row['receiver'], row['pay_sum_num'], row['sum_pay_num'],
+                  row['status'], row['period']]
+        for col, value in enumerate(values, start=1):
+            c = ws.cell(r, col, value)
+            c.border = border
+            c.alignment = Alignment(vertical='center')
+            if col in (10, 11):
+                c.number_format = money_fmt
+                c.alignment = Alignment(horizontal='right', vertical='center')
+        r += 1
+
+    if info['rows']:
+        ws.merge_cells(start_row=r, start_column=1, end_row=r, end_column=10)
+        ws.cell(r, 1, 'Итого')
+        ws.cell(r, 11, info['total_num']).number_format = money_fmt
+        for col in range(1, last_col + 1):
+            c = ws.cell(r, col)
+            c.font = Font(bold=True)
+            c.fill = head_fill
+            c.border = border
+        ws.cell(r, 11).alignment = Alignment(horizontal='right')
+        r += 1
+    if info['truncated']:
+        ws.cell(r + 1, 1, f"Показаны первые {info['limit']} записей.")
+
+    for col, width in enumerate([7, 16, 16, 14, 16, 8, 38, 15, 32, 16, 16, 22, 10], start=1):
+        ws.column_dimensions[get_column_letter(col)].width = width
+    ws.freeze_panes = 'A3'
+    ws.page_setup.orientation = 'landscape'
+    ws.page_setup.fitToWidth = 1
+    ws.page_setup.fitToHeight = 0
+    ws.sheet_properties.pageSetUpPr.fitToPage = True
+    ws.print_title_rows = '1:2'
+
+    out = BytesIO()
+    wb.save(out)
+    out.seek(0)
+    return out

@@ -247,4 +247,37 @@
             }
         });
     });
+
+    // Выгрузка таба «Информация участнику» в Excel (кнопка внутри подгруженного фрагмента)
+    document.addEventListener('click', async e => {
+        const btn = e.target.closest('.pc-info-panel [data-excel-url]');
+        if (!btn || btn.disabled) return;
+        const errBox = btn.parentNode.querySelector('.pc-info-error');
+        errBox.hidden = true;
+        btn.disabled = true;
+        try {
+            const r = await fetch(btn.dataset.excelUrl);
+            if (r.redirected) throw new Error('Сессия завершена. Обновите страницу и войдите снова.');
+            const type = r.headers.get('content-type') || '';
+            if (!r.ok) {
+                const j = type.includes('application/json') ? await r.json() : {};
+                throw new Error(j.error || 'Не удалось выгрузить Excel.');
+            }
+            if (!type.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'))
+                throw new Error('Сервер вернул некорректный ответ.');
+            const url = URL.createObjectURL(await r.blob());
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'participant_info.xlsx';
+            document.body.append(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } catch (exc) {
+            errBox.textContent = exc.message || 'Не удалось выгрузить Excel.';
+            errBox.hidden = false;
+        } finally {
+            btn.disabled = false;
+        }
+    });
 })();
