@@ -1,0 +1,65 @@
+/* Таб «Карточка». Берёт переменные --ps-* из payment_search.css, подключать после него. */
+.payment-search .pc-bar { display: flex; flex-wrap: wrap; align-items: stretch; margin: 0 0 8px; border: 1px solid var(--ps-line); border-radius: 5px; background: var(--ps-panel); }
+.payment-search .pc-grp { display: grid; align-content: center; gap: 4px 8px; margin: 0; padding: 8px 14px; border: 0; border-right: 1px solid var(--ps-line); min-width: 0; }
+.payment-search .pc-grp:last-of-type { border-right: 0; }
+.payment-search .pc-bar label { color: var(--ps-muted); font-size: 14px; }
+.payment-search .pc-bar .input_s { width: 100%; height: 30px; margin: 0; padding: 3px 8px; }
+/* ФИО: подпись под полем, как в старом приложении */
+.payment-search .pc-fio { width: 220px; gap: 0; }
+.payment-search .pc-fio label { margin: 2px 0 0; }
+.payment-search .pc-fio .input_s + label { margin-top: 4px; }
+.payment-search .pc-ident { width: 210px; }
+.payment-search .pc-ident .pc-check, .payment-search .pc-radio { display: flex; align-items: center; gap: 8px; color: var(--ps-text); font-size: 15px; min-height: 30px; }
+.payment-search .pc-bar input[type="checkbox"], .payment-search .pc-bar input[type="radio"] { width: 17px; height: 17px; margin: 0; accent-color: var(--ps-accent); }
+.payment-search .pc-mode { gap: 10px; }
+.payment-search .pc-actions { grid-auto-flow: column; align-items: center; gap: 6px; padding: 8px 12px; }
+.payment-search .pc-actions .pc-btn-col { flex-direction: column; align-items: center; gap: 4px; min-width: 96px; min-height: 80px; padding: 8px 10px; background: transparent; color: var(--ps-text); border-color: transparent; text-align: center; line-height: 1.15; cursor: pointer; }
+.payment-search .pc-actions .ps-reset { color: var(--ps-accent); }
+.payment-search .pc-actions .pc-btn-col:hover { background: var(--ps-hover); border-color: var(--ps-line); }
+.payment-search .pc-sel { grid-template-columns: max-content 150px; align-items: center; }
+.payment-search .pc-sel label { text-align: right; }
+.payment-search .pc-dates { grid-template-columns: max-content 150px; align-items: center; }
+.payment-search .pc-dates .pc-span { grid-column: 1 / -1; }
+.payment-search .pc-dates label { text-align: right; }
+.payment-search .pc-dates input:disabled { opacity: .55; }
+.payment-search .pc-bar .ps-error { padding: 0 14px 8px; }
+
+/* Тело: слева список, справа сведения; высота - весь остаток таба */
+.payment-search .ps-panel > .pc-body { flex: 1 1 0; min-height: 320px; display: grid; grid-template-columns: minmax(300px, 5fr) minmax(0, 8fr); gap: 8px; }
+.payment-search .pc-list { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.payment-search .pc-list .ps-table-wrap { flex: 1 1 0; min-height: 0; }
+.payment-search .pc-table { min-width: 560px; }
+.payment-search .pc-table tbody tr { cursor: pointer; }
+.payment-search .pc-table tbody tr[aria-selected="true"] { background: var(--ps-hover); box-shadow: inset 3px 0 0 var(--ps-accent); }
+.payment-search .pc-table tbody tr:focus-visible { outline: 2px solid var(--ps-accent); outline-offset: -2px; }
+.payment-search .pc-total { margin: 6px 4px 0; font-size: 14px; color: var(--ps-muted); }
+.payment-search .pc-detail { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.payment-search .pc-tabs { margin-bottom: 0; }
+.payment-search .pc-pane { flex: 1 1 0; min-height: 0; overflow: auto; border: 1px solid var(--ps-line); border-top: 0; border-radius: 0 0 5px 5px; background: var(--ps-row); }
+.payment-search .pc-pane > .ps-table-wrap { border: 0; border-radius: 0; height: 100%; }
+.payment-search .pc-sec { margin: 0; padding: 6px 12px; font-size: 15px; font-weight: normal; color: var(--ps-text); background: var(--ps-head); border-bottom: 1px solid var(--ps-line); border-top: 1px solid var(--ps-line); }
+.payment-search .pc-pane > div > .pc-sec:first-child { border-top: 0; }
+.payment-search .pc-kv { display: grid; gap: 6px 16px; margin: 0; padding: 10px 12px 12px; }
+.payment-search .pc-kv-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.payment-search .pc-kv > div { display: flex; gap: 8px; align-items: baseline; min-width: 0; }
+.payment-search .pc-kv:not(.pc-kv-4) > div { display: grid; grid-template-columns: 240px minmax(0, 1fr); }
+.payment-search .pc-kv-4 > div.pc-s2 { grid-column: span 2; }
+.payment-search .pc-kv-4 > div.pc-s4 { grid-column: 1 / -1; }
+.payment-search .pc-kv dt { margin: 0; flex: none; color: var(--ps-muted); font-size: 14px; }
+.payment-search .pc-kv dd { margin: 0; min-width: 0; color: var(--ps-accent); font-size: 14px; overflow-wrap: anywhere; }
+.payment-search .pc-kv dd:empty::before { content: "—"; color: var(--ps-muted); }
+.payment-search .pc-assign-table { min-width: 720px; }
+
+@media (max-width: 1180px) {
+    .payment-search .pc-kv-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .payment-search .pc-kv-4 > div.pc-s2 { grid-column: 1 / -1; }
+}
+@media (max-width: 900px) {
+    .payment-search .pc-grp { border-right: 0; border-bottom: 1px solid var(--ps-line); flex: 1 1 220px; }
+    .payment-search .ps-panel > .pc-body { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(240px, 1fr) minmax(320px, 1fr); }
+    .payment-search .pc-kv:not(.pc-kv-4) > div { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+    .payment-search .pc-kv-4 { grid-template-columns: minmax(0, 1fr); }
+    .payment-search .pc-fio, .payment-search .pc-ident { width: auto; }
+}

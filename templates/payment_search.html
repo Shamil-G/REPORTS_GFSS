@@ -6,6 +6,8 @@
 <a class="nav_button" href="/">{{ res_value('RETURN') }}</a>
 {% endblock %}
 {% block set_style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_card.css', v='1') }}">
+<script src="{{ url_for('static', filename='js/payment_card.js', v='1') }}" defer></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='16') }}">
 <script src="{{ url_for('static', filename='js/payment_search.js', v='6') }}" defer></script>
 <script src="{{ url_for('static', filename='js/payment_search_excel.js', v='1') }}" defer></script>
@@ -18,9 +20,109 @@
     <button type="button" class="ps-tab" role="tab" aria-selected="false" aria-controls="ps-card">Карточка</button>
     <button type="button" class="ps-tab" role="tab" aria-selected="true" aria-controls="ps-info">Информация по отчислениям и назначениям</button>
 </div>
-<div id="ps-card" class="ps-panel" role="tabpanel" hidden>
-    <div class="ps-empty"><strong>Раздел в разработке</strong></div>
+<div id="ps-card" class="ps-panel pc" role="tabpanel" hidden>
+    <form id="pc-filters" class="pc-bar" data-url="{{ url_for('view_payment_card_data') }}">
+        <fieldset class="pc-grp pc-fio">
+            <legend class="ps-sr-only">ФИО</legend>
+            <label for="pc-last">Фамилия</label>
+            <input class="input_s" id="pc-last" name="lastName" type="text" maxlength="60" autocomplete="off">
+            <label for="pc-first">Имя</label>
+            <input class="input_s" id="pc-first" name="firstName" type="text" maxlength="60" autocomplete="off">
+            <label for="pc-middle">Отчество</label>
+            <input class="input_s" id="pc-middle" name="middleName" type="text" maxlength="60" autocomplete="off">
+        </fieldset>
+        <fieldset class="pc-grp pc-ident">
+            <legend class="ps-sr-only">Идентификация</legend>
+            <label for="pc-birth">Дата рождения</label>
+            <input class="input_s" id="pc-birth" name="birthDate" type="date">
+            <label for="pc-iin">ИИН</label>
+            <input class="input_s" id="pc-iin" name="iin" type="text" inputmode="numeric" pattern="[0-9]{12}" maxlength="12" placeholder="12 цифр" title="12 цифр">
+            <label class="pc-check"><input type="checkbox" name="riskOnly" value="1"> Только с риском</label>
+        </fieldset>
+        <div class="pc-grp pc-actions">
+            <button type="submit" class="ps-find pc-btn-col">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+                <span>Поиск</span>
+            </button>
+            <button type="reset" class="ps-reset pc-btn-col">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6Z"/><path d="M4 4l16 16"/></svg>
+                <span>Сбросить</span>
+            </button>
+        </div>
+        <p id="pc-error" class="ps-error" role="alert" hidden></p>
+    </form>
+
+    <div class="pc-body">
+        <section class="pc-list" aria-label="Найденные получатели">
+            <div class="ps-table-wrap" tabindex="0" role="region" aria-label="Список получателей. Таблица прокручивается по горизонтали.">
+                <table class="ps-table pc-table">
+                    <caption class="ps-sr-only">Получатели</caption>
+                    <thead><tr>
+                        <th scope="col">№</th><th scope="col">Фамилия</th><th scope="col">Имя</th>
+                        <th scope="col">Отчество</th><th scope="col">Дата рождения</th>
+                    </tr></thead>
+                    <tbody id="pc-results"></tbody>
+                </table>
+                <div id="pc-empty" class="ps-empty" hidden>
+                    <strong>Получатели не найдены</strong>
+                    <p>Измените параметры поиска или сбросьте фильтры.</p>
+                </div>
+            </div>
+            <p id="pc-total" class="pc-total" role="status" aria-live="polite">Всего: 0</p>
+        </section>
+
+        <section class="pc-detail">
+            <div class="ps-tabs pc-tabs" role="tablist" aria-label="Сведения о получателе">
+                <button type="button" class="ps-tab" role="tab" aria-selected="true" aria-controls="pc-general">Общие сведения</button>
+                <button type="button" class="ps-tab" role="tab" aria-selected="false" aria-controls="pc-assign">Назначения</button>
+            </div>
+
+            <div id="pc-general" class="pc-pane" role="tabpanel">
+                <div id="pc-placeholder" class="ps-empty"><strong>Выберите получателя в списке</strong></div>
+                <div id="pc-data" hidden>
+                    <h3 class="pc-sec">Текущие сведения</h3>
+                    <dl class="pc-kv pc-kv-4">
+                        <div><dt>Фамилия</dt><dd data-f="lastName"></dd></div>
+                        <div><dt>Имя</dt><dd data-f="firstName"></dd></div>
+                        <div><dt>Отчество</dt><dd data-f="middleName"></dd></div>
+                        <div><dt>Дата рождения</dt><dd data-f="birthDate"></dd></div>
+                        <div class="pc-s2"><dt>ИИН</dt><dd data-f="iin"></dd></div>
+                        <div><dt>Пол</dt><dd data-f="gender"></dd></div>
+                        <div><dt>РНН</dt><dd data-f="rnn"></dd></div>
+                        <div class="pc-s2"><dt>Место рождения</dt><dd data-f="birthPlace"></dd></div>
+                        <div><dt>Дата регистрации</dt><dd data-f="regDate"></dd></div>
+                        <div class="pc-s4"><dt>Адрес</dt><dd data-f="address"></dd></div>
+                        <div class="pc-s4"><dt>Отделение</dt><dd data-f="department"></dd></div>
+                        <div class="pc-s4"><dt>Документ</dt><dd data-f="document"></dd></div>
+                        <div class="pc-s4"><dt>Статус</dt><dd data-f="status"></dd></div>
+                    </dl>
+                    <h3 class="pc-sec">Данные при регистрации</h3>
+                    <dl class="pc-kv">
+                        <div><dt>ФИО</dt><dd data-f="regFio"></dd></div>
+                        <div><dt>Место работы</dt><dd data-f="workplace"></dd></div>
+                        <div><dt>Отделение</dt><dd data-f="regDepartment"></dd></div>
+                        <div><dt>Дата первоначальной регистрации</dt><dd data-f="firstRegDate"></dd></div>
+                    </dl>
+                </div>
+            </div>
+
+            <div id="pc-assign" class="pc-pane" role="tabpanel" hidden>
+                <div class="ps-table-wrap" tabindex="0" role="region" aria-label="Назначения. Таблица прокручивается по горизонтали.">
+                    <div id="pc-placeholder2" class="ps-empty"><strong>В разработке</strong></div>
+<!--                    <table class="ps-table pc-assign-table">-->
+<!--                        <caption class="ps-sr-only">Назначения получателя</caption>-->
+<!--                    </table>-->
+<!--                    <div id="pc-assign-empty" class="ps-empty"><strong>Назначений нет</strong></div>-->
+                </div>
+            </div>
+        </section>
+    </div>
 </div>
+
+
+
+
+
 <div id="ps-info" class="ps-panel" role="tabpanel">
 <div id="ps-doc-tabs" class="ps-tabs ps-subtabs" role="tablist" aria-label="Открытые документы" data-url="{{ url_for('view_payment_search') }}/doc/">
     <button type="button" class="ps-tab" role="tab" aria-selected="true" aria-controls="ps-search">Поиск платежей</button>

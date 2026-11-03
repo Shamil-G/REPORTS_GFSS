@@ -403,3 +403,11 @@ def view_payment_print_excel(mhmh_id):
     except Exception:
         log.exception(f'Ошибка печати платежа MHMH_ID={mhmh_id}')
         return jsonify(error='Не удалось сформировать печатную форму.'), 500
+
+
+@app.route('/payment-search/card/data', methods=['GET'])
+@login_required
+@payments_required
+def view_payment_card_data():
+    # пока без данных
+    return jsonify(items=[], options={})
