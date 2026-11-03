@@ -409,5 +409,15 @@ def view_payment_print_excel(mhmh_id):
 @login_required
 @payments_required
 def view_payment_card_data():
-    # пока без данных
-    return jsonify(items=[], options={})
+    from model.payment_card_search import search_card
+    iin = request.args.get('iin', '')
+
+    log.info(f"CARD SEARCH. user: {session.get('username')}, iin: {'*' * 8 + iin[-4:] if iin else '-'}, "
+             f"fio: {any(request.args.get(k) for k in ('lastname', 'firstname', 'middlename'))}")
+    try:
+        return jsonify(search_card(request.args))
+    except ValueError as exc:
+        return jsonify(error=str(exc)), 400
+    except Exception:
+        log.exception('Ошибка поиска получателя в LOADER.PERSON')
+        return jsonify(error='Не удалось получить данные из БД. Возможно, запрос превысил время ожидания. Уточните фильтры. Подробности записаны в журнал приложения.'), 500

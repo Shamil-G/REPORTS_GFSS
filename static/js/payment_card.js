@@ -1,10 +1,8 @@
-/* Таб «Карточка»: поиск получателя, список, общие сведения и назначения.
-   Ожидаемый ответ эндпоинта (form.dataset.url, GET с параметрами формы):
-   { items: [ { id, lastName, firstName, middleName, birthDate, iin, gender, rnn, regDate,
-                birthPlace, address, department, document, status,
-                regFio, workplace, regDepartment, firstRegDate,
-                assignments: [ { type, region, status, dateFrom, dateTo, amount } ] } ],
-     options?: { paymentType: [{value,label}], region: [...], status: [...] } } */
+/* Таб «Карточка»: поиск получателя в LOADER.PERSON (GET /payment-search/card/data).
+   Фильтры: iin, lastname, firstname, middlename, birthdate. Ответ:
+   { items: [ { sicid, iin, lastname, ..., regfio } ], truncated, limit } (поля - см. COLUMNS в model/payment_card.py)
+   Ошибки приходят как { error } с кодом 4xx/5xx. Остальные поля «Общих сведений» и
+   «Назначения» заполняются, когда бэк начнёт их отдавать (data-f в card_panel.html). */
 (() => {
     const root = document.getElementById('ps-card');
     if (!root) return;
@@ -43,11 +41,14 @@
         });
     });
 
-    mode.addEventListener('change', () => {
-        const on = mode.value === 'range';
-        from.disabled = to.disabled = !on;
-        if (!on) from.value = to.value = '';
-    });
+    // Блок «Любая дата / Дата с - по» бэком пока не используется; если его убрали из разметки - не падаем
+    if (mode && from && to) {
+        mode.addEventListener('change', () => {
+            const on = mode.value === 'range';
+            from.disabled = to.disabled = !on;
+            if (!on) from.value = to.value = '';
+        });
+    }
 
     function fillSelects(opts) {
         if (!opts) return;
@@ -64,53 +65,81 @@
         if (!p) return;
         placeholder.hidden = true; data.hidden = false;
         data.querySelectorAll('[data-f]').forEach(el => { el.textContent = p[el.dataset.f] ?? ''; });
-        aBody.replaceChildren();
-        (p.assignments || []).forEach(a => {
-            const tr = document.createElement('tr');
-            tr.append(td(a.type), td(a.region), td(a.status), td(a.dateFrom), td(a.dateTo), td(money(a.amount), 'ps-money'));
-            aBody.append(tr);
-        });
-        aEmpty.hidden = aBody.rows.length > 0;
+        // «Назначения» - в разработке: таблица появится в разметке позже
+        if (aBody) {
+            aBody.replaceChildren();
+            (p.assignments || []).forEach(a => {
+                const tr = document.createElement('tr');
+                tr.append(td(a.type), td(a.region), td(a.status), td(a.dateFrom), td(a.dateTo), td(money(a.amount), 'ps-money'));
+                aBody.append(tr);
+            });
+            if (aEmpty) aEmpty.hidden = aBody.rows.length > 0;
+        }
     }
 
-    function render(list) {
+    function render(list, truncated, limit) {
         items = list;
         body.replaceChildren();
         list.forEach((p, i) => {
             const tr = document.createElement('tr');
             tr.tabIndex = 0;
             tr.setAttribute('aria-selected', 'false');
-            tr.append(td(i + 1), td(p.lastName), td(p.firstName), td(p.middleName), td(p.birthDate));
+            tr.append(td(i + 1), td(p.lastname), td(p.firstname), td(p.middlename), td(p.birthdate));
             tr.addEventListener('click', () => show(i));
             tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(i); } });
             body.append(tr);
         });
         empty.hidden = list.length > 0;
-        total.textContent = 'Всего: ' + list.length;
+        total.textContent = 'Всего: ' + list.length + (truncated ? ' (показаны первые ' + limit + ', уточните фильтры)' : '');
         data.hidden = true; placeholder.hidden = false;
         if (list.length === 1) show(0);
     }
 
+    const button = form.querySelector('button[type="submit"]');
+    let controller = null;
+    let sequence = 0;
+
     form.addEventListener('submit', async e => {
         e.preventDefault();
         showError('');
-        const iin = form.iin.value.trim();
+        const f = Object.fromEntries(new FormData(form));
+        const iin = (f.iin || '').trim();
         if (iin && !/^\d{12}$/.test(iin)) return showError('ИИН состоит из 12 цифр.');
-        if (mode.value === 'range' && from.value && to.value && from.value > to.value) return showError('Дата «с» позже даты «по».');
-        const q = new URLSearchParams(new FormData(form));
-        for (const [k, v] of [...q]) if (v === '') q.delete(k);
+        if (!iin && !(f.lastname || '').trim()) return showError('Укажите ИИН или фамилию.');
+        const q = new URLSearchParams();
+        ['iin', 'lastname', 'firstname', 'middlename', 'birthdate'].forEach(k => { if ((f[k] || '').trim()) q.set(k, f[k].trim()); });
+
+        if (controller) controller.abort();
+        const current = new AbortController();
+        controller = current;
+        const seq = ++sequence;
+        const timer = setTimeout(() => current.abort(), 45000);
+        button.disabled = true;
+        total.textContent = 'Поиск...';
         try {
-            const r = await fetch(form.dataset.url + '?' + q, { headers: { Accept: 'application/json' } });
-            if (!r.ok) throw new Error(r.status);
+            const r = await fetch(form.dataset.url + '?' + q, { signal: current.signal, headers: { Accept: 'application/json' } });
+            if (r.redirected) throw new Error('Сессия завершена. Обновите страницу и войдите снова.');
+            if (!(r.headers.get('content-type') || '').includes('application/json'))
+                throw new Error('Сервер вернул некорректный ответ. Обновите страницу и повторите поиск.');
             const j = await r.json();
-            fillSelects(j.options);
-            render(j.items || []);
-        } catch {
-            showError('Не удалось выполнить поиск. Повторите попытку.');
+            if (!r.ok) throw new Error(j.error || 'Не удалось выполнить поиск.');
+            if (seq === sequence) { fillSelects(j.options); render(j.items || [], j.truncated, j.limit); }
+        } catch (exc) {
+            if (seq === sequence) {
+                showError(exc.name === 'AbortError' ? 'Превышено время ожидания. Уточните фильтры.' : (exc.message || 'Не удалось связаться с сервером.'));
+                total.textContent = 'Поиск не выполнен.';
+            }
+        } finally {
+            clearTimeout(timer);
+            if (seq === sequence) { button.disabled = false; controller = null; }
         }
     });
 
     form.addEventListener('reset', () => {
-        setTimeout(() => { mode.dispatchEvent(new Event('change')); render([]); showError(''); });
+        ++sequence;
+        if (controller) controller.abort();
+        controller = null;
+        button.disabled = false;
+        setTimeout(() => { if (mode) mode.dispatchEvent(new Event('change')); render([], false, 0); showError(''); });
     });
 })();
