@@ -174,6 +174,9 @@ def do_report(file_name: str, date_first: str):
 			shift_row = 3
 			cnt_part = 0
 
+			# Загрузка перенесена в отдельный пакет sswh.load_min_so_history.make
+			# который стартует по расписанию, но с проверкой что еще не выполнялся. 
+			# Поэтому здесь можно не выполнять загрузку, а сразу формировать отчет.
 			log.info(f'REPORT {report_code}. LOAD: {stmt_load}')
 			cursor.execute(stmt_load)
 

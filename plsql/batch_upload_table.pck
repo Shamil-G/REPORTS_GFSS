@@ -24,18 +24,20 @@ CREATE OR REPLACE Package batch_upload_table Is
   -- загрузки, а наша последняя загрузка не упала; после ошибки приёмник ждёт разбора (state != 2).
   -- Перед загрузкой каждого источника состояние приёмников перечитывается: пока шли предыдущие
   -- источники, приёмник мог взять в работу или уже загрузить джоб LOAD_<таблица> (см. Skip_Reason).
-  -- Группы: load_tables_status.group_name (имя группы) объединяет таблицы, которые грузятся вместе, внутри группы -
-  -- по order_num. Их грузит Make (Run по потоку их пропускает), см. описание Make.
+  -- Группы: load_tables_status.group_name (имя группы) - расписание: таблицы группы грузит джоб группы,
+  -- внутри группы - по order_num. Таблицы P/M группы грузит Run(группа), таблицы L (пустой load_type) - Make(группа).
 
   -- приёмники к загрузке: строки load_tables_status, источник которых - локальная таблица потока LOADER
-  -- iStream = Null - все потоки; iOnly_Ready = 1 - только готовые к загрузке по правилу Run;
-  -- iDst_Exact - один приёмник по точному имени (для Make)
+  -- iStream = Null - все потоки; iOnly_Ready = 1 - только готовые к загрузке по правилу Run
+  -- (без iDst_Exact - только P/M);
+  -- iDst_Exact - один приёмник по точному имени (для Make); iGroup_Name - только таблицы группы (для Run)
   Cursor cur_load_queue
   (
     iStream     Varchar2,
     iDst_Prefix Varchar2,
     iOnly_Ready Number := 0,
-    iDst_Exact  Varchar2 := Null
+    iDst_Exact  Varchar2 := Null,
+    iGroup_Name Varchar2 := Null
   ) Is
     Select *
       From (Select ls.order_num,
@@ -51,6 +53,7 @@ CREATE OR REPLACE Package batch_upload_table Is
                    Nvl(ls.load_type, 'L') load_type,
                    Case When ls.load_type Is Null Then User || '.LOAD_' || ls.table_name || '.MAKE' End load_proc,
                    ls.state dst_state,
+                   ls.last_success_date dst_last_success_date,
                    ls.end_time dst_end_time,
                    ls.loaded_rows dst_rows,
                    ls.group_name,
@@ -75,9 +78,11 @@ CREATE OR REPLACE Package batch_upload_table Is
      Where (iStream Is Null Or upper(t.stream) = upper(iStream))
        And t.dst_name Like iDst_Prefix || '%'
        And t.loader_state = 2
-       And (iOnly_Ready = 0 Or t.loader_end_time > Nvl(t.dst_end_time, date '1900-01-01') And Nvl(t.dst_state, 2) = 2)
+--        And (iOnly_Ready = 0 Or t.loader_end_time > Nvl(t.dst_end_time, date '1900-01-01') And Nvl(t.dst_state, 2) = 2)
+       And (iOnly_Ready = 0 Or t.loader_end_time > Nvl(t.dst_last_success_date, date '1900-01-01') And Nvl(t.dst_state, 2) = 2)
        And (iDst_Exact Is Null Or upper(t.dst_name) = upper(iDst_Exact))
-       And (iDst_Exact Is Not Null Or iOnly_Ready = 0 Or t.group_name Is Null) -- таблицы групп Run пропускает
+       And (iGroup_Name Is Null Or upper(t.group_name) = upper(iGroup_Name))
+       And (iDst_Exact Is Not Null Or iOnly_Ready = 0 Or t.load_type In ('P', 'M')) -- Run грузит только P/M, L - Make
      -- источники - по наименьшему order_num их приёмников, строки одного источника идут подряд
      Order By Min(t.order_num) Over(Partition By t.src_full_name), t.src_full_name, t.order_num;
 
@@ -85,18 +90,17 @@ CREATE OR REPLACE Package batch_upload_table Is
 
   ------------------------------------------------------------------------------------------------------------------
   -- Для загрузки таблиц у которых нет собственных JOB или которые не имеют собственных LOAD_XXX процедур загрузки
-  -- Загрузка таблицы идет либо через 'P'-artition либо через 'M'-erge ветку 
+  -- Загрузка таблицы идет либо через 'P'-artition либо через 'M'-erge ветку
   -- Тип загрузки задан значением в колонке LOADER.LOAD_TABLE.LOAD_TYPE
-  
-  -- Пакет берет список загружаемых таблиц по имени потока
-  -- и если эти таблицы могут быть загружены - они загружаются
-  
-  -- Поток справочников идентифицируется именем 'STREAM_REF', значит его вызов произойдет через
-  -- вызов следующего джоба с именем потока: JOB_UPLOAD_REF -> Run('STREAM_REF');
 
-  -- нечего грузить - выход без записей в протокол. Новые таблицы не регистрирует.
-  -- Имя поотока берется из таблицы LOADER.LAOAD_TABLE.PERIOD
-  Procedure Run(iStream Varchar2);
+  -- Пакет берет список загружаемых таблиц по имени группы (SSWH.LOAD_TABLES_STATUS.GROUP_NAME)
+  -- и если эти таблицы могут быть загружены - они загружаются
+
+  -- Группа задаёт расписание: справочники - группа 'REF', джоб группы: JOB_UPLOAD_REF -> Run('REF');
+  -- таблицы L той же группы (если есть) грузит Make('REF').
+
+  -- Новые таблицы не регистрирует. Без имени группы не делает ничего.
+  Procedure Run(iGroup_Name Varchar2);
 
   -- ручная загрузка потока: без проверки свежести источника и состояния прошлой загрузки
   Procedure Load
@@ -106,25 +110,33 @@ CREATE OR REPLACE Package batch_upload_table Is
   );
 
   ---------------------------------------------------------------------------------------
-  
+
   ---------------------------------------------------------------------------------------
   --
   -- Для загрузки таблиц, имеющих собственную процедуру загрузки LOAD_XXX
   --
-  
+
   -- Для этого таблицы объединяются в группу, по аналогии с потоками
-  -- Группы записаны в колонку SSWH.LOAD_TABLES_STATUS.GROUP_NUM
-  
-  -- для джоба групп (точка входа, как MAKE у LOAD_*): группы по порядку group_num, внутри группы таблицы по id.
+  -- Группы записаны в колонку SSWH.LOAD_TABLES_STATUS.GROUP_NAME
+
+  -- для джоба групп (точка входа, как MAKE у LOAD_*): группы по порядку group_name, внутри группы таблицы по order_num.
+  -- Берёт только таблицы с пустым load_type (L); P/M группы грузит Run(группа).
   -- Группа пропускается, если её первая таблица не готова к загрузке по правилу Run или у какой-либо
   -- таблицы группы прошлая загрузка не завершилась успешно (state не 2 и не пусто). На первой ошибке
   -- группа останавливается. Таблица группы без источника в LOADER (строится из таблиц SSWH)
   -- грузится своей LOAD_<таблица>.MAKE; у первой таблицы группы источник в LOADER должен быть.
+  -- Исключение - суррогатные таблицы (load_tables_status.depend_groups - список групп через запятую):
+  -- такая таблица собирается, когда все таблицы этих групп загружены успешно позже её прошлой сборки,
+  -- иначе пропускается, а группа идёт дальше; если она первая в группе, группа считается готовой.
+  -- Суррогатные независимы: их state не проверяется для всей группы, их ошибка группу не останавливает.
   -- Таблица группы, которую перед стартом пропустил Skip_Reason (её грузит другой процесс, или P/M
   -- уже загружена после LOADER): первая - пропускается вся группа, остальные - группа идёт дальше.
   -- Нечего грузить - выход без записей в протокол.
-  Procedure Make;
-  
+
+  -- iGroup_Name - имя группы (load_tables_status.group_name), регистр не важен;
+  -- Null - все группы по порядку (как раньше, существующие вызовы Make не меняются)
+  Procedure Make(iGroup_Name Varchar2 := Null);
+
   ---------------------------------------------------------------------------------------
 
   -- завести в load_tables_status новые таблицы потока LOADER с load_type = 'X' (не грузятся до P/M);
@@ -153,12 +165,15 @@ CREATE OR REPLACE Package Body batch_upload_table Is
   p_First_Error Varchar2(2000); -- первая ошибка по текущему источнику - для load_tables_status
   p_All_Skipped Boolean; -- Load_Source не грузил: все приёмники пропущены по Skip_Reason
 
-  -- таблицы групп для Make: по имени группы, внутри группы - по order_num
-  Cursor cur_group_queue Is
-    Select ls.group_name, ls.order_num, ls.table_name, ls.load_type, ls.state
-      From load_tables_status ls
-     Where ls.group_name Is Not Null
-     Order By ls.group_name, ls.order_num;
+  -- таблицы групп для Make: только L (пустой load_type), по имени группы, внутри группы - по order_num
+  Cursor cur_group_queue(iGroup_Name Varchar2) Is
+  Select ls.group_name, ls.order_num, ls.table_name, ls.load_type, ls.state, ls.depend_groups
+    From load_tables_status ls
+   Where ls.group_name Is Not Null
+     And ls.load_type Is Null
+     And (iGroup_Name Is Null And ls.freq = 'D' Or upper(ls.group_name) = upper(iGroup_Name))
+   Order By ls.group_name, ls.order_num;
+
 
   Type TGroupQueue Is Table Of cur_group_queue%Rowtype;
 
@@ -166,6 +181,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
   -- длины в байтах: object Varchar2(64), info Varchar2(4000), база AL32UTF8
   Procedure Log
   (
+    iproc   varchar2,
     iObject Varchar2,
     iAction Varchar2,
     iMsg    Varchar2 := Null
@@ -173,9 +189,9 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     Pragma Autonomous_Transaction;
   Begin
     Insert Into log_load_tables
-      (atime, object, action, info)
+      (atime, pkg, proc, object, action, info)
     Values
-      (Current_Timestamp, substrb(iObject, 1, 64), iAction, substrb(iMsg, 1, 4000));
+      (Current_Timestamp, 'BATCH_UPLOAD_TABLE', iproc, substrb(coalesce(iObject,''), 1, 64), iAction, substrb(coalesce(iMsg,''), 1, 4000));
     Commit;
   End;
 
@@ -191,8 +207,8 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     If p_First_Error Is Null Then
       p_First_Error := substrb(iObject || ': ' || iErr, 1, 2000);
     End If;
-    Log(iObject, 'Ошибка !', iErr || Case When iSql Is Not Null Then ' | ' || iSql End);
-  End;
+    Log( 'Fail', iObject, 'Ошибка !', iErr || Case When iSql Is Not Null Then ' | ' || iSql End);
+  End Fail;
 
   -- Выполнить команду. В протокол пишется только ошибка - вместе с текстом команды;
   -- загрузка при этом не прерывается, сбрасывается p_Source_Ok.
@@ -267,9 +283,9 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     End Loop;
     If p_Names Is Not Null Then
       Commit;
-      Log(cObject, 'Новые таблицы (X)', iStream || ': ' || substr(p_Names, 3));
+      Log( 'Register', cObject, 'Новые таблицы (X)', iStream || ': ' || substr(p_Names, 3));
     End If;
-  End;
+  End Register;
 
   -- Почему приёмник сейчас грузить не надо (Null - надо). Строка load_tables_status перечитывается:
   -- приёмник загружается (state = 1) - пропуск всегда. iOnly_Ready = 1 (Run, Make), приёмник P/M:
@@ -281,9 +297,9 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     iOnly_Ready Number
   ) Return Varchar2 Is
     p_State load_tables_status.state%Type;
-    p_End   load_tables_status.end_time%Type;
+    p_End   load_tables_status.last_success_date%Type;
   Begin
-    Select s.state, s.end_time
+    Select s.state, s.last_success_date
       Into p_State, p_End
       From load_tables_status s
      Where s.table_name = upper(iDst.dst_name);
@@ -299,7 +315,53 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       End If;
     End If;
     Return Null;
-  End;
+  End Skip_Reason;
+
+  -- Суррогатная таблица (строится из таблиц SSWH, источника в LOADER нет) собирается, когда загружены
+  -- группы из её load_tables_status.depend_groups (через запятую): у каждой таблицы этих групп, кроме X,
+  -- прошлая загрузка успешна и позже прошлой сборки суррогатной. Null - собирать, иначе причина пропуска.
+  -- Пустой depend_groups - зависимостей нет, Null.
+  Function Depend_Reason(iTable Varchar2) Return Varchar2 Is
+    p_Groups  load_tables_status.depend_groups%Type;
+    p_Last    load_tables_status.last_success_date%Type;
+    p_State   load_tables_status.state%Type;
+    p_Found  Pls_Integer; -- сколько групп из списка есть в load_tables_status
+    p_Waiting Pls_Integer; -- сколько таблиц этих групп не готово
+    p_Blocker Varchar2(400); -- первая из них - для протокола
+  Begin
+    Select upper(Replace(s.depend_groups, ' ')), s.last_success_date, s.state
+      Into p_Groups, p_Last, p_State
+      From load_tables_status s
+     Where s.table_name = upper(iTable);
+    If p_Groups Is Null Then
+      Return Null;
+    End If;
+    -- суррогатная не входит в проверку состояния группы (Group_Ready) - проверяем её саму
+    If Nvl(p_State, 2) != 2 Then
+      Return 'Прошлая сборка не завершена успешно, state = ' || p_State;
+    End If;
+    Select Count(Distinct upper(d.group_name)),
+           Count(Case When d.not_ready = 1 Then 1 End),
+           Min(Case When d.not_ready = 1 Then
+                 d.group_name || '.' || d.table_name || ': state = ' || d.state || ', загружена ' ||
+                 Nvl(to_char(d.last_success_date, 'dd.mm.yyyy hh24:mi:ss'), 'никогда')
+               End) Keep(Dense_Rank First Order By d.not_ready Desc, d.group_name, d.order_num)
+      Into p_Found, p_Waiting, p_Blocker
+      From (Select t.*,
+                   Case When Nvl(t.state, 2) != 2 Or
+                             Nvl(t.last_success_date, date '1900-01-01') <= Nvl(p_Last, date '1900-01-01')
+                        Then 1 Else 0 End not_ready
+              From load_tables_status t
+             Where Instr(',' || p_Groups || ',', ',' || upper(t.group_name) || ',') > 0
+               And Nvl(t.load_type, 'L') != 'X') d;
+    If p_Found < regexp_count(p_Groups, '[^,]+') Then
+      Return 'В depend_groups (' || p_Groups || ') есть группа без таблиц в load_tables_status';
+    End If;
+    If p_Waiting > 0 Then
+      Return 'Не готово таблиц: ' || p_Waiting || ', первая ' || p_Blocker;
+    End If;
+    Return Null;
+  End Depend_Reason;
 
   -- table_name = имя приёмника без владельца; строка с load_type заведена вручную
   Procedure Status_Begin(iDst cur_load_queue%Rowtype) Is
@@ -356,7 +418,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
           p_Next_Type := 'M';
         End If;
         If p_Next_Type != iDst(i).load_type Then
-          Log(iDst(i).dst_full_name, 'Тип загрузки', iDst(i).load_type || ' -> ' || p_Next_Type || ', строк ' || p_Rows_Now);
+          Log( 'Status_End', iDst(i).dst_full_name, 'Тип загрузки', iDst(i).load_type || ' -> ' || p_Next_Type || ', строк ' || p_Rows_Now);
         End If;
         Update load_tables_status s
            Set s.state = 2, s.end_time = Sysdate, s.last_success_date = Sysdate, s.loaded_rows = p_Rows_Now,
@@ -369,7 +431,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       End If;
     End Loop;
     Commit;
-  End;
+  End Status_End;
 
   ---------------------------------------------------------------- приёмник
   -- добавить недостающие переключаемые партиции
@@ -590,7 +652,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       Return;
     End If;
     Commit;
-    Log(iDst.dst_full_name, 'Merge завершён',
+    Log('Merge_Dst', iDst.dst_full_name, 'Merge завершён',
         'Пришло ' || p_Src_Rows || Case When p_Index Is Null Then ', сверка по всем колонкам: добавлено '
                                   Else ', по ключу ' || p_Index || ': изменено и добавлено ' End ||
         p_Merged_Rows || ', удалено ' || p_Deleted_Rows);
@@ -598,25 +660,25 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     When Others Then
       Rollback;
       Fail(iDst.dst_full_name, Sqlerrm);
-  End;
+  End Merge_Dst;
 
   -- L: своя процедура LOAD_<таблица>.MAKE. Ошибки она обрабатывает и пишет в load_tables_status сама,
   -- поэтому на p_Source_Ok и на статус приёмников P/M того же источника не влияет.
   Procedure Call_Own_Proc(iDst cur_load_queue%Rowtype) Is
     p_State load_tables_status.state%Type;
   Begin
-    Log(iDst.dst_full_name, 'Своя процедура', iDst.load_proc);
+    Log( 'Call_Own_Proc', iDst.dst_full_name, 'Своя процедура', iDst.load_proc);
     Execute Immediate 'Begin ' || iDst.load_proc || '; End;';
     Select s.state Into p_State From load_tables_status s Where s.table_name = upper(iDst.dst_name);
     If p_State != 2 Then
       p_Proc_Ok := False;
-      Log(iDst.dst_full_name, 'Своя процедура завершилась с ошибкой', 'state = ' || p_State);
+      Log( 'Call_Own_Proc', iDst.dst_full_name, 'Своя процедура завершилась с ошибкой', 'state = ' || p_State);
     End If;
   Exception
     When Others Then
       p_Proc_Ok := False;
-      Log(iDst.dst_full_name, 'Ошибка !', Sqlerrm || ' | ' || iDst.load_proc);
-  End;
+      Log( 'Call_Own_Proc', iDst.dst_full_name, 'Ошибка !', Sqlerrm || ' | ' || iDst.load_proc);
+  End Call_Own_Proc;
 
   ---------------------------------------------------------------- источник
   -- Insert All: по ветке When на каждый приёмник (партиционированный - только его партиции),
@@ -659,7 +721,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       p_Sql := p_Sql || chr(10) || 'Where PART_ID In (' || Part_Id_List(p_Union_Parts) || ')';
     End If;
     Return p_Sql;
-  End;
+  End Insert_Sql;
 
   -- iOnly_Ready = 1 - загрузка по готовности (Run, Make), см. Skip_Reason
   Procedure Load_Source
@@ -686,7 +748,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
         p_To_Load.Extend;
         p_To_Load(p_To_Load.Count) := iDst(i);
       Else
-        Log(iDst(i).dst_full_name, 'Пропущена', p_Skip_Why);
+        Log( 'LOAD_SOURCE', iDst(i).dst_full_name, 'Пропущена', p_Skip_Why);
       End If;
     End Loop;
     If p_To_Load.Count = 0 Then
@@ -703,7 +765,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       End If;
     End Loop;
     If Not p_Source_Ok Then
-      Log(p_Log_Object, 'Загрузка отменена');
+      Log('LOAD_SOURCE', p_Log_Object, 'Загрузка отменена');
       Status_End(p_To_Load, Null);
       Return;
     End If;
@@ -722,7 +784,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       p_Names := p_Names || ', ' || Case When p_To_Load.Count > 1 Then p_To_Load(i).dst_full_name || ' ' End ||
                  '(' || p_To_Load(i).load_type || ')';
     End Loop;
-    Log(p_Log_Object, 'Приёмники подготовлены', substr(p_Names, 3));
+    Log('LOAD_SOURCE', p_Log_Object, 'Приёмники подготовлены', substr(p_Names, 3));
     If p_P_Targets.Count > 0 Then
       -- 2. P: одна вставка во все такие приёмники
       Begin
@@ -731,7 +793,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
         Commit;
         p_Inserted_Rows := p_Last_Rows;
         If p_Inserted_Rows Is Not Null Then
-          Log(p_Log_Object, 'Вставка завершена', 'Загружено ' || p_Inserted_Rows || ' записей');
+          Log( 'Load_Source', p_Log_Object, 'Вставка завершена', 'Загружено ' || p_Inserted_Rows || ' записей');
         End If;
       Exception
         When Others Then
@@ -753,23 +815,24 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     End Loop;
     -- 5. итог
     If p_Source_Ok And p_Proc_Ok Then
-      Log(p_Log_Object, 'Загрузка завершена');
+      Log('Load_Source', p_Log_Object, 'Загрузка завершена');
     Else
-      Log(p_Log_Object, 'Загрузка завершена с ошибками');
+      Log('Load_Source', p_Log_Object, 'Загрузка завершена с ошибками');
     End If;
     Status_End(p_To_Load, p_Inserted_Rows);
   Exception
     When Others Then
       Fail(p_Log_Object, Sqlerrm);
       Status_End(p_To_Load, p_Inserted_Rows);
-  End;
+  End Load_Source;
 
   ---------------------------------------------------------------- точка входа
   Procedure Do_Load
   (
     iStream     Varchar2,
     iDst_Name   Varchar2,
-    iOnly_Ready Number
+    iOnly_Ready Number,
+    iGroup_Name Varchar2 := Null
   ) Is
     p_All_Targets    TLoadQueue; -- все приёмники, упорядочены по источнику
     p_Dst            TLoadQueue := TLoadQueue(); -- приёмники текущего источника
@@ -779,15 +842,19 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     If iOnly_Ready = 0 Then
       Register(iStream);
     End If;
-    Open cur_load_queue(iStream, iDst_Name, iOnly_Ready);
-    Fetch cur_load_queue Bulk Collect
-      Into p_All_Targets;
+
+    Open cur_load_queue(iStream, iDst_Name, iOnly_Ready, Null, iGroup_Name);
+    Fetch cur_load_queue Bulk Collect Into p_All_Targets;
     Close cur_load_queue;
+
     If iOnly_Ready = 1 And p_All_Targets.Count = 0 Then
+      Log( 'Do_Load', cObject, Nvl(iGroup_Name, iStream), 'Нет готовых к загрузке таблиц');
       Return; -- джобу нечего грузить
     End If;
-    Log(cObject, 'Начало загрузки',
-        Case When iOnly_Ready = 1 Then 'Run ' End || 'Stream=' || iStream ||
+
+    Log( 'Do_Load', cObject, 'Начало загрузки',
+        Case When iOnly_Ready = 1 Then 'Run ' End ||
+        Case When iGroup_Name Is Not Null Then 'Group=' || iGroup_Name Else 'Stream=' || iStream End ||
         Case When iDst_Name Is Not Null Then ', Dst=' || iDst_Name End);
     For i In 1 .. p_All_Targets.Count Loop
       p_Dst.Extend;
@@ -803,16 +870,16 @@ CREATE OR REPLACE Package Body batch_upload_table Is
         End If;
       End If;
     End Loop;
-    Log(cObject, 'Загрузка завершена', 'Источников: ' || p_Sources || ', с ошибками: ' || p_Failed_Sources);
+    Log( 'Do_Load', cObject, 'Загрузка завершена', 'Источников: ' || p_Sources || ', с ошибками: ' || p_Failed_Sources);
   Exception
     When Others Then
       -- курсор уровня пакета остаётся открытым до конца сессии
       If cur_load_queue%Isopen Then
         Close cur_load_queue;
       End If;
-      Log(cObject, 'Ошибка !', Sqlerrm);
+      Log( 'Do_Load', cObject, 'Ошибка !', Sqlerrm);
       Raise;
-  End;
+  End Do_Load;
 
   Procedure Load
   (
@@ -823,13 +890,19 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     Do_Load(iStream, iDst_Name, 0);
   End;
 
-  Procedure Run(iStream Varchar2) Is
+  Procedure Run(iGroup_Name Varchar2) Is
   Begin
-    Do_Load(iStream, Null, 1);
+    If iGroup_Name Is Null Then
+      Return; -- без группы Run загрузил бы все P/M всех потоков
+    End If;
+    Log( 'Run', iGroup_Name, 'Start');
+    Do_Load(Null, Null, 1, iGroup_Name);
+    Log( 'Run', iGroup_Name, 'Finish');
   End;
 
   ---------------------------------------------------------------- группы
-  -- группа готова: первая таблица готова по правилу Run, у всех таблиц прошлая загрузка успешна
+  -- группа готова: первая таблица готова по правилу Run, у всех таблиц прошлая загрузка успешна.
+  -- Первая таблица суррогатная (depend_groups) - группа готова, каждая таблица проверит свои зависимости сама.
   Function Group_Ready
   (
     iGrp   TGroupQueue,
@@ -837,23 +910,40 @@ CREATE OR REPLACE Package Body batch_upload_table Is
     iLast  Pls_Integer
   ) Return Boolean Is
   Begin
+    Log( 'Group_Ready', 'Start check state', '');
+
+    -- Если в группе есть незаконченная загрузка - откажемся от загрузки группы
+    -- суррогатные (depend_groups) независимы: своё состояние каждая проверяет сама (Depend_Reason)
     For i In iFirst .. iLast Loop
+      Continue When iGrp(i).depend_groups Is Not Null;
       If Nvl(iGrp(i).state, 2) != 2 Then
+        Log( 'Group_Ready', 'False', 'There is an incomplete download !!!');
         Return False;
       End If;
     End Loop;
-    For r In cur_load_queue(Null, Null, 1, iGrp(iFirst).table_name) Loop
+
+    If iGrp(iFirst).depend_groups Is Not Null Then
+      Return True;
+    End If;
+
+    Log( 'Group_Ready', 'Check table_name', '');
+    -- Бежим по кусору, чтобы сразу вытащить True !?
+    For r In cur_load_queue(Null, Null, 1, iGrp(iFirst).table_name)
+    Loop
       Return True;
     End Loop;
+    Log( 'Group_Ready', 'False', 'iFirst: '||iFirst||', TableName: '||iGrp(iFirst).table_name);
     Return False;
   End;
 
-  -- загрузить одну таблицу группы: с источником в LOADER - как обычно, без него - своей процедурой
+  -- загрузить одну таблицу группы: с источником в LOADER - как обычно, без него - своей процедурой,
+  -- если готовы её зависимости (Depend_Reason). Неготовая суррогатная пропускается, группа идёт дальше.
   Procedure Load_Member(iTable Varchar2) Is
     p_Dst        TLoadQueue;
     p_Has_Source Pls_Integer; -- у таблицы есть источник в потоке LOADER
     p_Has_Proc   Pls_Integer; -- есть LOAD_<таблица>.MAKE
     p_Proc_Dst   cur_load_queue%Rowtype;
+    p_Skip_Why   Varchar2(1000);
   Begin
     Open cur_load_queue(Null, Null, 0, iTable);
     Fetch cur_load_queue Bulk Collect
@@ -883,6 +973,11 @@ CREATE OR REPLACE Package Body batch_upload_table Is
        And pr.object_name = 'LOAD_' || upper(iTable)
        And pr.procedure_name = 'MAKE';
     If p_Has_Source = 0 And p_Has_Proc > 0 Then
+      p_Skip_Why := Depend_Reason(iTable);
+      If p_Skip_Why Is Not Null Then
+        Log( 'Load_Member', User || '.' || upper(iTable), 'Пропущена', p_Skip_Why);
+        Return;
+      End If;
       p_Proc_Dst.dst_name      := upper(iTable);
       p_Proc_Dst.dst_full_name := User || '.' || upper(iTable);
       p_Proc_Dst.load_type     := 'L';
@@ -890,54 +985,65 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       Call_Own_Proc(p_Proc_Dst);
     Else
       p_Proc_Ok := False;
-      Log(User || '.' || upper(iTable), 'Ошибка !',
+      Log( 'Load_Member', User || '.' || upper(iTable), 'Ошибка !',
           'Таблицу группы нельзя загрузить: источник в LOADER не загружен успешно, load_type = X ' ||
           'или нет LOAD_' || upper(iTable) || '.MAKE');
     End If;
-  End;
+  End Load_Member;
 
-  Procedure Make Is
+  Procedure Make(iGroup_Name in varchar2) Is
     p_Tables        TGroupQueue;
     p_Group_First   Pls_Integer := 1; -- первая таблица текущей группы
     p_Group_Last    Pls_Integer; -- последняя таблица текущей группы
     p_Groups        Pls_Integer := 0; -- загружено групп
     p_Failed_Groups Pls_Integer := 0; -- из них остановлено на ошибке
   Begin
-    Open cur_group_queue;
-    Fetch cur_group_queue Bulk Collect
-      Into p_Tables;
+    -- Выберем все группы сразу
+    -- load_tables_status.ls.group_name Is Not Null
+    util.recompile_invalid_packages;
+
+    Open cur_group_queue(iGroup_Name);
+    Fetch cur_group_queue Bulk Collect Into p_Tables;
     Close cur_group_queue;
+
     While p_Group_First <= p_Tables.Count Loop
       p_Group_Last := p_Group_First;
-      While p_Group_Last < p_Tables.Count And p_Tables(p_Group_Last + 1).group_name = p_Tables(p_Group_First).group_name Loop
+
+      While p_Group_Last < p_Tables.Count And p_Tables(p_Group_Last + 1).group_name = p_Tables(p_Group_First).group_name
+      Loop
         p_Group_Last := p_Group_Last + 1;
       End Loop;
+
+      -- теперь границы группы известны
       If Group_Ready(p_Tables, p_Group_First, p_Group_Last) Then
         If p_Groups = 0 Then
-          Log(cObject, 'Начало загрузки', 'Make');
+          Log( 'Make', cObject, 'Начало загрузки', 'Make');
         End If;
         p_Groups := p_Groups + 1;
-        Log(cObject, 'Группа ' || p_Tables(p_Group_First).group_name, 'Таблиц: ' || (p_Group_Last - p_Group_First + 1));
+        Log('Make', cObject, 'Группа ' || p_Tables(p_Group_First).group_name, 'Таблиц: ' || (p_Group_Last - p_Group_First + 1));
         For i In p_Group_First .. p_Group_Last Loop
           dbms_application_info.set_client_info('Group ' || p_Tables(i).group_name || ': ' || p_Tables(i).table_name);
           Load_Member(p_Tables(i).table_name);
           -- первая таблица пропущена (её грузит другой процесс или уже загрузил) - не грузим всю группу
           If i = p_Group_First And p_All_Skipped Then
-            Log(cObject, 'Группа ' || p_Tables(p_Group_First).group_name || ' пропущена',
+            Log( 'Make', cObject, 'Группа ' || p_Tables(p_Group_First).group_name || ' пропущена',
                 'Пропущена первая таблица ' || p_Tables(i).table_name);
             Exit;
           End If;
-          If Not p_Source_Ok Or Not p_Proc_Ok Then
+          -- ошибка суррогатной (depend_groups) группу не останавливает: суррогатные друг от друга не зависят
+          If (Not p_Source_Ok Or Not p_Proc_Ok) And p_Tables(i).depend_groups Is Null Then
             p_Failed_Groups := p_Failed_Groups + 1;
-            Log(cObject, 'Группа ' || p_Tables(p_Group_First).group_name || ' остановлена', 'На ' || p_Tables(i).table_name);
+            Log( 'Make', cObject, 'Группа ' || p_Tables(p_Group_First).group_name || ' остановлена', 'На ' || p_Tables(i).table_name);
             Exit;
           End If;
         End Loop;
+      else
+        Log('Make', cObject, 'Группа ' || p_Tables(p_Group_First).group_name, 'Для загрузки не готова');
       End If;
       p_Group_First := p_Group_Last + 1;
     End Loop;
     If p_Groups > 0 Then
-      Log(cObject, 'Загрузка завершена', 'Групп: ' || p_Groups || ', остановлено на ошибке: ' || p_Failed_Groups);
+      Log( 'Make', cObject, 'Загрузка завершена', 'Групп: ' || p_Groups || ', остановлено на ошибке: ' || p_Failed_Groups);
     End If;
   Exception
     When Others Then
@@ -947,9 +1053,9 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       If cur_load_queue%Isopen Then
         Close cur_load_queue;
       End If;
-      Log(cObject, 'Ошибка !', Sqlerrm);
+      Log( 'Make', cObject, 'Ошибка !', Sqlerrm);
       Raise;
-  End;
+  End Make;
 
   Function table_list(iStream Varchar2) Return TLoadQueue
     Pipelined Is
@@ -958,7 +1064,7 @@ CREATE OR REPLACE Package Body batch_upload_table Is
       Pipe Row(r);
     End Loop;
     Return;
-  End;
+  End table_list;
 
 End batch_upload_table;
 /
