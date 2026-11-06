@@ -3883,27 +3883,6 @@ dict_reports = {
     ,
     "ВОЗВРАТЫ":
     {
-        "8000 - Паспорт СОСС":
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.8000",
-            "live_time": 0,
-            "reports": REPORTS_8000,
-        },
-        "3200":
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.VOZVRATY.3200",
-            "live_time": 0,
-            "reports":
-            {
-                "01": {
-                    "name": "3201 - Справка о последней дате уплаты СО",
-                    "proc": "rep_dia_3201",
-                    "data_approve": "02.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rnn": {"display_name": "РНН", "type": "string", "length": 12, "required": False}, "bin_iin": {"display_name": "БИН/ИИН", "type": "string", "length": 12, "required": False}},
-                },
-            }
-        },
         "600 - Справки":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.VOZVRATY.600",
@@ -4041,6 +4020,21 @@ dict_reports = {
                 },
             }
         },
+        "3200":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.VOZVRATY.3200",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "3201 - Справка о последней дате уплаты СО",
+                    "proc": "rep_dia_3201",
+                    "data_approve": "02.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rnn": {"display_name": "РНН", "type": "string", "length": 12, "required": False}, "bin_iin": {"display_name": "БИН/ИИН", "type": "string", "length": 12, "required": False}},
+                },
+            }
+        },
         "5000 - Социальная напряженность":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.VOZVRATY.5000",
@@ -4091,6 +4085,13 @@ dict_reports = {
                 },
             }
         },
+        "8000 - Паспорт СОСС":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.8000",
+            "live_time": 0,
+            "reports": REPORTS_8000,
+        },
+
     }
     ,
 }
