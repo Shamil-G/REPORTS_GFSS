@@ -783,9 +783,16 @@ dict_reports = {
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO, "rfpm_id": {**LIST_RFPM, "required": False}},
                 },
+                "27": {
+                    "name": "Средние СО за период",
+                    "proc": "rep_dia_avg_so",
+                    "data_approve": "06.11.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_YTD},
+                },
             }
         },
-        "1501" : 
+        "1501" :
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.1501",
             "live_time": 0,

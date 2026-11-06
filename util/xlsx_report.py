@@ -124,7 +124,7 @@ _FORMATS = {
         'align': 'center', 'valign': 'vcenter',
         'font_size': 14, 'bold': True, 'text_wrap': True},
     'code': {
-        'align': 'left', 'valign': 'vcenter', 'font_size': 12, 'bold': True},
+        'align': 'right', 'valign': 'vcenter', 'font_size': 12, 'bold': True},
     'period': {
         'align': 'right', 'valign': 'vcenter', 'font_size': 11, 'italic': True},
     'subtitle': {
@@ -408,7 +408,10 @@ def build_report(*, code, name, columns, stmt,
     table_px = _col_px(6) + sum(_col_px(w) for w in widths)
 
     def _make_header(ws, title, subtitle, slots):
-        ws.set_row(TITLE_ROW, title_height or _text_height(title, table_px, 14))
+        # название занимает ширину таблицы без последней колонки: в ней справа
+        # стоит шифр отчёта
+        title_px = table_px - _col_px(widths[-1])
+        ws.set_row(TITLE_ROW, title_height or _text_height(title, title_px, 14))
         ws.set_row(CODE_ROW, 18)
         ws.set_row(COLNUM_ROW, 14)
         auto = _header_heights(columns, header_depth, widths, slots)
@@ -416,13 +419,14 @@ def build_report(*, code, name, columns, stmt,
         for i, (a, m) in enumerate(zip(auto, manual)):
             ws.set_row(HEADER_ROW + i, m or a)
 
-        _merge(ws, TITLE_ROW, 0, TITLE_ROW, total_cols - 1, title, fmt['title'])
-        ws.write(CODE_ROW, 0, code, fmt['code'])
-        # Справа в этой же строке будет дата формирования - её пишет
+        _merge(ws, TITLE_ROW, 0, TITLE_ROW, total_cols - 2, title, fmt['title'])
+        # шифр отчёта - первая строка, последняя колонка, прижат вправо
+        ws.write(TITLE_ROW, total_cols - 1, code, fmt['code'])
+        # Справа во второй строке будет дата формирования - её пишет
         # _write_stamp() уже после выгрузки данных, когда известно время
-        # окончания. Поэтому подпись периода стоит слева, рядом с кодом.
+        # окончания. Поэтому подпись периода стоит слева.
         if subtitle:
-            ws.write(CODE_ROW, 1, subtitle, fmt['subtitle'])
+            ws.write(CODE_ROW, 0, subtitle, fmt['subtitle'])
 
         ws.set_column(0, 0, 6)
         for i, c in enumerate(leaves, start=1):
