@@ -10,7 +10,7 @@ from util.ad_check import iin_in_ad, AdUnavailable
 # Наибольшее число платежей одного поиска и одной выгрузки в Excel. Больше -
 # приложение зависает, поэтому поиск показывает первые LIMIT, а выгрузка при
 # превышении отказывает (неполный файл молча отдавать нельзя).
-LIMIT = 200000
+LIMIT = 15000
 PAGE_SIZE = 200              # строк на странице экрана
 EXPORT_TIMEOUT_MS = 170000   # меньше timeout gunicorn (180 с)
 COLUMNS = (
@@ -78,8 +78,11 @@ def build_query(filters):
             raise ValueError('Введите неотрицательную сумму с точностью до двух знаков после запятой.')
         where.append('p.pay_sum = :amount')
         params['amount'] = Decimal(amount)
-    bin_value = filters.get('bin', '').strip()
-    if bin_value:
+    # БИН плательщика (p_rnn) и БИН получателя (r_rnn) - одна и та же проверка
+    for key, column in (('bin', 'p_rnn'), ('rbin', 'r_rnn')):
+        bin_value = filters.get(key, '').strip()
+        if not bin_value:
+            continue
         # Меньше 6 цифр - слишком широкая выборка: сортировка по дате читает
         # почти всю таблицу и упирается в таймаут.
         if not re.fullmatch(r'[0-9]{6,12}', bin_value):
@@ -93,13 +96,13 @@ def build_query(filters):
                         raise ValueError('Доступ запрещен!')
                 except AdUnavailable:
                     raise ValueError('Не удалось проверить данные в Active Directory. Попробуйте позже.') from None
-            where.append('p.p_rnn = :bin')
-            params['bin'] = bin_value
+            where.append(f'p.{column} = :{key}')
+            params[key] = bin_value
         else:
             # По началу номера: шаблон без ведущего % может использовать индекс,
             # с '%...%' запрос читает всю таблицу и упирается в таймаут.
-            where.append('p.p_rnn LIKE :bin')
-            params['bin'] = bin_value + '%'
+            where.append(f'p.{column} LIKE :{key}')
+            params[key] = bin_value + '%'
     # Направление пока не участвует в поиске. Лишняя строка определяет усечение.
     # Сортировка - во внутреннем запросе, до ROWNUM: при усечении остаются
     # самые свежие платежи, а не произвольные LIMIT + 1 строк.
