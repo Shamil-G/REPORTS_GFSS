@@ -8,6 +8,12 @@
     const empty = document.getElementById('ps-empty');
     const button = form.querySelector('button[type="submit"]');
     const initialSummary = summary.textContent;
+    const pager = document.getElementById('ps-pager');
+    const pagerPrev = document.getElementById('ps-page-prev');
+    const pagerNext = document.getElementById('ps-page-next');
+    const pagerInfo = document.getElementById('ps-page-info');
+    let lastFilters = null;      // фильтры последнего поиска - для переключения страниц
+    let lastPage = 1;
     const columns = ['pay_date', 'doc_date', 'doc_nmb', 'refer', 'cipher_id_knp',
         'pay_sum', 'rfem_id', 'tmst_id', 'p_name', 'p_rnn', 'rfbk_mfo_pbank',
         'p_account', 'r_name', 'r_rnn', 'rfbk_mfo_rbank', 'r_account', 'doc_assign', 'doc_err'];
@@ -26,7 +32,7 @@
         error.textContent = message;
         error.hidden = false;
     }
-    function render(data) {
+    function render(data, filters) {
         results.replaceChildren();
         const fragment = document.createDocumentFragment();
         for (const row of data.rows) {
@@ -52,18 +58,23 @@
         }
         results.appendChild(fragment);
         empty.hidden = data.rows.length > 0;
-        const total = data.rows.reduce((sum, row) => sum + Number(row.pay_sum || 0), 0);
+        const count = new Intl.NumberFormat('ru-RU').format(data.total);
         summary.textContent = data.truncated
-            ? `Показаны первые ${data.limit} записей. Уточните фильтры. Сумма показанных платежей: ${money(total)} ₸`
-            : `Найдено: ${data.rows.length} · Общая сумма: ${money(total)} ₸`;
+            ? `Найдено более ${new Intl.NumberFormat('ru-RU').format(data.limit)} записей, доступны первые ${count}. Уточните фильтры: выгрузка в Excel недоступна`
+            : `Найдено: ${count} · Общая сумма: ${money(data.total_sum)} ₸`;
+        lastPage = data.page;
+        pager.hidden = data.pages <= 1;
+        pagerInfo.textContent = `Страница ${data.page} из ${data.pages}`;
+        pagerPrev.disabled = data.page <= 1;
+        pagerNext.disabled = data.page >= data.pages;
 
         document.dispatchEvent(
-            new CustomEvent('payment-search-results', {detail: data})
+            new CustomEvent('payment-search-results', {detail: {...data, filters}})
         );
     }
     form.elements.reference.addEventListener('input', updateRequired);
     updateRequired();
-    form.addEventListener('submit', async event => {
+    form.addEventListener('submit', event => {
         event.preventDefault();
         error.hidden = true;
         const filters = Object.fromEntries(new FormData(form));
@@ -79,6 +90,14 @@
             showError('Дата «с» не должна быть позже даты «по».');
             return;
         }
+        load(filters, 1);
+    });
+    pagerPrev.addEventListener('click', () => lastFilters && load(lastFilters, lastPage - 1));
+    pagerNext.addEventListener('click', () => lastFilters && load(lastFilters, lastPage + 1));
+
+    async function load(filters, page) {
+        error.hidden = true;
+        lastFilters = filters;
         if (controller) controller.abort();
         const currentController = new AbortController();
         controller = currentController;
@@ -87,9 +106,10 @@
         button.disabled = true;
         results.replaceChildren();
         empty.hidden = true;
+        pager.hidden = true;
         summary.textContent = 'Поиск платежей...';
         try {
-            const response = await fetch(`${form.dataset.url}?${new URLSearchParams(filters)}`, {
+            const response = await fetch(`${form.dataset.url}?${new URLSearchParams({...filters, page})}`, {
                 signal: currentController.signal, headers: {'Accept': 'application/json'}
             });
             if (response.redirected) throw new Error('Сессия завершена. Обновите страницу и войдите снова.');
@@ -98,7 +118,7 @@
             }
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || 'Не удалось выполнить поиск.');
-            if (currentSequence === sequence) render(data);
+            if (currentSequence === sequence) render(data, filters);
         } catch (exc) {
             if (currentSequence === sequence) {
                 showError(exc.name === 'AbortError'
@@ -113,8 +133,10 @@
                 controller = null;
             }
         }
-    });
+    }
     form.addEventListener('reset', () => {
+        lastFilters = null;
+        pager.hidden = true;
         ++sequence;
         if (controller) controller.abort();
         controller = null;

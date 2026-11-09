@@ -8,9 +8,9 @@
 {% block set_style %}
 <link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_card.css', v='1') }}">
 <script src="{{ url_for('static', filename='js/payment_card.js', v='1') }}" defer></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='16') }}">
-<script src="{{ url_for('static', filename='js/payment_search.js', v='6') }}" defer></script>
-<script src="{{ url_for('static', filename='js/payment_search_excel.js', v='1') }}" defer></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='common_style/payment_search.css', v='17') }}">
+<script src="{{ url_for('static', filename='js/payment_search.js', v='7') }}" defer></script>
+<script src="{{ url_for('static', filename='js/payment_search_excel.js', v='2') }}" defer></script>
 <script src="{{ url_for('static', filename='js/payment_tabs.js', v='1') }}" defer></script>
 {% endblock %}
 
@@ -249,6 +249,11 @@
             <p>Измените параметры поиска или сбросьте фильтры.</p>
         </div>
     </div>
+    <nav id="ps-pager" class="ps-pager" aria-label="Страницы результатов" hidden>
+        <button type="button" id="ps-page-prev" class="ps-reset">← Назад</button>
+        <span id="ps-page-info" role="status" aria-live="polite"></span>
+        <button type="button" id="ps-page-next" class="ps-reset">Вперёд →</button>
+    </nav>
 </div>
 </div>
 </section>

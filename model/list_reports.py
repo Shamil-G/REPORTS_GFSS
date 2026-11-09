@@ -2991,34 +2991,6 @@ dict_reports = {
                 },
             }
         },
-        "6000 - Квартальные отчеты":
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.6000",
-            "live_time": 0,
-            "reports":
-            {
-                "01": {
-                    "name": "6001 - Кол-во работодателей для лиц с СВбр",
-                    "proc": "rep_dia_6001",
-                    "data_approve": "07.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_QUARTER},
-                },
-                "02": {
-                    "name": "6002 - 1 МЗП квартальный",
-                    "proc": "rep_dia_6002",
-                    "data_approve": "07.10.2026",
-                    "author": "Гусейнов Ш.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_QUARTER},
-                },
-            }
-        },
-        "8000 - Паспорт СОСС":
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.8000",
-            "live_time": 0,
-            "reports": REPORTS_8000,
-        },
         "6 - Обороты и назначения":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.6",
@@ -3043,25 +3015,25 @@ dict_reports = {
                 },
             }
         },
-        "9000 - Список плательщиков без подтверждения трудовых отношений с получателями СВбр, СВур":
+        "6000 - Квартальные отчеты":
         {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.9000",
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.6000",
             "live_time": 0,
             "reports":
             {
                 "01": {
-                    "name": "9001 - Список лиц, не являющихся наемными работниками",
-                    "proc": "rep_dia_9001",
-                    "data_approve": "15.10.2026",
+                    "name": "6001 - Кол-во работодателей для лиц с СВбр",
+                    "proc": "rep_dia_6001",
+                    "data_approve": "07.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"iin": {"display_name": "ИИН ИП", "type": "string", "length": 12, "required": True}},
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_QUARTER},
                 },
                 "02": {
-                    "name": "9002 - Список лиц, не указанных в заявлении",
-                    "proc": "rep_dia_9002",
-                    "data_approve": "15.10.2026",
+                    "name": "6002 - 1 МЗП квартальный",
+                    "proc": "rep_dia_6002",
+                    "data_approve": "07.10.2026",
                     "author": "Гусейнов Ш.",
-                    "meta_params": {"iin": {"display_name": "ИИН ИП", "type": "string", "length": 12, "required": True}},
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_QUARTER},
                 },
             }
         },
@@ -3116,6 +3088,12 @@ dict_reports = {
 
             }
         },
+        "8000 - Паспорт СОСС":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.8000",
+            "live_time": 0,
+            "reports": REPORTS_8000,
+        },
         "ЕдПлатеж": 
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.cp",
@@ -3162,122 +3140,6 @@ dict_reports = {
                     "author": "Адильханова А.К.",
                     "params": {"date_first": "С", "date_second": "по"},
                 }
-            }
-        },
-        "ЕСП": 
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.esp",
-            "live_time":  0,
-            "reports": 
-            {
-                "01": {
-                    "name": "Списочная часть чистых ЕСП-шников",
-                    "proc": "rep_dia_esp_01",
-                    "data_approve": "25.07.2023",
-                    "author": "Алиманов Д.Д.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "02": {
-                    "name": "Списочная часть смешанных ЕСП-шников",
-                    "proc": "rep_dia_esp_02",
-                    "data_approve": "25.07.2023",
-                    "author": "Алиманов Д.Д.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "03": {
-                    "name": "Списочная часть смешанных ЕСП-шников(СВ)",
-                    "proc": "rep_dia_esp_03_sv",
-                    "data_approve": "14.09.2023",
-                    "author": "Алиманов Д.Д.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "04": {
-                    "name": "Списочная часть чистых ЕСП-шников(СВ)",
-                    "proc": "rep_dia_esp_04_sv",
-                    "data_approve": "14.09.2023",
-                    "author": "Алиманов Д.Д.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                }
-            }
-        },
-        "Консолидированные отчеты": 
-        {
-            "module_dir": f"{REPORT_MODULE_PATH}.DIA.consolidated",
-            "live_time":  0,
-            "reports": 
-            {
-                "01": {
-                    "name": "Количество участников и суммы взносов по частоте участия за период",
-                    "proc": "rep_dia_freq_so_01",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "02": {
-                    "name": "СО по КНП, регионам, количеству участников и сумм (5СО)",
-                    "proc": "rep_dia_5CO",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "03": {
-                    "name": "Выплаты по регионам и коду выплаты (7CP)",
-                    "proc": "rep_dia_7CP",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "04": {
-                    "name": "Выплаты по регионам и коду выплаты (7CP-СВбр)",
-                    "proc": "rep_dia_7CP_0704",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "05": {
-                    "name": "Выплаты по регионам и коду выплаты (7CP-СВбр-301)",
-                    "proc": "rep_dia_7CP_07040301",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "06": {
-                    "name": "Выплаты по коду выплаты и регионам (6CB)",
-                    "proc": "rep_dia_6CB",
-                    "data_approve": "28.01.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "07": {
-                    "name": "Сведения о СВбр, назначенный размер которых составил 3 млн. тенге и более в разрезе регионов",
-                    "proc": "rep_dia_3m",
-                    "data_approve": "24.02.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "Первый год:"},
-                },
-                "08": {
-                    "name": "Сведения о назначенных социальных выплатах, включенных (поставленных) на выплату (статус 20) ",
-                    "proc": "rep_dia_20status",
-                    "data_approve": "14.10.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "params": {"date_first": "С", "date_second": "по"},
-                },
-                "09": {
-                    "name": "Динамика числености получателей и сумм СО",
-                    "proc": "rep_dia_dynamic",
-                    "data_approve": "22.10.2025",
-                    "author": "Гусейнов Ш.А.",
-                    "meta_params": {
-                        "date_first": DATE_FROM,
-                    }
-                },
-                "10": {
-                    "name": "Средние с начала года и за месяц",
-                    "proc": "rep_dia_avg_so",
-                    "data_approve": "07.10.2026",
-                    "author": "Гусейнов Ш.А.",
-                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
-                },
             }
         },
         "минСО": 
@@ -3410,6 +3272,147 @@ dict_reports = {
                 }
             }
         },        
+        
+        "9000 - Плательщики без подтверждения трудовых отношений с получателями СВбр, СВур":
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.9000",
+            "live_time": 0,
+            "reports":
+            {
+                "01": {
+                    "name": "9001 - Список лиц, не являющихся наемными работниками",
+                    "proc": "rep_dia_9001",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+                "02": {
+                    "name": "9002 - Список лиц, не указанных в заявлении",
+                    "proc": "rep_dia_9002",
+                    "data_approve": "15.10.2026",
+                    "author": "Гусейнов Ш.",
+                    "meta_params": {"iin": {"display_name": "ИИН ИП", "type": "string", "length": 12, "required": True}},
+                },
+            }
+        },
+
+        "ЕСП": 
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.esp",
+            "live_time":  0,
+            "reports": 
+            {
+                "01": {
+                    "name": "Списочная часть чистых ЕСП-шников",
+                    "proc": "rep_dia_esp_01",
+                    "data_approve": "25.07.2023",
+                    "author": "Алиманов Д.Д.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "02": {
+                    "name": "Списочная часть смешанных ЕСП-шников",
+                    "proc": "rep_dia_esp_02",
+                    "data_approve": "25.07.2023",
+                    "author": "Алиманов Д.Д.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "03": {
+                    "name": "Списочная часть смешанных ЕСП-шников(СВ)",
+                    "proc": "rep_dia_esp_03_sv",
+                    "data_approve": "14.09.2023",
+                    "author": "Алиманов Д.Д.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "04": {
+                    "name": "Списочная часть чистых ЕСП-шников(СВ)",
+                    "proc": "rep_dia_esp_04_sv",
+                    "data_approve": "14.09.2023",
+                    "author": "Алиманов Д.Д.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                }
+            }
+        },
+        "Консолидированные отчеты": 
+        {
+            "module_dir": f"{REPORT_MODULE_PATH}.DIA.consolidated",
+            "live_time":  0,
+            "reports": 
+            {
+                "01": {
+                    "name": "Количество участников и суммы взносов по частоте участия за период",
+                    "proc": "rep_dia_freq_so_01",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "02": {
+                    "name": "СО по КНП, регионам, количеству участников и сумм (5СО)",
+                    "proc": "rep_dia_5CO",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "03": {
+                    "name": "Выплаты по регионам и коду выплаты (7CP)",
+                    "proc": "rep_dia_7CP",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "04": {
+                    "name": "Выплаты по регионам и коду выплаты (7CP-СВбр)",
+                    "proc": "rep_dia_7CP_0704",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "05": {
+                    "name": "Выплаты по регионам и коду выплаты (7CP-СВбр-301)",
+                    "proc": "rep_dia_7CP_07040301",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "06": {
+                    "name": "Выплаты по коду выплаты и регионам (6CB)",
+                    "proc": "rep_dia_6CB",
+                    "data_approve": "28.01.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "07": {
+                    "name": "Сведения о СВбр, назначенный размер которых составил 3 млн. тенге и более в разрезе регионов",
+                    "proc": "rep_dia_3m",
+                    "data_approve": "24.02.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "Первый год:"},
+                },
+                "08": {
+                    "name": "Сведения о назначенных социальных выплатах, включенных (поставленных) на выплату (статус 20) ",
+                    "proc": "rep_dia_20status",
+                    "data_approve": "14.10.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "params": {"date_first": "С", "date_second": "по"},
+                },
+                "09": {
+                    "name": "Динамика числености получателей и сумм СО",
+                    "proc": "rep_dia_dynamic",
+                    "data_approve": "22.10.2025",
+                    "author": "Гусейнов Ш.А.",
+                    "meta_params": {
+                        "date_first": DATE_FROM,
+                    }
+                },
+                "10": {
+                    "name": "Средние с начала года и за месяц",
+                    "proc": "rep_dia_avg_so",
+                    "data_approve": "07.10.2026",
+                    "author": "Гусейнов Ш.А.",
+                    "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
+                },
+            }
+        },
+       
         "Списки": 
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.lists",

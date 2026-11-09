@@ -62,7 +62,7 @@ per_person as (
     where si.knp = '012'
     and   si.pay_date  >= prm.start_date
     and   si.pay_date  <  prm.before_date
-    and   si.pay_month >= prm.start_date
+    and   si.pay_month >= trunc(prm.start_date,'YY')
     and   si.pay_month <  prm.before_date
     and   si.type_payer != 'Е'
     and   si.sicid = p.sicid
@@ -70,7 +70,7 @@ per_person as (
 ),
 agg as (
     select ord,
-           count(sicid)               as cnt_sicid,
+           count(sicid)        as cnt_sicid,
            sum(avg_sum)               as sum_avg,
            sum(age)                   as sum_age,
            sum(sum_pay)               as sum_pay,

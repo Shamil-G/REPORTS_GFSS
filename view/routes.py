@@ -323,19 +323,16 @@ def view_payment_search_data():
         log.exception('Ошибка поиска платежей в PMPD_PAY_DOC')
         return jsonify(error='Не удалось получить платежи из БД. Возможно, запрос превысил время ожидания. Уточните фильтры. Подробности записаны в журнал приложения.'), 500
 
-@app.route('/payment-search/excel', methods=['POST'])
+@app.route('/payment-search/excel', methods=['GET'])
 @login_required
 @payments_required
 def view_payment_search_excel():
     from flask import send_file
     from model.payment_excel import make_payment_excel
 
-    payload = request.get_json(silent=True)
-    if not isinstance(payload, dict):
-        return jsonify(error='Некорректные данные для выгрузки.'), 400
-
+    # фильтры те же, что у поиска: запрос выполняется заново, без ограничения страницей
     try:
-        output = make_payment_excel(payload.get('rows'))
+        output = make_payment_excel(request.args)
         return send_file(
             output,
             as_attachment=True,
@@ -346,7 +343,7 @@ def view_payment_search_excel():
         return jsonify(error=str(exc)), 400
     except Exception:
         log.exception('Ошибка выгрузки платежей в Excel')
-        return jsonify(error='Не удалось сформировать Excel.'), 500
+        return jsonify(error='Не удалось сформировать Excel. Возможно, запрос превысил время ожидания. Уточните фильтры.'), 500
 
 @app.route('/payment-search/doc/<int:mhmh_id>', methods=['GET'])
 @login_required

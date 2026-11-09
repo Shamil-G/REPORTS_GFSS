@@ -7,16 +7,18 @@
     if (!form || !button) return;
 
     const error = document.getElementById('ps-error');
-    let rows = [];
+    let filters = null;      // фильтры последнего поиска: сервер выполняет запрос заново
     let exporting = false;
 
+    // Выгрузка доступна, если что-то найдено и результат не усечён лимитом
     document.addEventListener('payment-search-results', event => {
-        rows = event.detail.rows;
-        button.disabled = exporting || rows.length === 0;
+        const d = event.detail;
+        filters = (d.total > 0 && !d.truncated) ? d.filters : null;
+        button.disabled = exporting || !filters;
     });
 
     const clear = () => {
-        rows = [];
+        filters = null;
         button.disabled = true;
     };
 
@@ -24,21 +26,15 @@
     form.addEventListener('reset', clear);
 
     button.addEventListener('click', async () => {
-        if (!rows.length || exporting) return;
+        if (!filters || exporting) return;
 
-        const selectedRows = rows;
+        const params = new URLSearchParams(filters);
         exporting = true;
         button.disabled = true;
         error.hidden = true;
 
         try {
-            const response = await fetch(button.dataset.url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({rows: selectedRows})
-            });
+            const response = await fetch(`${button.dataset.url}?${params}`);
 
             if (response.redirected) {
                 throw new Error(
@@ -81,7 +77,7 @@
             error.hidden = false;
         } finally {
             exporting = false;
-            button.disabled = rows.length === 0;
+            button.disabled = !filters;
         }
     });
 })();
