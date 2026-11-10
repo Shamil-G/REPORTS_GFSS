@@ -18,7 +18,7 @@ with period as(
 , mzp as (
   Select /*+ PARALLEL(8)*/
       br, SICID, 
-    --sex, 
+      sex, 
     LAST_RNN, SUM_PAY, cnt_pay_mnth,
       --type_payer,
       case  when cnt_mzp/cnt_pay_mnth   < 1 then 1
@@ -46,7 +46,7 @@ with period as(
                      FIRST_VALUE(coalesce(cb.RFBN_ID,'ZZ'))
                      over(partition by sm.sicid order by sm.pay_date_gfss desc) BR,
                      SM.SICID,
-                     p.sex,
+                     (case when p.sex='0' then 'Ж' else 'М' end) as sex,
                      SM.SUM_PAY,
                      sm.pay_month,
                      round(sm.cnt_mzp,3) cnt_mzp,
@@ -89,7 +89,6 @@ type_co as
 )
 SELECT /*+ parallel(4)*/
   m.kat_mzp,
-  -- m.sex,
   m.br rfbn_id,--"Код",
   nvl(br.NAME, 'Не найден') name, --"Наименование",
   case when a.sam>0 and a.fiz=0 and a.ur=0  and a.sz=0 and a.pz=0 and a.o_pl=0 then 'ИП'
@@ -101,13 +100,13 @@ SELECT /*+ parallel(4)*/
     when a.fiz>0 and a.ur>0 and a.sam=0 and a.sz=0 and a.pz=0 then 'Смешанный физ+юр'
     else 'Смешанный' 
   end type, 
+  m.sex,
   count(a.sicid),
   sum(m.sum_pay)
 FROM  type_co a, mzp m, rfbn_branch br 
 WHERE a.sicid = m.sicid
 AND   m.br=br.RFBN_ID(+)
-GROUP BY m.kat_mzp, 
-     -- m.sex,
+GROUP BY m.kat_mzp, m.sex,
     m.br, 
     nvl(br.NAME, 'Не найден'), 
   case when a.sam>0 and a.fiz=0 and a.ur=0  and a.sz=0 and a.pz=0 and a.o_pl=0 then 'ИП'
@@ -130,12 +129,13 @@ def format_worksheet(worksheet, common_format):
 	#worksheet.set_row(3, 48)
 
 	worksheet.set_column(0, 0, 6)
-	worksheet.set_column(1, 1, 6)
-	worksheet.set_column(2, 2, 12)
+	worksheet.set_column(1, 1, 7)
+	worksheet.set_column(2, 2, 7)
 	worksheet.set_column(3, 3, 40)
 	worksheet.set_column(4, 4, 18)
-	worksheet.set_column(5, 5, 18)
+	worksheet.set_column(5, 5, 7)
 	worksheet.set_column(6, 6, 18)
+	worksheet.set_column(7, 7, 18)
 
 	worksheet.write(2,0, '1', common_format)
 	worksheet.write(2,1, '2', common_format)
@@ -144,13 +144,15 @@ def format_worksheet(worksheet, common_format):
 	worksheet.write(2,4, '5', common_format)
 	worksheet.write(2,5, '6', common_format)
 	worksheet.write(2,6, '7', common_format)
+	worksheet.write(2,7, '8', common_format)
 	worksheet.write(3,0, '№', common_format)
 	worksheet.write(3,1, 'Группа МЗП', common_format)
 	worksheet.write(3,2, 'Код района', common_format)
 	worksheet.write(3,3, 'Наименование', common_format)
 	worksheet.write(3,4, 'Тип предприятия', common_format)
-	worksheet.write(3,5, 'Общее количество сотрудников за которых поступили СО', common_format)
-	worksheet.write(3,6, 'Общая сумма СО', common_format)
+	worksheet.write(3,5, 'Пол', common_format)
+	worksheet.write(3,6, 'Общее количество сотрудников за которых поступили СО', common_format)
+	worksheet.write(3,7, 'Общая сумма СО', common_format)
 
 
 def do_report(file_name: str, date_first: str, date_second: str):
@@ -268,9 +270,11 @@ def do_report(file_name: str, date_first: str, date_second: str):
 				for list_val in record:
 					if col in (3,4):
 						worksheet[page_num-1].write(row_cnt+shift_row, col, list_val, region_name_format)
-					if col in (1,2,5):
+					if col in (1,2,6):
 						worksheet[page_num-1].write(row_cnt+shift_row, col, list_val, digital_format)
-					if col in (6,):
+					if col in (5,):
+						worksheet[page_num-1].write(row_cnt+shift_row, col, list_val, common_format)
+					if col in (7,):
 						worksheet[page_num-1].write(row_cnt+shift_row, col, list_val, money_format)
 					col+= 1
 				row_cnt+= 1
@@ -296,8 +300,8 @@ def do_report(file_name: str, date_first: str, date_second: str):
 
 			for i in range(page_num):
 				# Шифр отчета
-				worksheet[i].write(0, 5, report_code, title_report_code)
-				worksheet[i].write(1, 5, f'Дата формирования: {now.strftime("%d.%m.%Y ")}({s_date} - {stop_time})', title_format_it)
+				worksheet[i].write(0, 7, report_code, title_report_code)
+				worksheet[i].write(1, 7, f'Дата формирования: {now.strftime("%d.%m.%Y ")}({s_date} - {stop_time})', title_format_it)
 
 			workbook.close()
 			set_status_report(file_name, 2)
