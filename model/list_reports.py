@@ -1,7 +1,7 @@
 from app_config import REPORT_MODULE_PATH
 from regions import regions
 from util.period import period_choices
-from datetime import date
+from datetime import date, timedelta
 import re
 
 # live_time - время жизни отчета в часах, может указываться с 2 знаками после запятой
@@ -67,6 +67,10 @@ DYNAMIC_VALUES = {
     "current_month": lambda: f"1.{date.today().month}",
     "current_quarter": lambda: f"2.{(date.today().month - 1) // 3 + 1}",
     "current_ytd": lambda: f"7.{date.today().month}",
+    # Предыдущий месяц: в январе это декабрь прошлого года, поэтому год и месяц
+    # считаются вместе, а не по отдельности.
+    "prev_month_year": lambda: str((date.today().replace(day=1) - timedelta(days=1)).year),
+    "prev_month": lambda: f"1.{(date.today().replace(day=1) - timedelta(days=1)).month}",
 }
 
 REP_YEAR = {
@@ -132,6 +136,23 @@ PERIOD_QUARTER = {
 
 # Только месяц - для формы 18 REP_MINTRUD (f11): Rep_11 читает лишь
 # месячные данные, расчёт за другие периоды смысла не имеет.
+# Год и месяц для месячных отчётов, которые обычно снимают за прошедший месяц
+# (Динамика): по умолчанию стоит предыдущий месяц.
+REP_YEAR_PREV = {
+    "display_name": "Год",
+    "type": "list",
+    "required": True,
+    "values": {},
+    "dynamic": {"values": "years", "default": "prev_month_year"},
+}
+PERIOD_MONTH_PREV = {
+    "display_name": "Месяц",
+    "type": "list",
+    "required": True,
+    "values": period_choices((1,)),
+    "dynamic": {"default": "prev_month"},
+}
+
 PERIOD_MONTH = {
     "display_name": "Период",
     "type": "list",
@@ -3399,9 +3420,14 @@ dict_reports = {
                     "proc": "rep_dia_dynamic",
                     "data_approve": "22.10.2025",
                     "author": "Гусейнов Ш.А.",
-                    "meta_params": {
-                        "date_first": DATE_FROM,
-                    }
+                    "meta_params": {"rep_year": REP_YEAR_PREV, "period": PERIOD_MONTH_PREV}
+                },
+                "11": {
+                    "name": "Динамика числености получателей и сумм СО (версия 2, как в REP_MINTRUD)",
+                    "proc": "rep_dia_dynamic_1",
+                    "data_approve": "11.11.2026",
+                    "author": "Гусейнов Ш.А.",
+                    "meta_params": {"rep_year": REP_YEAR_PREV, "period": PERIOD_MONTH_PREV}
                 },
                 "10": {
                     "name": "Средние с начала года и за месяц",
@@ -3412,8 +3438,8 @@ dict_reports = {
                 },
             }
         },
-       
-        "Списки": 
+
+        "Списки":
         {
             "module_dir": f"{REPORT_MODULE_PATH}.DIA.lists",
             "live_time":  0,

@@ -185,3 +185,14 @@ def first_date_label(rep_year, date_type, date_start=None) -> str:
     в названиях старых отчётов (`... за ' || pdate || ' г.'`)."""
     d_from, _ = period_bounds(rep_year, date_type, date_start)
     return f'{d_from:%d.%m.%Y}'
+
+
+def month_first_day(rep_year, period) -> str:
+    """Год + значение из списка "1.10" -> "2026-10-01" (формат :dt_from месячных отчётов)."""
+    t, m = split_period(period)
+    if t != 1 or not 1 <= m <= 12:
+        raise ValueError(f'Нужен месяц, получено: {period}')
+    y = int(rep_year)
+    if not 2005 <= y <= date.today().year:
+        raise ValueError(f'Неправильное значение года: {rep_year}')
+    return f'{y:04d}-{m:02d}-01'
