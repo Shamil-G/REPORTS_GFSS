@@ -59,7 +59,7 @@ select {n} n, '{label}' period_name,
          where si.knp = '012'
            and si.pay_date  >= {start}
            and si.pay_date  <  {before}
-           and si.pay_month >= {start}
+           and si.pay_month >= trunc({start}, 'YY')
            and si.pay_month <  {before}
            and si.type_payer != 'E'
            and si.sicid = p.sicid
