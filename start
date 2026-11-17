@@ -3,8 +3,10 @@ PROJECT_DIR=/home/reports/REPORTS_GFSS
 
 echo 'Upgrade PIP .....'
 pip install --upgrade pip
-echo 'Install LDAP3 .....'
-pip install ldap3
+#echo 'Install LDAP3 .....'
+#pip install ldap3
 
-python main_app.py
-#gunicorn
+pip install dotenv
+
+#python main_app.py
+gunicorn
