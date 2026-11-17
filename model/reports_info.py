@@ -168,6 +168,8 @@ def get_list_reports():
         {
             "num": num_rep,
             "name": rep["name"],
+            # "stale" в list_reports: причина, по которой отчёт серый и не запускается
+            "stale": rep.get("stale"),
             "params": rep.get("params", {}),
             "meta_params": own_region_param(
                 resolve_dynamic(rep.get("meta_params", {})), group, rep, dep_name)

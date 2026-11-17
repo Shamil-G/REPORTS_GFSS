@@ -331,6 +331,7 @@ dict_reports = {
                 "01": {
                     "name": "1 - Анализ назначения социальных выплат с начала года",
                     "proc": "rep_dia_1",
+                    "stale": "Данные устарели: SIFL_FILE (последние данные 2017-12), SIFL_FILE_MAKET (последние данные 2017-12), SIPR_PAYER (последние данные 2017-11), SIPR_PAYER_MAKET (последние данные 2017-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
@@ -345,6 +346,7 @@ dict_reports = {
                 "03": {
                     "name": "4 - Мониторинг движения макетов дел",
                     "proc": "rep_dia_4",
+                    "stale": "Данные устарели: SIFL_FILE (последние данные 2017-12), SIFL_FILE_MAKET (последние данные 2017-12), SIPR_PAYER (последние данные 2017-11), SIPR_PAYER_MAKET (последние данные 2017-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rfpm_kind": {"display_name": "Вид выплаты", "type": "list", "required": True, "values": {"1": "1 - по потере кормильца", "2": "2 - по утрате трудоспособности", "3": "3 - по потере работы", "4": "4 - по потере дохода в связи с беременностью и родами", "5": "5 - по потере дохода по уходу до 1 года", "6": "6 - по потере дохода в связи с усыновлением (удочерением) новорожденного"}}},
@@ -366,6 +368,7 @@ dict_reports = {
                 "06": {
                     "name": "9 - Сведения о назначенных социальных выплатах из АО «ГФСС» по случаю потери работы",
                     "proc": "rep_dia_9",
+                    "stale": "Данные устарели: SIPR_MAKET_FIRST_APPROVE (последние данные 2023-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
@@ -373,6 +376,7 @@ dict_reports = {
                 "07": {
                     "name": "10 - «Еженедельные» оперативные сведения о назначенных социальных выплатах",
                     "proc": "rep_dia_10",
+                    "stale": "Данные устарели: SIPR_MAKET_FIRST_APPROVE (последние данные 2023-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -380,6 +384,7 @@ dict_reports = {
                 "08": {
                     "name": "11 - «Еженедельные» оперативные сведения об обратившихся за назначением социальных выплат",
                     "proc": "rep_dia_11",
+                    "stale": "Данные устарели: SIFL_FILE (последние данные 2017-12), SIFL_FILE_MAKET (последние данные 2017-12), SIPR_PAYER (последние данные 2017-11), SIPR_PAYER_MAKET (последние данные 2017-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -387,6 +392,7 @@ dict_reports = {
                 "09": {
                     "name": "12 - Сведения об участниках системы социального страхования, обратившихся за социальной выплатой по случаю потери работы",
                     "proc": "rep_dia_12",
+                    "stale": "Данные устарели: SIFL_FILE (последние данные 2017-12), SIFL_FILE_MAKET (последние данные 2017-12), SIPR_PAYER (последние данные 2017-11), SIPR_PAYER_MAKET (последние данные 2017-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -394,6 +400,7 @@ dict_reports = {
                 "10": {
                     "name": "13 - СВЕДЕНИЯ о назначенных социальных выплатах из АО «ГФСС» по случаю потери работы",
                     "proc": "rep_dia_13",
+                    "stale": "Данные устарели: SIPR_MAKET_FIRST_APPROVE (последние данные 2023-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
@@ -401,6 +408,7 @@ dict_reports = {
                 "11": {
                     "name": "17 - 100-9 По регионам",
                     "proc": "rep_dia_17",
+                    "stale": "Данные устарели: SIPR_MAKET_FIRST_APPROVE (последние данные 2023-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rep_year": REP_YEAR, "period": PERIOD_MONTH},
@@ -408,6 +416,7 @@ dict_reports = {
                 "12": {
                     "name": "16 - Списки переплат по СВпр",
                     "proc": "rep_dia_16",
+                    "stale": "Данные устарели: SIPR_PAYER (последние данные 2017-11)",
                     "data_approve": "15.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rfbn_id": LIST_REGION},
@@ -593,6 +602,7 @@ dict_reports = {
                     "name": "Получатели и суммы СВ по возрасту и стажу, "
                             "по виду выплаты (42-46)",
                     "proc": "app_42_46",
+                    "stale": "Данные устарели: SIPR_KSU (последние данные 2017-11 (по SIPR_PAYER))",
                     "data_approve": "29.09.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {
@@ -648,6 +658,7 @@ dict_reports = {
                 "13": {
                     "name": "Сведения по количеству получателей и суммам социальных выплат в разрезе регионов и стажа участия (1426)",
                     "proc": "rep_dia_1426",
+                    "stale": "Данные устарели: SIPR_MAKET_FIRST_APPROVE (последние данные 2023-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO, "rfpm_id": {**LIST_RFPM, "required": True}},
@@ -985,6 +996,7 @@ dict_reports = {
                     "name": "Коэффициент замещения дохода при утрате "
                             "трудоспособности, с выбором учёта ГСП (38, v2)",
                     "proc": "app_38_v2",
+                    "stale": "Данные устарели: RFBS_BASE_SIZE (последние данные размеры до 2023-12-31)",
                     "data_approve": "29.09.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {
@@ -997,6 +1009,7 @@ dict_reports = {
                     "name": "Коэффициент замещения дохода при потере "
                             "кормильца, с выбором учёта ГСП (39, v2)",
                     "proc": "app_39_v2",
+                    "stale": "Данные устарели: RFBS_BASE_SIZE (последние данные размеры до 2023-12-31)",
                     "data_approve": "29.09.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {
@@ -1020,6 +1033,7 @@ dict_reports = {
                     "name": "СВБР: получатели по доле МЗП, по виду "
                             "выплаты (табл. 2)",
                     "proc": "svbr_tab2",
+                    "stale": "Данные устарели: SIPR_PAYER (последние данные 2017-11)",
                     "data_approve": "29.09.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {
@@ -1066,6 +1080,7 @@ dict_reports = {
                 "03": {
                     "name": "3005 - Сведения о градации вновь назначенных получателей социальных выплат",
                     "proc": "rep_dia_3005",
+                    "stale": "Данные устарели: SIPR_MAKET_FIRST_APPROVE (последние данные 2023-11)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -1352,6 +1367,7 @@ dict_reports = {
                 "22": {
                     "name": "3105 - Ведомость возвращенных излишне уплаченных СО",
                     "proc": "rep_dia_3105",
+                    "stale": "Данные устарели: TEST_GFSS_PAY_DOC (последние данные 2023-10), TEST_SIOR_ORDER_RET (последние данные 2023-10), TEST_GFSS_ORDER_RET_LIST (последние данные 2023-10), TEST_MHMH_GFSS_GCVP (последние данные 2023-10)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -2978,6 +2994,7 @@ dict_reports = {
                 "01": {
                     "name": "3502 - Отчет о поступивших СО от плательщиков ЕСП",
                     "proc": "rep_dia_3502",
+                    "stale": "Данные устарели: RFBS_BASE_SIZE (последние данные размеры до 2023-12-31)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rfbn_id": LIST_REGION, "date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3006,6 +3023,7 @@ dict_reports = {
                 "05": {
                     "name": "3506 - Отчет о поступивших СО от плательщиков ЕСП по периоду",
                     "proc": "rep_dia_3506",
+                    "stale": "Данные устарели: RFBS_BASE_SIZE (последние данные размеры до 2023-12-31)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rfbn_id": LIST_REGION, "date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3021,6 +3039,7 @@ dict_reports = {
                 "01": {
                     "name": "6-1 - Обороты и назначения: назначения",
                     "proc": "rep_dia_6_1",
+                    "stale": "Данные устарели: SIFL_FILE (последние данные 2017-12), SIFL_FILE_MAKET (последние данные 2017-12), SIPR_PAYER (последние данные 2017-11), SIPR_PAYER_MAKET (последние данные 2017-11)",
                     "audit": True,
                     "data_approve": "15.10.2026",
                     "author": "Гусейнов Ш.",
@@ -3558,6 +3577,7 @@ dict_reports = {
                 "03": {
                     "name": "710 - Средневзвешенные КСУ",
                     "proc": "rep_dia_710",
+                    "stale": "Данные устарели: SIPR_PAYER_ARC (последние данные 2017-11), SIHS_HISTORY (последние данные 2017-11), SIAP_ACTION_PROTOCOL (последние данные 2020-05)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3565,6 +3585,7 @@ dict_reports = {
                 "04": {
                     "name": "711 - Средние размеры по утрате трудоспособности",
                     "proc": "rep_dia_711",
+                    "stale": "Данные устарели: SIPR_PAYER_ARC (последние данные 2017-11), SIHS_HISTORY (последние данные 2017-11), SIAP_ACTION_PROTOCOL (последние данные 2020-05)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3572,6 +3593,7 @@ dict_reports = {
                 "05": {
                     "name": "712 - Средние размеры по потере кормильца",
                     "proc": "rep_dia_712",
+                    "stale": "Данные устарели: SIPR_PAYER_ARC (последние данные 2017-11), SIHS_HISTORY (последние данные 2017-11), SIAP_ACTION_PROTOCOL (последние данные 2020-05)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3579,6 +3601,7 @@ dict_reports = {
                 "06": {
                     "name": "713 - Средние размеры по потере работы",
                     "proc": "rep_dia_713",
+                    "stale": "Данные устарели: SIPR_PAYER_ARC (последние данные 2017-11), SIHS_HISTORY (последние данные 2017-11), SIAP_ACTION_PROTOCOL (последние данные 2020-05)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3586,6 +3609,7 @@ dict_reports = {
                 "07": {
                     "name": "714 - Средняя продолжительность выплат по утрате трудоспособности (факт)",
                     "proc": "rep_dia_714",
+                    "stale": "Данные устарели: SIFL_FILE (последние данные 2017-12), SIPR_PAYER (последние данные 2017-11), SIPR_PAYER_ARC (последние данные 2017-11), SIAP_ACTION_PROTOCOL (последние данные 2020-05)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3593,6 +3617,7 @@ dict_reports = {
                 "08": {
                     "name": "715 - Средняя продолжительность выплат по утрате трудоспособности (прогноз)",
                     "proc": "rep_dia_715",
+                    "stale": "Данные устарели: SIFL_FILE (последние данные 2017-12), SIPR_PAYER (последние данные 2017-11), SIPR_PAYER_ARC (последние данные 2017-11), SIAP_ACTION_PROTOCOL (последние данные 2020-05)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3600,6 +3625,7 @@ dict_reports = {
                 "09": {
                     "name": "716 - Средняя продолжительность выплат по потере кормильца (факт)",
                     "proc": "rep_dia_716",
+                    "stale": "Данные устарели: SIFL_FILE (последние данные 2017-12), SIPR_PAYER (последние данные 2017-11), SIPR_PAYER_ARC (последние данные 2017-11), SIAP_ACTION_PROTOCOL (последние данные 2020-05)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3740,6 +3766,7 @@ dict_reports = {
                 "02": {
                     "name": "3320 - Список безработных",
                     "proc": "rep_dia_3320",
+                    "stale": "Данные устарели: V_LM_UNEMPLOY_SS_INFO (последние данные 2019-09), UNEMPLOYED_CALC (последние данные 2019-09)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3747,6 +3774,7 @@ dict_reports = {
                 "03": {
                     "name": "3321 - Сведения по безработным",
                     "proc": "rep_dia_3321",
+                    "stale": "Данные устарели: V_LM_UNEMPLOY_SS_INFO (последние данные 2019-09), UNEMPLOYED_CALC (последние данные 2019-09)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3768,6 +3796,7 @@ dict_reports = {
                 "06": {
                     "name": "3326 - Сведения по отказным выплатам 42500 в разрезе причин",
                     "proc": "rep_dia_3326",
+                    "stale": "Данные устарели: ALL_LIST_42500 (последние данные 2020-06)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3775,6 +3804,7 @@ dict_reports = {
                 "07": {
                     "name": "3327 - Количество отказанных дел по причинам, в разрезе областей",
                     "proc": "rep_dia_3327",
+                    "stale": "Данные устарели: ALL_LIST_42500 (последние данные 2020-06)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3782,6 +3812,7 @@ dict_reports = {
                 "08": {
                     "name": "3328 - Сведения по выплатам 42500 в разрезе причин",
                     "proc": "rep_dia_3328",
+                    "stale": "Данные устарели: ALL_LIST_42500 (последние данные 2020-06)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rfbn_id": {**LIST_REGION, "required": True}, "date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3909,6 +3940,7 @@ dict_reports = {
                 "01": {
                     "name": "7001 - Сведения об оказанных услугах по отделениям",
                     "proc": "rep_dia_7001",
+                    "stale": "Данные устарели: SERVICES_JOURN (последние данные 2024-05), WEB_GS_EMP (последние данные нет свежих данных)",
                     "data_approve": "07.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"rfbn_id": LIST_REGION, "date_first": DATE_FROM, "date_second": DATE_TO},
@@ -3942,6 +3974,7 @@ dict_reports = {
                 "03": {
                     "name": "605 - Реестр беременных",
                     "proc": "rep_dia_605",
+                    "stale": "Данные устарели: PREG_REGISTRY (последние данные 2017-02)",
                     "data_approve": "02.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {"iin": {"display_name": "ИИН получателя", "type": "string", "length": 12, "required": True}},
@@ -3949,6 +3982,7 @@ dict_reports = {
                 "04": {
                     "name": "603 - Протокол операций",
                     "proc": "rep_dia_603",
+                    "stale": "Данные устарели: SIFL_FILE (последние данные 2017-12), SIFL_FILE_MAKET (последние данные 2017-12), SIPR_PAYER (последние данные 2017-11), SIPR_PAYER_ARC (последние данные 2017-11), SIPR_PAYER_MAKET (последние данные 2017-11), SIAP_ACTION_PROTOCOL (последние данные 2020-05)",
                     "data_approve": "14.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {
@@ -4001,6 +4035,7 @@ dict_reports = {
                 "11": {
                     "name": "614 - Список получателей СВпр, снятых с учета в качестве безработного",
                     "proc": "rep_dia_614",
+                    "stale": "Данные устарели: V_LM_UNEMPLOY_SS_INFO (последние данные 2019-09)",
                     "data_approve": "15.10.2026",
                     "author": "Гусейнов Ш.",
                     "meta_params": {},

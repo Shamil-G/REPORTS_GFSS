@@ -17,7 +17,11 @@
 <form class="form_r">
     {% for el in cursor %}
     <reports>
+        {% if el.stale %}
+        <span style="color:#999;cursor:not-allowed" title="{{ el.stale }}">{{el.num}}.&nbsp;{{ el.name }}</span>
+        {% else %}
         <a href="/extract-params/{{el.num}}">{{el.num}}.&nbsp;{{ el.name }}</a>
+        {% endif %}
     </reports>
     {% endfor %}
 </form>

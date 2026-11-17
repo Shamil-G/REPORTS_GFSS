@@ -277,6 +277,10 @@ def call_report(dep_name: str, group_name: str, num_rep: str, params: dict):
                  f'отчёт: {dep_name}.{group_name}.{num_rep}, access: {access_rule}')
         return _audit_page('Доступ к отчёту запрещен.')
 
+    if report.get("stale"):
+        log.info(f'CALL REPORT. ОТЧЁТ ОТКЛЮЧЁН (устаревшие данные): {dep_name}.{group_name}.{num_rep}: {report["stale"]}')
+        return _audit_page('Отчёт отключён: данные устарели. ' + report["stale"])
+
     module_dir = group["module_dir"]
     live_time = group["live_time"]
     proc = report["proc"]

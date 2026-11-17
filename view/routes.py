@@ -107,6 +107,9 @@ def view_extract_params(rep_number):
     for rep in get_list_reports():
         log.debug(f'2. VIEW EXTRACT PARAMS.REP: {rep}')
         if rep_num == rep.get('num'):
+            if rep.get('stale'):
+                # отчёт серый: адрес набрали руками, форму параметров не открываем
+                return redirect(url_for('view_set_grp_name', grp=session['grp_name']))
             if 'meta_params' in rep:
                 meta_params = rep.get('meta_params')
             if 'params' in rep:
