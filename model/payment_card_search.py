@@ -141,25 +141,63 @@ def search_card(filters):
 # «Информация участнику системы обязательного социального страхования»:
 # платежи человека из SI_MEMBER_2 + реквизиты платёжного документа из PMPD_PAY_DOC
 # ---------------------------------------------------------------------------
-MEMBER_TABLE = 'LOADER.SI_MEMBER_2'  # если таблица в другой схеме - укажите 'SCHEMA.SI_MEMBER_2'
 INFO_LIMIT = 3000
 RECEIVER = 'Гос.фонд социального страхования'
 
-TMST_STATUSES = {
-    1: '1 — Поступил', 2: '2 — Брак', 4: '4 — Не рассчитанные', 5: '5 — Обработанные',
-    6: '6 — Сторнированные', 7: '7 — Проведен сторн.', 8: '8 — Проведен', 9: '9 — Аннулирован',
-    65: '65 — Провед. раздел.', 66: '66 — Сторн. разделен.', 101: '101 — Сформированные',
-    102: '102 — Не доставленные', 103: '103 — Доставленные', 104: '104 — Возвращенные',
-    105: '105 — Рабочий', 106: '106 — Аннулированные',
-}
 
-INFO_SQL = f"""SELECT * FROM (
-    SELECT m.pay_date, m.pay_date_gfss, d.doc_nmb, d.doc_date, m.knp, d.p_name, m.p_rnn,
-           d.pay_sum, m.sum_pay, d.tmst_id, m.period
-    FROM {MEMBER_TABLE} m
-    LEFT JOIN LOADER.PMPD_PAY_DOC d ON d.mhmh_id = m.mhmh_id
-    WHERE m.sicid = :sicid
-    ORDER BY m.pay_date DESC, m.period DESC
+INFO_SQL = """SELECT * FROM (
+WITH p AS (
+    SELECT sicid FROM LOADER.person WHERE iin = :iin
+),
+sics AS (
+    SELECT c.sicid FROM LOADER.p10_card c WHERE c.sicid IN (SELECT sicid FROM p)
+    UNION ALL
+    SELECT c.sicid FROM LOADER.p10_card c WHERE c.sicid_head IN (SELECT sicid FROM p)
+),
+l AS (
+    SELECT pl.sicid, pl.pay_sum, pl.mhmh_id, pl.period, pl.rfem_id
+      FROM sics v, LOADER.pmdl_doc_list pl
+     WHERE pl.sicid = v.sicid
+),
+t AS (
+    SELECT d.pay_date in_date, d.pay_date out_date, d.doc_nmb, d.doc_date,
+           d.cipher_id_knp knp, d.p_name company, d.p_rnn rnn,
+           NULL pf_name, d.pay_sum sum_doc, l.pay_sum, d.tmst_id,
+           s.name, d.period
+      FROM l, LOADER.pmpd_pay_doc d, LOADER.tmst_state s
+     WHERE d.mhmh_id = l.mhmh_id
+       AND s.tmst_id < 7
+       AND d.tmst_id = s.tmst_id
+       AND d.cipher_id_knp IN ('012', '017')
+       AND d.pay_date < DATE '2006-07-01'
+    UNION ALL
+    SELECT d.pay_date, d.pay_date, d.doc_nmb, d.doc_date, d.cipher_id_knp,
+           d.p_name, d.p_rnn, NULL, d.pay_sum, l.pay_sum,
+           CASE WHEN l.rfem_id IS NULL THEN d.tmst_id ELSE 6 END,
+           CASE WHEN l.rfem_id IS NULL THEN s.name ELSE 'СТОРНИРОВАННЫЕ' END,
+           NVL(d.period, l.period)
+      FROM l, LOADER.pmpd_pay_doc d, LOADER.tmst_state s
+     WHERE d.mhmh_id = l.mhmh_id
+       AND s.tmst_id <> 103
+       AND d.tmst_id = s.tmst_id(+)
+       AND d.cipher_id_knp IN ('012', '017')
+       AND d.pay_date > DATE '2006-07-01'
+    UNION ALL
+    SELECT d.pay_date, d.pay_date, d.doc_nmb, d.doc_date, d.cipher_id_knp,
+           d.p_name, d.p_rnn, d.r_name, d.pay_sum, l.pay_sum, d.tmst_id,
+           s.name, NVL(d.period, l.period)
+      FROM l, LOADER.pmpd_pay_doc d, LOADER.tmst_state s
+     WHERE d.mhmh_id = l.mhmh_id
+       AND s.tmst_id = 103
+       AND d.tmst_id = s.tmst_id
+       AND d.cipher_id_knp IN ('026', '094')
+)
+SELECT in_date, out_date, doc_nmb, doc_date, knp, company, rnn,
+       NVL(pf_name, 'Гос.фонд социального страхования') pf_name, sum_doc,
+       pay_sum, LOWER(RTRIM(name)) name, period,
+       CASE WHEN tmst_id = 5 AND knp <> '032' THEN pay_sum ELSE 0 END sum_processed
+  FROM t
+ ORDER BY in_date
 )
 WHERE ROWNUM <= :lim"""
 
@@ -181,8 +219,6 @@ def _text(value):
 
 
 def get_card_info(sicid):
-    """Данные для таба «Информация участнику». None - человека нет в PERSON.
-    PermissionError - человек является сотрудником (данные только для роли Admin)."""
     with get_connection() as connection:
         old_timeout = connection.call_timeout
         try:
@@ -193,33 +229,35 @@ def get_card_info(sicid):
                 person = cursor.fetchone()
                 if person is None:
                     return None
-                iin = _text(person[0])
-                # ИИН берём из БД, а не из запроса: проверка сотрудников не обходится подменой sicid
+                iin = _text(person[0]).strip()
                 if iin and not is_admin():
                     try:
                         if iin_in_ad(iin):
                             raise PermissionError('Доступ запрещен!')
                     except AdUnavailable:
                         raise ValueError('Не удалось проверить данные в Active Directory. Попробуйте позже.') from None
-                cursor.arraysize = 200
-                cursor.execute(INFO_SQL, {'sicid': sicid, 'lim': INFO_LIMIT + 1})
-                rows = cursor.fetchall()
+                rows = []
+                if iin:
+                    cursor.arraysize = 200
+                    cursor.execute(INFO_SQL, {'iin': iin, 'lim': INFO_LIMIT + 1})
+                    rows = cursor.fetchall()
         finally:
             connection.call_timeout = old_timeout
 
     result, total = [], Decimal(0)
-    for (pay_date, pay_date_gfss, doc_nmb, doc_date, knp, p_name, p_rnn,
-         pay_sum, sum_pay, tmst_id, period) in rows[:INFO_LIMIT]:
-        if sum_pay is not None:
-            total += Decimal(str(sum_pay))
+    for (in_date, out_date, doc_nmb, doc_date, knp, company, rnn, pf_name,
+         sum_doc, pay_sum, name, period, sum_processed) in rows[:INFO_LIMIT]:
+        if sum_processed is not None:
+            total += Decimal(str(sum_processed))
         result.append({
-            'pay_date': _date(pay_date), 'pay_date_gfss': _date(pay_date_gfss),
+            'pay_date': _date(in_date), 'pay_date_gfss': _date(out_date),
             'doc_nmb': _text(doc_nmb), 'doc_date': _date(doc_date), 'knp': _text(knp),
-            'p_name': _text(p_name), 'p_rnn': _text(p_rnn), 'receiver': RECEIVER,
-            'pay_sum': _money(pay_sum), 'sum_pay': _money(sum_pay),
-            'pay_sum_num': None if pay_sum is None else float(pay_sum),   # числа - для Excel
-            'sum_pay_num': None if sum_pay is None else float(sum_pay),
-            'status': '' if tmst_id is None else TMST_STATUSES.get(int(tmst_id), str(tmst_id)),
+            'p_name': _text(company), 'p_rnn': _text(rnn), 'receiver': _text(pf_name),
+            'pay_sum': _money(sum_doc), 'sum_pay': _money(pay_sum),
+            'sum_processed': _money(sum_processed),
+            'pay_sum_num': None if sum_doc is None else float(sum_doc),   # числа - для Excel
+            'sum_pay_num': None if pay_sum is None else float(pay_sum),
+            'status': _text(name),
             'period': _text(period),
         })
     return {
